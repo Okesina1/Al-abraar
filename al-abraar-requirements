@@ -1,0 +1,127 @@
+
+# Al-Abraar Online Modrasah - System Requirements
+
+## Overview
+Al-Abraar is an online Modrasah platform designed for booking Islamic lessons between students and Ustaadhs (teachers), managed by a System Admin. The system aims to provide an efficient and user-friendly interface for managing classes, scheduling, and payments.
+
+---
+
+## 🎨 Branding
+- **Primary Color:** Green (represents growth, harmony, and Islam).  
+- **Secondary Color:** Yellow/Golden (represents knowledge, wisdom, and excellence).  
+
+These colors will be consistently applied across the platform UI for buttons, highlights, and branding materials.
+
+---
+
+## Roles & Responsibilities
+
+### 1. System Admin
+- Approves or rejects Ustaadh registrations after reviewing submitted information and CVs.
+- Oversees all system activity including bookings, payments, and student/ustaadh management.
+- Manages platform settings such as pricing, refund policy, and course availability.
+- Generates analytical reports (students per course, earnings, active teachers, etc.).
+- Handles disputes and complaints.
+
+**Admin Dashboard Includes:**
+- Pending Ustaadh approval requests.
+- Financial overview (subscriptions, payments).
+- Notifications for issues or disputes.
+- Reports and analytics.
+
+---
+
+### 2. Ustaadh (Teacher)
+- Registers with: Full Name, Email, Phone Number, Country, City, Age, and CV upload.
+- Must wait for admin approval to activate their account.
+- Receives confirmation email after verification.
+
+**Ustaadh Dashboard Includes:**
+- Manage profile & availability (set available days and hours).
+- View list of booked students with selected times.
+- Calendar view to prevent double-booking conflicts.
+- Provide Google Meet link for scheduled classes.
+- Communication with students via messaging/notifications.
+- Track earnings (subscriptions, payments, payouts).
+- Upload lesson materials (PDF, notes).
+- Attendance tracking (mark sessions as completed).
+
+---
+
+### 3. Student
+- Registers with: Full Name, Email, Phone Number, Country, City, Age.
+- Browses list of verified Ustaadhs, filters by country, course, etc.
+- Views Ustaadh profile with bio, reviews, availability, and courses offered.
+
+**Booking Process:**
+- Selects one of two packages:
+  - **Qur’an & Tajweed → $5/hr**
+  - **Qur’an, Tajweed, Hadeeth & Arabic → $7/hr**
+- Selects:
+  - Number of hours per day.
+  - Number of days per week.
+  - Subscription duration in months (monthly plans).
+- Prevented from double-booking the same time slot with an Ustaadh.
+- Makes payment to confirm booking.
+
+**Student Dashboard Includes:**
+- Manage profile.
+- Upcoming lessons overview.
+- Payment history and active subscriptions.
+- Reschedule option (with admin-defined rules, e.g., 24h notice).
+- Leave reviews/ratings for Ustaadhs.
+
+---
+
+## Core Features
+
+### Scheduling & Booking
+- Calendar-based booking to avoid conflicts.
+- Ustaadh sets available slots.
+- Students select from available times only.
+- Prevents double-booking by design.
+
+### Notifications & Reminders
+- Email/SMS reminders for upcoming lessons.
+- Notifications for schedule changes or cancellations.
+
+### Payments
+- Supports multiple payment gateways (Stripe, PayPal, Paystack, Flutterwave).
+- Monthly recurring subscriptions or one-time plans.
+- Invoices and receipts for students.
+- Payout statements for Ustaadhs.
+- Admin-controlled refund/dispute management.
+
+### Learning & Interaction
+- Google Meet integration: Ustaadh provides meeting link to students.
+- Secure messaging between student and Ustaadh.
+- Ustaadh uploads lesson materials for students to access.
+- Attendance tracking for quality assurance.
+
+### Quality Assurance
+- Ratings and reviews system for Ustaadhs.
+- Verified badge for approved Ustaadhs.
+- Admin monitors disputes and session quality.
+
+---
+
+## Extra Enhancements
+- Multi-language support (English + Arabic).
+- Mobile-first responsive design.
+- Referral program (discounts for invited friends).
+- Gamification: badges for attendance streaks, completed months.
+
+---
+
+## Tech Stack (Suggested)
+- **Frontend:** React (Typescript).
+- **Backend:** Node.js (NestJS).
+- **Database:** MongoDB.
+- **Payments:** Stripe, PayPal, Paystack.
+- **Video Conferencing:** Google Meet (Ustaadh provides link).
+- **Authentication:** JWT, email verification, optional 2FA.
+
+---
+
+## Summary
+Al-Abraar Modrasah provides a structured and scalable online learning platform for students and Ustaadhs. The system ensures verified instructors, structured booking, flexible payment options, and a simple way to conduct lessons using Google Meet links provided by Ustaadhs. It improves on existing systems like Ustadhee by offering better scheduling, interaction, branding consistency, and quality assurance.
