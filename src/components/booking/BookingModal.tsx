@@ -1,0 +1,327 @@
+import React, { useState } from 'react';
+import { X, Calendar, Clock, DollarSign, CreditCard } from 'lucide-react';
+import { User } from '../../types';
+import { useBooking } from '../../contexts/BookingContext';
+import { useAuth } from '../../contexts/AuthContext';
+
+interface BookingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  ustaadh: User;
+}
+
+export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ustaadh }) => {
+  const { user } = useAuth();
+  const { createBooking, checkTimeSlotAvailability } = useBooking();
+  const [step, setStep] = useState(1);
+  const [bookingData, setBookingData] = useState({
+    packageType: 'basic' as 'basic' | 'complete',
+    hoursPerDay: 1,
+    daysPerWeek: 1,
+    subscriptionMonths: 1,
+    selectedDays: [] as number[],
+    selectedTimes: [] as string[],
+    startDate: new Date().toISOString().split('T')[0]
+  });
+  const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const packagePrices = {
+    basic: 5, // Qur'an & Tajweed
+    complete: 7 // Qur'an, Tajweed, Hadeeth & Arabic
+  };
+
+  const calculateTotal = () => {
+    const hourlyRate = packagePrices[bookingData.packageType];
+    const weeksInMonth = 4;
+    return hourlyRate * bookingData.hoursPerDay * bookingData.daysPerWeek * weeksInMonth * bookingData.subscriptionMonths;
+  };
+
+  const handleBookingSubmit = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // Generate schedule slots
+      const schedule = bookingData.selectedDays.map((day, index) => ({
+        id: `slot-${Date.now()}-${index}`,
+        dayOfWeek: day,
+        startTime: bookingData.selectedTimes[index] || '14:00',
+        endTime: addHours(bookingData.selectedTimes[index] || '14:00', bookingData.hoursPerDay),
+        status: 'scheduled' as const,
+        date: getNextDateForDay(day, bookingData.startDate)
+      }));
+
+      const endDate = new Date(bookingData.startDate);
+      endDate.setMonth(endDate.getMonth() + bookingData.subscriptionMonths);
+
+      await createBooking({
+        studentId: user.id,
+        ustaadhId: ustaadh.id,
+        packageType: bookingData.packageType,
+        hoursPerDay: bookingData.hoursPerDay,
+        daysPerWeek: bookingData.daysPerWeek,
+        subscriptionMonths: bookingData.subscriptionMonths,
+        totalAmount: calculateTotal(),
+        startDate: bookingData.startDate,
+        endDate: endDate.toISOString().split('T')[0],
+        schedule
+      });
+
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      alert('Booking confirmed! You will receive a confirmation email shortly.');
+      onClose();
+    } catch (error) {
+      alert('Booking failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addHours = (time: string, hours: number): string => {
+    const [h, m] = time.split(':').map(Number);
+    const totalMinutes = h * 60 + m + hours * 60;
+    const newHours = Math.floor(totalMinutes / 60) % 24;
+    const newMinutes = totalMinutes % 60;
+    return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
+  };
+
+  const getNextDateForDay = (dayOfWeek: number, startDate: string): string => {
+    const date = new Date(startDate);
+    const diff = dayOfWeek - date.getDay();
+    if (diff < 0) {
+      date.setDate(date.getDate() + diff + 7);
+    } else {
+      date.setDate(date.getDate() + diff);
+    }
+    return date.toISOString().split('T')[0];
+  };
+
+  const renderStep1 = () => (
+    <div className="space-y-6">
+      <h3 className="text-xl font-semibold text-gray-800 mb-4">Select Package</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div 
+          className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+            bookingData.packageType === 'basic' 
+              ? 'border-green-500 bg-green-50' 
+              : 'border-gray-200 hover:border-green-300'
+          }`}
+          onClick={() => setBookingData({...bookingData, packageType: 'basic'})}
+        >
+          <h4 className="font-semibold text-gray-800 mb-2">Qur'an & Tajweed</h4>
+          <p className="text-2xl font-bold text-green-600 mb-2">$5/hour</p>
+          <ul className="text-sm text-gray-600 space-y-1">
+            <li>• Qur'an recitation</li>
+            <li>• Tajweed rules</li>
+            <li>• Pronunciation correction</li>
+          </ul>
+        </div>
+
+        <div 
+          className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+            bookingData.packageType === 'complete' 
+              ? 'border-green-500 bg-green-50' 
+              : 'border-gray-200 hover:border-green-300'
+          }`}
+          onClick={() => setBookingData({...bookingData, packageType: 'complete'})}
+        >
+          <h4 className="font-semibold text-gray-800 mb-2">Complete Package</h4>
+          <p className="text-2xl font-bold text-green-600 mb-2">$7/hour</p>
+          <ul className="text-sm text-gray-600 space-y-1">
+            <li>• Qur'an & Tajweed</li>
+            <li>• Hadeeth studies</li>
+            <li>• Arabic language</li>
+            <li>• Islamic studies</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Hours per day</label>
+          <select 
+            value={bookingData.hoursPerDay}
+            onChange={(e) => setBookingData({...bookingData, hoursPerDay: parseFloat(e.target.value)})}
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+          >
+            <option value={0.5}>30 minutes</option>
+            <option value={1}>1 hour</option>
+            <option value={1.5}>1.5 hours</option>
+            <option value={2}>2 hours</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Days per week</label>
+          <select 
+            value={bookingData.daysPerWeek}
+            onChange={(e) => setBookingData({...bookingData, daysPerWeek: parseInt(e.target.value)})}
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+          >
+            <option value={1}>1 day</option>
+            <option value={2}>2 days</option>
+            <option value={3}>3 days</option>
+            <option value={4}>4 days</option>
+            <option value={5}>5 days</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Subscription (months)</label>
+          <select 
+            value={bookingData.subscriptionMonths}
+            onChange={(e) => setBookingData({...bookingData, subscriptionMonths: parseInt(e.target.value)})}
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+          >
+            <option value={1}>1 month</option>
+            <option value={3}>3 months</option>
+            <option value={6}>6 months</option>
+            <option value={12}>12 months</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="flex justify-between items-center">
+          <span className="text-lg font-medium text-gray-800">Total Amount:</span>
+          <span className="text-2xl font-bold text-green-600">${calculateTotal()}</span>
+        </div>
+        <p className="text-sm text-gray-600 mt-1">
+          ${packagePrices[bookingData.packageType]}/hr × {bookingData.hoursPerDay}h × {bookingData.daysPerWeek} days × 4 weeks × {bookingData.subscriptionMonths} months
+        </p>
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => (
+    <div className="space-y-6">
+      <h3 className="text-xl font-semibold text-gray-800 mb-4">Schedule & Payment</h3>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+        <input
+          type="date"
+          value={bookingData.startDate}
+          onChange={(e) => setBookingData({...bookingData, startDate: e.target.value})}
+          min={new Date().toISOString().split('T')[0]}
+          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Select Days & Times</label>
+        <div className="space-y-3">
+          {Array.from({length: bookingData.daysPerWeek}, (_, i) => (
+            <div key={i} className="flex space-x-4">
+              <select 
+                value={bookingData.selectedDays[i] || ''}
+                onChange={(e) => {
+                  const newDays = [...bookingData.selectedDays];
+                  newDays[i] = parseInt(e.target.value);
+                  setBookingData({...bookingData, selectedDays: newDays});
+                }}
+                className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Select Day</option>
+                <option value={1}>Monday</option>
+                <option value={2}>Tuesday</option>
+                <option value={3}>Wednesday</option>
+                <option value={4}>Thursday</option>
+                <option value={5}>Friday</option>
+                <option value={6}>Saturday</option>
+                <option value={0}>Sunday</option>
+              </select>
+              <input
+                type="time"
+                value={bookingData.selectedTimes[i] || ''}
+                onChange={(e) => {
+                  const newTimes = [...bookingData.selectedTimes];
+                  newTimes[i] = e.target.value;
+                  setBookingData({...bookingData, selectedTimes: newTimes});
+                }}
+                className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h4 className="font-medium text-yellow-800 mb-2">Payment Information</h4>
+        <p className="text-sm text-yellow-700">
+          You will be redirected to our secure payment processor to complete your subscription.
+          Your lessons will be confirmed once payment is processed.
+        </p>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">Book Lesson with {ustaadh.fullName}</h2>
+              <p className="text-gray-600">{ustaadh.city}, {ustaadh.country}</p>
+            </div>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="h-6 w-6 text-gray-500" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {step === 1 && renderStep1()}
+          {step === 2 && renderStep2()}
+        </div>
+
+        <div className="p-6 border-t border-gray-200 flex justify-between">
+          {step > 1 && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Back
+            </button>
+          )}
+          
+          <div className="flex space-x-3 ml-auto">
+            <button
+              onClick={onClose}
+              className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            
+            {step < 2 ? (
+              <button
+                onClick={() => setStep(step + 1)}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                onClick={handleBookingSubmit}
+                disabled={loading}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+              >
+                <CreditCard className="h-4 w-4" />
+                <span>{loading ? 'Processing...' : 'Confirm & Pay'}</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
