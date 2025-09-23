@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+const API_BASE_URL = 'http://localhost:3001/api';
+
 interface User {
   id: string;
   email: string;
@@ -60,50 +62,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Demo users for testing
-      let demoUser: User;
-      if (email === 'admin@al-abraar.com') {
-        demoUser = {
-          id: '1',
-          email: 'admin@al-abraar.com',
-          fullName: 'System Administrator',
-          role: 'admin',
-          createdAt: new Date().toISOString()
-        };
-      } else if (email === 'ustaadh@al-abraar.com') {
-        demoUser = {
-          id: '2',
-          email: 'ustaadh@al-abraar.com',
-          fullName: 'Ahmed Al-Hafiz',
-          role: 'ustaadh',
-          phoneNumber: '+1234567890',
-          country: 'Saudi Arabia',
-          city: 'Riyadh',
-          age: 35,
-          isApproved: true,
-          createdAt: new Date().toISOString()
-        };
-      } else {
-        demoUser = {
-          id: '3',
-          email: 'student@al-abraar.com',
-          fullName: 'Fatima Al-Zahra',
-          role: 'student',
-          phoneNumber: '+1234567891',
-          country: 'United Kingdom',
-          city: 'London',
-          age: 25,
-          createdAt: new Date().toISOString()
-        };
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
       }
 
-      setUser(demoUser);
-      localStorage.setItem('al-abraar-user', JSON.stringify(demoUser));
+      const data = await response.json();
+      setUser(data.user);
+      localStorage.setItem('al-abraar-user', JSON.stringify(data.user));
+      localStorage.setItem('al-abraar-token', data.access_token);
     } catch (error) {
-      throw new Error('Login failed');
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -112,28 +89,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (userData: RegisterData) => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newUser: User = {
-        id: Date.now().toString(),
-        email: userData.email,
-        fullName: userData.fullName,
-        role: userData.role,
-        phoneNumber: userData.phoneNumber,
-        country: userData.country,
-        city: userData.city,
-        age: userData.age,
-        isApproved: userData.role === 'student' ? true : false,
-        createdAt: new Date().toISOString()
-      };
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
 
-      if (userData.role === 'student') {
-        setUser(newUser);
-        localStorage.setItem('al-abraar-user', JSON.stringify(newUser));
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
       }
+
+      const data = await response.json();
+      
+      if (data.user) {
+        // Student auto-login
+        setUser(data.user);
+        localStorage.setItem('al-abraar-user', JSON.stringify(data.user));
+        localStorage.setItem('al-abraar-token', data.access_token);
+      }
+      
+      return data;
     } catch (error) {
-      throw new Error('Registration failed');
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -142,6 +122,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     setUser(null);
     localStorage.removeItem('al-abraar-user');
+    localStorage.removeItem('al-abraar-token');
   };
 
   const updateUser = (userData: Partial<User>) => {
