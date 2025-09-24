@@ -2,12 +2,62 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBooking } from '../../contexts/BookingContext';
 import { DashboardLayout } from '../common/DashboardLayout';
+import { UserManagement } from './UserManagement';
+import { BookingManagement } from './BookingManagement';
+import { PaymentManagement } from './PaymentManagement';
 import { Users, BookOpen, DollarSign, CheckCircle, XCircle, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
+import { User } from '../../types';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const { bookings } = useBooking();
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Mock users data for demonstration
+  const [users, setUsers] = useState<User[]>([
+    {
+      id: '1',
+      email: 'admin@al-abraar.com',
+      fullName: 'System Administrator',
+      role: 'admin',
+      phoneNumber: '+1234567890',
+      country: 'USA',
+      city: 'New York',
+      age: 35,
+      isApproved: true,
+      createdAt: '2023-01-01T00:00:00Z'
+    },
+    {
+      id: '2',
+      email: 'ahmed.alhafiz@email.com',
+      fullName: 'Ahmed Al-Hafiz',
+      role: 'ustaadh',
+      phoneNumber: '+966123456789',
+      country: 'Saudi Arabia',
+      city: 'Riyadh',
+      age: 35,
+      isApproved: true,
+      createdAt: '2023-01-15T10:00:00Z',
+      bio: 'Certified Qur\'an teacher with 15 years of experience.',
+      experience: '15 years',
+      specialties: ['Qur\'an', 'Tajweed', 'Arabic'],
+      rating: 4.9,
+      reviewCount: 127,
+      isVerified: true
+    },
+    {
+      id: '3',
+      email: 'student@al-abraar.com',
+      fullName: 'Sarah Ahmed',
+      role: 'student',
+      phoneNumber: '+1987654321',
+      country: 'Canada',
+      city: 'Toronto',
+      age: 28,
+      isApproved: true,
+      createdAt: '2023-02-01T14:30:00Z'
+    }
+  ]);
 
   // Mock data for pending approvals
   const [pendingUstaadhApprovals, setPendingUstaadhApprovals] = useState([
@@ -90,6 +140,24 @@ export const AdminDashboard: React.FC = () => {
     setPendingUstaadhApprovals(prev => prev.filter(u => u.id !== ustaadhId));
     // In real app, update user status and send rejection email
     alert('Ustaadh application rejected. Notification email sent.');
+  };
+
+  const handleUpdateUser = (userId: string, updates: Partial<User>) => {
+    setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...updates } : u));
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    setUsers(prev => prev.filter(u => u.id !== userId));
+  };
+
+  const handleUpdateBooking = (bookingId: string, updates: Partial<any>) => {
+    // In real app, update booking in context
+    console.log('Update booking:', bookingId, updates);
+  };
+
+  const handleRefundPayment = (paymentId: string, amount?: number) => {
+    // In real app, process refund
+    console.log('Refund payment:', paymentId, amount);
   };
 
   const renderOverview = () => (
@@ -311,9 +379,25 @@ export const AdminDashboard: React.FC = () => {
         {/* Tab Content */}
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'approvals' && renderApprovals()}
-        {activeTab === 'users' && <div className="bg-white rounded-xl shadow-md p-6"><p>User management coming soon...</p></div>}
-        {activeTab === 'bookings' && <div className="bg-white rounded-xl shadow-md p-6"><p>Booking management coming soon...</p></div>}
-        {activeTab === 'payments' && <div className="bg-white rounded-xl shadow-md p-6"><p>Payment management coming soon...</p></div>}
+        {activeTab === 'users' && (
+          <UserManagement 
+            users={users}
+            onUpdateUser={handleUpdateUser}
+            onDeleteUser={handleDeleteUser}
+          />
+        )}
+        {activeTab === 'bookings' && (
+          <BookingManagement 
+            bookings={bookings}
+            onUpdateBooking={handleUpdateBooking}
+          />
+        )}
+        {activeTab === 'payments' && (
+          <PaymentManagement 
+            payments={[]}
+            onRefundPayment={handleRefundPayment}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

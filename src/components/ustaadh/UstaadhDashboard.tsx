@@ -4,6 +4,8 @@ import { useBooking } from '../../contexts/BookingContext';
 import { DashboardLayout } from '../common/DashboardLayout';
 import { AvailabilityCalendar } from '../calendar/AvailabilityCalendar';
 import { MessageCenter } from '../messaging/MessageCenter';
+import { StudentManagement } from './StudentManagement';
+import { EarningsTracker } from './EarningsTracker';
 import { Calendar, Users, DollarSign, BookOpen, Clock, Star } from 'lucide-react';
 
 export const UstaadhDashboard: React.FC = () => {
@@ -138,6 +140,11 @@ export const UstaadhDashboard: React.FC = () => {
     <AvailabilityCalendar />
   );
 
+  const handleMessageStudent = (studentId: string, studentName: string) => {
+    setMessageRecipient({ id: studentId, name: studentName });
+    setShowMessageCenter(true);
+  };
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BookOpen },
     { id: 'schedule', label: 'Schedule', icon: Calendar },
@@ -175,8 +182,15 @@ export const UstaadhDashboard: React.FC = () => {
         {/* Tab Content */}
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'schedule' && renderSchedule()}
-        {activeTab === 'students' && <div className="bg-white rounded-xl shadow-md p-6"><p>Students management coming soon...</p></div>}
-        {activeTab === 'earnings' && <div className="bg-white rounded-xl shadow-md p-6"><p>Earnings tracking coming soon...</p></div>}
+        {activeTab === 'students' && (
+          <StudentManagement 
+            bookings={myBookings}
+            onMessageStudent={handleMessageStudent}
+          />
+        )}
+        {activeTab === 'earnings' && (
+          <EarningsTracker bookings={myBookings} />
+        )}
 
         {/* Message Center Modal */}
         {showMessageCenter && (

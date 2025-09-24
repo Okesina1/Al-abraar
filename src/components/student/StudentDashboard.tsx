@@ -4,6 +4,8 @@ import { useBooking } from '../../contexts/BookingContext';
 import { DashboardLayout } from '../common/DashboardLayout';
 import { UstaadhBrowser } from './UstaadhBrowser';
 import { BookingModal } from '../booking/BookingModal';
+import { LessonHistory } from './LessonHistory';
+import { PaymentHistory } from './PaymentHistory';
 import { MessageCenter } from '../messaging/MessageCenter';
 import { Calendar, BookOpen, CreditCard, Star, Clock, Users, MessageCircle, Search } from 'lucide-react';
 import { User } from '../../types';
@@ -50,6 +52,12 @@ export const StudentDashboard: React.FC = () => {
   const handleMessageUstaadh = (ustaadhId: string, ustaadhName: string) => {
     setMessageRecipient({ id: ustaadhId, name: ustaadhName });
     setShowMessageCenter(true);
+  };
+
+  const handleRateLesson = (bookingId: string, rating: number, comment: string) => {
+    // In real app, submit rating to backend
+    console.log('Rate lesson:', bookingId, rating, comment);
+    alert('Thank you for your rating!');
   };
 
   const renderOverview = () => (
@@ -204,8 +212,15 @@ export const StudentDashboard: React.FC = () => {
         {/* Tab Content */}
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'browse' && renderBrowse()}
-        {activeTab === 'lessons' && <div className="bg-white rounded-xl shadow-md p-6"><p>Lesson history coming soon...</p></div>}
-        {activeTab === 'payments' && <div className="bg-white rounded-xl shadow-md p-6"><p>Payment history coming soon...</p></div>}
+        {activeTab === 'lessons' && (
+          <LessonHistory 
+            bookings={myBookings}
+            onRateLesson={handleRateLesson}
+          />
+        )}
+        {activeTab === 'payments' && (
+          <PaymentHistory bookings={myBookings} />
+        )}
 
         {/* Modals */}
         {showBookingModal && selectedUstaadh && (
