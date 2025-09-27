@@ -40,8 +40,8 @@ export const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">Flexible Scheduling</h3>
-              <p className="text-gray-600">Book lessons at your convenience with our smart scheduling system</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">{t('feature_flexible_title')}</h3>
+              <p className="text-gray-600">{t('feature_flexible_description')}</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
