@@ -59,7 +59,7 @@ export const LandingPage: React.FC = () => {
       <section className="py-12 lg:py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-8 lg:mb-12">
-            Why Choose Al-Abraar?
+            {t('why_choose_heading')}
           </h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
