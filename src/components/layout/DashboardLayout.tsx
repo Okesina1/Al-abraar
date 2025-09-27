@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useI18n } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { NotificationCenter, type Notification } from '../notifications/NotificationCenter';
 import { 
@@ -26,7 +27,7 @@ interface DashboardLayoutProps {
 }
 
 const LangToggle: React.FC = () => {
-  const { lang, setLang } = (require('../../contexts/LanguageContext') as any).useI18n();
+  const { lang, setLang } = useI18n();
   return (
     <div className="flex items-center border rounded-md overflow-hidden">
       <button
