@@ -4,6 +4,7 @@ import { BookingModal } from '../../components/booking/BookingModal';
 import { MessageCenter } from '../../components/messaging/MessageCenter';
 import { UstaadhCard } from '../../components/student/UstaadhCard';
 import { ReviewSystem } from '../../components/reviews/ReviewSystem';
+import { useToast } from '../../contexts/ToastContext';
 import { EmptyState } from '../../components/common/EmptyState';
 import { User } from '../../types';
 
@@ -16,6 +17,7 @@ export const StudentBrowsePage: React.FC = () => {
   const [selectedUstaadh, setSelectedUstaadh] = useState<User | null>(null);
   const [showMessageCenter, setShowMessageCenter] = useState(false);
   const [messageRecipient, setMessageRecipient] = useState<{id: string, name: string} | null>(null);
+  const toast = useToast();
   const [showReviews, setShowReviews] = useState(false);
   const [selectedForReviews, setSelectedForReviews] = useState<User | null>(null);
 
@@ -246,7 +248,7 @@ export const StudentBrowsePage: React.FC = () => {
               <button onClick={()=>setShowReviews(false)} className="p-1 hover:bg-gray-100 rounded-full">×</button>
             </div>
             <div className="p-4">
-              <ReviewSystem ustaadhId={selectedForReviews.id} canLeaveReview={true} onSubmitReview={()=>alert('Review submitted (mock)')} />
+              <ReviewSystem ustaadhId={selectedForReviews.id} canLeaveReview={true} onSubmitReview={()=>toast.success('Review submitted (mock)')} />
             </div>
           </div>
         </div>

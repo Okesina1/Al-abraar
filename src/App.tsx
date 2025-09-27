@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
 import { MessagingProvider } from './contexts/MessagingContext';
 import { I18nProvider } from './contexts/LanguageContext';
+import { ToastProvider } from './contexts/ToastContext';
 
 // Auth Pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -195,9 +196,11 @@ function App() {
       <BookingProvider>
         <MessagingProvider>
           <I18nProvider>
-            <Router>
-              <AppRoutes />
-            </Router>
+            <ToastProvider>
+              <Router>
+                <AppRoutes />
+              </Router>
+            </ToastProvider>
           </I18nProvider>
         </MessagingProvider>
       </BookingProvider>

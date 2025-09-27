@@ -3,6 +3,7 @@ import { X, Calendar, Clock, DollarSign, CreditCard } from 'lucide-react';
 import { User } from '../../types';
 import { useBooking } from '../../contexts/BookingContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
     startDate: new Date().toISOString().split('T')[0]
   });
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   if (!isOpen) return null;
 
@@ -72,10 +74,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      alert('Booking confirmed! You will receive a confirmation email shortly.');
+      toast.success('Booking confirmed! You will receive a confirmation email shortly.');
       onClose();
     } catch (error) {
-      alert('Booking failed. Please try again.');
+      toast.error('Booking failed. Please try again.');
     } finally {
       setLoading(false);
     }

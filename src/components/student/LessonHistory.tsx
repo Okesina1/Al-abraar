@@ -3,6 +3,7 @@ import { Calendar, Clock, Star, MessageCircle, Video, FileText, Search, Filter, 
 import { Booking, ScheduleSlot } from '../../types';
 import { useBooking } from '../../contexts/BookingContext';
 import { MaterialsModal } from '../common/MaterialsModal';
+import { useToast } from '../../contexts/ToastContext';
 
 interface LessonHistoryProps {
   bookings: Booking[];
@@ -15,6 +16,7 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<{booking: Booking, slot: ScheduleSlot} | null>(null);
   const [rating, setRating] = useState(0);
+  const toast = useToast();
   const { updateBooking, checkTimeSlotAvailability } = useBooking();
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [comment, setComment] = useState('');
@@ -368,7 +370,7 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
                       const nh = Math.floor(minutes/60)%24; const nm = minutes%60; return `${nh.toString().padStart(2,'0')}:${nm.toString().padStart(2,'0')}`;
                     })();
                     const ok = checkTimeSlotAvailability(selectedLesson.booking.ustaadhId, newDate, newTime, endTime);
-                    if (!ok) { alert('Selected time conflicts with availability or existing bookings.'); return; }
+                    if (!ok) { toast.error('Selected time conflicts with availability or existing bookings.'); return; }
                     const updated = selectedLesson.booking.schedule.map(s => s.id === selectedLesson.slot.id ? { ...s, date: newDate, startTime: newTime, endTime } : s);
                     await updateBooking(selectedLesson.booking.id, { schedule: updated });
                     setShowReschedule(false);

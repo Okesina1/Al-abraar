@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, BookOpen, CreditCard, Star, Clock, Users, MessageCircle, TrendingUp } from 'lucide-react';
+import { useToast } from '../../contexts/ToastContext';
 
 export const StudentDashboardPage: React.FC = () => {
+  const toast = useToast();
   // Mock data
   const stats = [
     { title: 'Active Subscriptions', value: '2', icon: BookOpen, color: 'bg-green-500' },
@@ -208,7 +210,7 @@ export const StudentDashboardPage: React.FC = () => {
         <p className="text-sm text-gray-600 mb-4">Invite friends and earn discounts on your next month.</p>
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <input readOnly value={`https://al-abraar.com/referral/SARAH123`} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg" />
-          <button onClick={()=>{ navigator.clipboard.writeText('https://al-abraar.com/referral/SARAH123'); alert('Referral link copied!'); }} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Copy Link</button>
+          <button onClick={()=>{ navigator.clipboard.writeText('https://al-abraar.com/referral/SARAH123'); toast.success('Referral link copied!'); }} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Copy Link</button>
         </div>
         <p className="text-xs text-gray-500 mt-2">You have earned 2 rewards so far.</p>
       </div>

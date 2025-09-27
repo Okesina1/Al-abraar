@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Settings, DollarSign, Shield, BookOpen, Save } from 'lucide-react';
+import { useToast } from '../../contexts/ToastContext';
 
 export const AdminSettingsPage: React.FC = () => {
   const [pricing, setPricing] = useState({ basic: 5, complete: 7 });
   const [refundPolicy, setRefundPolicy] = useState({ enabled: true, windowDays: 7 });
   const [courseAvailability, setCourseAvailability] = useState({ quran: true, tajweed: true, hadeeth: true, arabic: true });
 
+  const toast = useToast();
   const handleSave = () => {
-    alert('Settings saved (mock). Changes will apply platform-wide.');
+    toast.success('Settings saved (mock). Changes will apply platform-wide.');
   };
 
   return (

@@ -2,17 +2,19 @@ import React from 'react';
 import { LessonHistory } from '../../components/student/LessonHistory';
 import { useBooking } from '../../contexts/BookingContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 
 export const StudentLessonsPage: React.FC = () => {
   const { user } = useAuth();
   const { getBookingsByUser } = useBooking();
+  const toast = useToast();
 
   const bookings = user ? getBookingsByUser(user.id, 'student') : [];
 
   const handleRateLesson = (bookingId: string, rating: number, comment: string) => {
     // In a real app, this would call an API to submit the rating
     console.log('Rating submitted:', { bookingId, rating, comment });
-    alert('Thank you for your rating!');
+    toast.success('Thank you for your rating!');
   };
 
   return (
