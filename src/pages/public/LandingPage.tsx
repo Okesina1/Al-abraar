@@ -32,8 +32,8 @@ export const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">Quality Education</h3>
-              <p className="text-gray-600">Learn from certified Ustaadhs with proven expertise in Islamic studies</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">{t('feature_quality_title')}</h3>
+              <p className="text-gray-600">{t('feature_quality_description')}</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
