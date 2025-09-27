@@ -49,12 +49,12 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 lg:p-8">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 lg:p-8 mx-4">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center mx-auto mb-4">
             <BookOpen className="h-8 w-8 text-white" />
           </div>
-          <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Welcome Back</h2>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">Welcome Back</h2>
           <p className="text-gray-600 mt-2">Sign in to your Al-Abraar account</p>
         </div>
 

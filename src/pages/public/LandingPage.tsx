@@ -17,7 +17,7 @@ export const LandingPage: React.FC = () => {
             </p>
             <Link
               to="/register"
-              className="inline-block bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-lg font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="inline-block bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-base sm:text-lg font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               Start Your Journey
             </Link>
@@ -28,7 +28,7 @@ export const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">Quality Education</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">Quality Education</h3>
               <p className="text-gray-600">Learn from certified Ustaadhs with proven expertise in Islamic studies</p>
             </div>
 
@@ -36,7 +36,7 @@ export const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">Flexible Scheduling</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">Flexible Scheduling</h3>
               <p className="text-gray-600">Book lessons at your convenience with our smart scheduling system</p>
             </div>
 
@@ -44,7 +44,7 @@ export const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">Safe & Secure</h3>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">Safe & Secure</h3>
               <p className="text-gray-600">All teachers are verified and approved by our administration team</p>
             </div>
           </div>
@@ -113,11 +113,11 @@ export const LandingPage: React.FC = () => {
       {/* Call to Action */}
       <section className="py-12 lg:py-16 px-4 bg-gradient-to-r from-green-600 to-green-700">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">Ready to Begin Your Islamic Learning Journey?</h2>
-          <p className="text-lg lg:text-xl text-green-100 mb-8">Join thousands of students learning with verified Islamic teachers worldwide</p>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6">Ready to Begin Your Islamic Learning Journey?</h2>
+          <p className="text-base sm:text-lg lg:text-xl text-green-100 mb-8">Join thousands of students learning with verified Islamic teachers worldwide</p>
           <Link
             to="/register"
-            className="inline-block bg-white text-green-600 text-lg font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            className="inline-block bg-white text-green-600 text-base sm:text-lg font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
           >
             Get Started Today
           </Link>

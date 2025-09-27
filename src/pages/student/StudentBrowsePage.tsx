@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Search, MapPin, Star, BookOpen, MessageCircle, Filter, Clock, Award } from 'lucide-react';
 import { BookingModal } from '../../components/booking/BookingModal';
 import { MessageCenter } from '../../components/messaging/MessageCenter';
+import { UstaadhCard } from '../../components/student/UstaadhCard';
+import { EmptyState } from '../../components/common/EmptyState';
 import { User } from '../../types';
 
 export const StudentBrowsePage: React.FC = () => {
@@ -187,83 +189,23 @@ export const StudentBrowsePage: React.FC = () => {
       </div>
 
       {/* Results */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
         {filteredUstaadhs.map((ustaadh) => (
-          <div key={ustaadh.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-            <div className="p-6">
-              <div className="flex items-start space-x-4 mb-4">
-                <div className="relative flex-shrink-0">
-                  <img
-                    src={ustaadh.avatar}
-                    alt={ustaadh.fullName}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                  {ustaadh.isVerified && (
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <Award className="h-3 w-3 text-white" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
-                    <h3 className="text-xl font-semibold text-gray-800 truncate">{ustaadh.fullName}</h3>
-                    <div className="flex items-center space-x-1 mt-1 sm:mt-0">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                      <span className="text-sm font-medium text-gray-700">{ustaadh.rating}</span>
-                      <span className="text-sm text-gray-500">({ustaadh.reviewCount})</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center text-gray-600 mb-2">
-                    <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
-                    <span className="text-sm truncate">{ustaadh.city}, {ustaadh.country}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600 mb-3">
-                    <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
-                    <span className="text-sm">{ustaadh.experience} experience</span>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-gray-600 text-sm mb-4 line-clamp-2">{ustaadh.bio}</p>
-
-              <div className="mb-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">Specialties</p>
-                <div className="flex flex-wrap gap-2">
-                  {ustaadh.specialties?.map((specialty, index) => (
-                    <span key={index} className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                      {specialty}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                <button
-                  onClick={() => handleBookUstaadh(ustaadh)}
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center space-x-2"
-                >
-                  <BookOpen className="h-4 w-4" />
-                  <span>Book Lesson</span>
-                </button>
-                <button
-                  onClick={() => handleMessageUstaadh(ustaadh.id, ustaadh.fullName)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-1"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  <span>Message</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <UstaadhCard
+            key={ustaadh.id}
+            ustaadh={ustaadh}
+            onBook={handleBookUstaadh}
+            onMessage={handleMessageUstaadh}
+          />
         ))}
       </div>
 
       {filteredUstaadhs.length === 0 && (
-        <div className="text-center py-12">
-          <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-600 mb-2">No Ustaadhs found matching your criteria</p>
-          <p className="text-gray-500 text-sm">Try adjusting your search filters</p>
-        </div>
+        <EmptyState
+          icon={Search}
+          title="No Ustaadhs Found"
+          description="No teachers match your current search criteria. Try adjusting your filters or search terms."
+        />
       )}
 
       {/* Modals */}

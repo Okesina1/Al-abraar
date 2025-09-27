@@ -43,13 +43,13 @@ export const MessageCenter: React.FC<MessageCenterProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full h-[600px] flex overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full h-[90vh] sm:h-[600px] flex flex-col sm:flex-row overflow-hidden">
         {/* Header */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <MessageCircle className="h-6 w-6 text-green-600" />
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                 {recipientName ? `Chat with ${recipientName}` : 'Messages'}
               </h2>
             </div>
@@ -95,21 +95,22 @@ export const MessageCenter: React.FC<MessageCenterProps> = ({
 
           {/* Message Input */}
           <div className="p-4 border-t border-gray-200">
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <textarea
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message..."
-                className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none min-h-[80px] sm:min-h-[60px]"
                 rows={2}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim()}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 <Send className="h-5 w-5" />
+                <span className="ml-2 sm:hidden">Send</span>
               </button>
             </div>
           </div>

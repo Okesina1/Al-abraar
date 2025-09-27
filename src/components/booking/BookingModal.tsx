@@ -263,12 +263,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">Book Lesson with {ustaadh.fullName}</h2>
-              <p className="text-gray-600">{ustaadh.city}, {ustaadh.country}</p>
+              <p className="text-gray-600 text-sm sm:text-base">{ustaadh.city}, {ustaadh.country}</p>
             </div>
             <button 
               onClick={onClose}
@@ -284,20 +284,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
           {step === 2 && renderStep2()}
         </div>
 
-        <div className="p-6 border-t border-gray-200 flex justify-between">
+        <div className="p-6 border-t border-gray-200 flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0">
           {step > 1 && (
             <button
               onClick={() => setStep(step - 1)}
-              className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full sm:w-auto px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Back
             </button>
           )}
           
-          <div className="flex space-x-3 ml-auto">
+          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 sm:ml-auto">
             <button
               onClick={onClose}
-              className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full sm:w-auto px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
@@ -305,7 +305,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
             {step < 2 ? (
               <button
                 onClick={() => setStep(step + 1)}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 Next
               </button>
@@ -313,7 +313,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
               <button
                 onClick={handleBookingSubmit}
                 disabled={loading}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                className="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
               >
                 <CreditCard className="h-4 w-4" />
                 <span>{loading ? 'Processing...' : 'Confirm & Pay'}</span>

@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import { Star, MessageSquare, ThumbsUp, User } from 'lucide-react';
-import { Review } from '../../types';
 
 interface ReviewSystemProps {
   ustaadhId: string;
   canLeaveReview?: boolean;
   onSubmitReview?: (rating: number, comment: string) => void;
+}
+
+interface Review {
+  id: string;
+  studentId: string;
+  ustaadhId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  studentName: string;
 }
 
 export const ReviewSystem: React.FC<ReviewSystemProps> = ({ 

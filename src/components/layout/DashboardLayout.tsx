@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { NotificationCenter } from '../notifications/NotificationCenter';
 import { 
   BookOpen, 
   LogOut, 
@@ -29,6 +30,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   const getNavigationItems = () => {
     if (!user) return [];
@@ -164,7 +166,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             </button>
             
             <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
+              <button 
+                onClick={() => setNotificationOpen(true)}
+                className="relative p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              >
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
               </button>
@@ -182,7 +187,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             </div>
 
             <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
+              <button 
+                onClick={() => setNotificationOpen(true)}
+                className="relative p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              >
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
               </button>
@@ -209,6 +217,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           {children}
         </main>
       </div>
+
+      {/* Notification Center */}
+      <NotificationCenter 
+        isOpen={notificationOpen} 
+        onClose={() => setNotificationOpen(false)} 
+      />
     </div>
   );
 };

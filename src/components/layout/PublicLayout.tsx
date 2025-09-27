@@ -18,7 +18,7 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
               <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-lg flex items-center justify-center">
                 <BookOpen className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-800">Al-Abraar</span>
+              <span className="text-xl sm:text-2xl font-bold text-gray-800">Al-Abraar</span>
             </Link>
 
             <div className="flex items-center space-x-4">
