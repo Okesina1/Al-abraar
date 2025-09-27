@@ -69,8 +69,8 @@ export const LandingPage: React.FC = () => {
                   <Users className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Verified Teachers</h3>
-                  <p className="text-gray-600">All Ustaadhs undergo thorough verification and approval process</p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('why_choose_verified_title')}</h3>
+                  <p className="text-gray-600">{t('why_choose_verified_description')}</p>
                 </div>
               </div>
 
