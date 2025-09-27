@@ -13,16 +13,17 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6">
-              Al-Abraar Online <span className="text-green-600">Modrasah</span>
+              {t('hero_title_main')}{' '}
+              <span className="text-green-600">{t('hero_title_highlight')}</span>
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Connect with verified Islamic teachers for personalized Qur'an, Tajweed, Hadeeth, and Arabic lessons
+              {t('hero_description')}
             </p>
             <Link
               to="/register"
               className="inline-block bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-base sm:text-lg font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Start Your Journey
+              {t('hero_cta')}
             </Link>
           </div>
 
