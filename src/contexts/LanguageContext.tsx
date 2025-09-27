@@ -66,7 +66,7 @@ const strings = {
   },
   cta_subheading: {
     en: 'Join thousands of students learning with verified Islamic teachers worldwide',
-    ar: 'انضم إلى آلاف الطلاب الذين يتعلمون مع معلمين إسلاميين موثوقين حول العالم',
+    ar: 'انضم إلى آلاف الطلاب ��لذين يتعلمون مع معلمين إسلاميين موثوقين حول العالم',
   },
   cta_primary: { en: 'Get Started Today', ar: 'ابدأ اليوم' },
   welcome_back: { en: 'Welcome back, Sarah!', ar: 'مرحباً بعودتك يا سارة!' },
@@ -90,6 +90,17 @@ interface I18nCtx {
 }
 
 const I18nContext = createContext<I18nCtx | null>(null);
+
+const STORAGE_KEY = 'al-abraar-lang';
+
+const getStoredLanguage = (): Lang => {
+  if (typeof window === 'undefined') {
+    return 'en';
+  }
+
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  return stored === 'ar' ? 'ar' : 'en';
+};
 
 export const useI18n = () => {
   const ctx = useContext(I18nContext);
