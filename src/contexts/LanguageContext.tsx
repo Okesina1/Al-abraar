@@ -47,7 +47,7 @@ const strings = {
     ar: 'اتصل بالمعلمين من أنحاء العالم وتعلم من أي مكان',
   },
   packages_heading: { en: 'Course Packages', ar: 'باقات الدورات' },
-  packages_quran_title: { en: "Qur'an & Tajweed", ar: 'القرآن والتجويد' },
+  packages_quran_title: { en: "Qur'an & Tajweed", ar: 'ا��قرآن والتجويد' },
   packages_quran_description: {
     en: 'Perfect for beginners and intermediate learners',
     ar: 'مثالية للمبتدئين والمتعلمين من المستوى المتوسط',
@@ -66,7 +66,7 @@ const strings = {
   },
   cta_subheading: {
     en: 'Join thousands of students learning with verified Islamic teachers worldwide',
-    ar: 'انضم إلى آلاف الطلاب ��لذين يتعلمون مع معلمين إسلاميين موثوقين حول العالم',
+    ar: 'انضم إلى آلاف الطلاب الذين يتعلمون مع معلمين إسلاميين موثوقين حول العالم',
   },
   cta_primary: { en: 'Get Started Today', ar: 'ابدأ اليوم' },
   welcome_back: { en: 'Welcome back, Sarah!', ar: 'مرحباً بعودتك يا سارة!' },
@@ -109,17 +109,44 @@ export const useI18n = () => {
 };
 
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [lang, setLang] = useState<Lang>(() => (localStorage.getItem('al-abraar-lang') as Lang) || 'en');
+  const [lang, setLang] = useState<Lang>(getStoredLanguage);
 
   useEffect(() => {
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    localStorage.setItem('al-abraar-lang', lang);
+    if (typeof document !== 'undefined') {
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    }
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_KEY, lang);
+    }
   }, [lang]);
 
-  const t = useMemo(() => (key: keyof typeof strings) => strings[key]?.[lang] ?? key, [lang]);
+  const translate = useCallback(
+    (key: TranslationKey, fallback?: string) => {
+      const entry = strings[key];
+      if (!entry) {
+        return fallback ?? key;
+      }
+
+      return entry[lang] ?? entry.en ?? fallback ?? key;
+    },
+    [lang]
+  );
+
+  const hasTranslationKey = useCallback((key: string): key is TranslationKey => key in strings, []);
+
+  const value = useMemo<I18nCtx>(
+    () => ({
+      lang,
+      setLang,
+      t: translate,
+      hasKey: hasTranslationKey,
+    }),
+    [lang, translate, hasTranslationKey]
+  );
 
   return (
-    <I18nContext.Provider value={{ lang, setLang, t }}>
+    <I18nContext.Provider value={value}>
       {children}
     </I18nContext.Provider>
   );
