@@ -121,6 +121,24 @@ export const AdminUsersPage: React.FC = () => {
     // In real app, call API to activate user
   };
 
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'admin': return 'bg-purple-100 text-purple-800';
+      case 'ustaadh': return 'bg-blue-100 text-blue-800';
+      case 'student': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'inactive': return 'bg-yellow-100 text-yellow-800';
+      case 'suspended': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const UserModal = () => {
     if (!selectedUser) return null;
 
@@ -247,7 +265,7 @@ export const AdminUsersPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
         <h1 className="text-2xl font-bold text-gray-900">Users Management</h1>
         <div className="text-sm text-gray-600">
-          {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
+          {users.length} user{users.length !== 1 ? 's' : ''}
         </div>
       </div>
 
