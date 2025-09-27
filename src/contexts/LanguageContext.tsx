@@ -8,6 +8,8 @@ const strings = {
   brand_name: { en: 'Al-Abraar', ar: 'البراء' },
   nav_sign_in: { en: 'Sign In', ar: 'تسجيل الدخول' },
   nav_register: { en: 'Register', ar: 'إنشاء حساب' },
+  language_toggle_en: { en: 'Switch to English', ar: 'التبديل إلى الإنجليزية' },
+  language_toggle_ar: { en: 'Switch to Arabic', ar: 'التبديل إلى العربية' },
   hero_title_main: { en: 'Al-Abraar Online', ar: 'مدرسة البراء' },
   hero_title_highlight: { en: 'Modrasah', ar: 'الإلكترونية' },
   hero_description: {
