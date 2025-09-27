@@ -15,7 +15,7 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<{booking: Booking, slot: ScheduleSlot} | null>(null);
   const [rating, setRating] = useState(0);
-  const { updateBooking } = (require('../../contexts/BookingContext') as any).useBooking?.() || { updateBooking: async () => {} };
+  const { updateBooking } = useBooking();
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [comment, setComment] = useState('');
 
