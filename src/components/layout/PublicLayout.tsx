@@ -9,6 +9,13 @@ interface PublicLayoutProps {
 
 export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   const location = useLocation();
+  const { t, lang, setLang } = useI18n();
+
+  const changeLanguage = (nextLang: Lang) => {
+    if (nextLang !== lang) {
+      setLang(nextLang);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-yellow-50">
