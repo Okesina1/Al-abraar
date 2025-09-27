@@ -9,7 +9,7 @@ interface UstaadhCardProps {
   onViewReviews?: (ustaadh: User) => void;
 }
 
-export const UstaadhCard: React.FC<UstaadhCardProps> = ({ ustaadh, onBook, onMessage }) => {
+export const UstaadhCard: React.FC<UstaadhCardProps> = ({ ustaadh, onBook, onMessage, onViewReviews }) => {
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
       <div className="p-4 sm:p-6">
