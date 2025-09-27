@@ -17,6 +17,7 @@ import { AdminUsersPage } from './pages/admin/AdminUsersPage';
 import { AdminBookingsPage } from './pages/admin/AdminBookingsPage';
 import { AdminPaymentsPage } from './pages/admin/AdminPaymentsPage';
 import { AdminApprovalsPage } from './pages/admin/AdminApprovalsPage';
+import { AdminReportsPage } from './pages/admin/AdminReportsPage';
 
 // Ustaadh Pages
 import { UstaadhDashboardPage } from './pages/ustaadh/UstaadhDashboardPage';
@@ -111,6 +112,11 @@ function AppRoutes() {
       <Route path="/admin/approvals" element={
         <ProtectedRoute allowedRoles={['admin']}>
           <DashboardLayout><AdminApprovalsPage /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/reports" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><AdminReportsPage /></DashboardLayout>
         </ProtectedRoute>
       } />
 
