@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Search, MapPin, Star, BookOpen, MessageCircle, Filter, Clock, Award } from 'lucide-react';
+import { Search, MapPin, Star, BookOpen, MessageCircle, Filter, Clock, Award, MessageSquare } from 'lucide-react';
 import { BookingModal } from '../../components/booking/BookingModal';
 import { MessageCenter } from '../../components/messaging/MessageCenter';
 import { UstaadhCard } from '../../components/student/UstaadhCard';
+import { ReviewSystem } from '../../components/reviews/ReviewSystem';
 import { EmptyState } from '../../components/common/EmptyState';
 import { User } from '../../types';
 
@@ -15,6 +16,8 @@ export const StudentBrowsePage: React.FC = () => {
   const [selectedUstaadh, setSelectedUstaadh] = useState<User | null>(null);
   const [showMessageCenter, setShowMessageCenter] = useState(false);
   const [messageRecipient, setMessageRecipient] = useState<{id: string, name: string} | null>(null);
+  const [showReviews, setShowReviews] = useState(false);
+  const [selectedForReviews, setSelectedForReviews] = useState<User | null>(null);
 
   // Mock Ustaadh data
   const ustaadhs: User[] = [
@@ -196,6 +199,7 @@ export const StudentBrowsePage: React.FC = () => {
             ustaadh={ustaadh}
             onBook={handleBookUstaadh}
             onMessage={handleMessageUstaadh}
+            onViewReviews={(u)=>{ setSelectedForReviews(u); setShowReviews(true); }}
           />
         ))}
       </div>
@@ -230,6 +234,22 @@ export const StudentBrowsePage: React.FC = () => {
           recipientId={messageRecipient?.id}
           recipientName={messageRecipient?.name}
         />
+      )}
+      {showReviews && selectedForReviews && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <MessageSquare className="h-5 w-5 text-green-600" />
+                <h2 className="text-lg font-semibold text-gray-800">Reviews for {selectedForReviews.fullName}</h2>
+              </div>
+              <button onClick={()=>setShowReviews(false)} className="p-1 hover:bg-gray-100 rounded-full">×</button>
+            </div>
+            <div className="p-4">
+              <ReviewSystem ustaadhId={selectedForReviews.id} canLeaveReview={true} onSubmitReview={()=>alert('Review submitted (mock)')} />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

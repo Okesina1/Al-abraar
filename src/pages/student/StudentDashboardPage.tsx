@@ -202,6 +202,17 @@ export const StudentDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Referral Program */}
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Refer a Friend</h3>
+        <p className="text-sm text-gray-600 mb-4">Invite friends and earn discounts on your next month.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <input readOnly value={`https://al-abraar.com/referral/SARAH123`} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg" />
+          <button onClick={()=>{ navigator.clipboard.writeText('https://al-abraar.com/referral/SARAH123'); alert('Referral link copied!'); }} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Copy Link</button>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">You have earned 2 rewards so far.</p>
+      </div>
+
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link

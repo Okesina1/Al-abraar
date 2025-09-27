@@ -6,6 +6,7 @@ interface UstaadhCardProps {
   ustaadh: User;
   onBook: (ustaadh: User) => void;
   onMessage: (ustaadhId: string, ustaadhName: string) => void;
+  onViewReviews?: (ustaadh: User) => void;
 }
 
 export const UstaadhCard: React.FC<UstaadhCardProps> = ({ ustaadh, onBook, onMessage }) => {
@@ -76,6 +77,15 @@ export const UstaadhCard: React.FC<UstaadhCardProps> = ({ ustaadh, onBook, onMes
             <MessageCircle className="h-4 w-4" />
             <span>Message</span>
           </button>
+          {onViewReviews && (
+            <button
+              onClick={() => onViewReviews(ustaadh)}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-1"
+            >
+              <Star className="h-4 w-4 text-yellow-500" />
+              <span>Reviews</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
