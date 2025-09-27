@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Users, Star, Shield, Clock, Globe } from 'lucide-react';
+import { useI18n } from '../../contexts/LanguageContext';
 
 export const LandingPage: React.FC = () => {
+  const { t } = useI18n();
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -10,16 +13,17 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6">
-              Al-Abraar Online <span className="text-green-600">Modrasah</span>
+              {t('hero_title_main')}{' '}
+              <span className="text-green-600">{t('hero_title_highlight')}</span>
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Connect with verified Islamic teachers for personalized Qur'an, Tajweed, Hadeeth, and Arabic lessons
+              {t('hero_description')}
             </p>
             <Link
               to="/register"
               className="inline-block bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-base sm:text-lg font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Start Your Journey
+              {t('hero_cta')}
             </Link>
           </div>
 
@@ -28,24 +32,24 @@ export const LandingPage: React.FC = () => {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">Quality Education</h3>
-              <p className="text-gray-600">Learn from certified Ustaadhs with proven expertise in Islamic studies</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">{t('feature_quality_title')}</h3>
+              <p className="text-gray-600">{t('feature_quality_description')}</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">Flexible Scheduling</h3>
-              <p className="text-gray-600">Book lessons at your convenience with our smart scheduling system</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">{t('feature_flexible_title')}</h3>
+              <p className="text-gray-600">{t('feature_flexible_description')}</p>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">Safe & Secure</h3>
-              <p className="text-gray-600">All teachers are verified and approved by our administration team</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">{t('feature_secure_title')}</h3>
+              <p className="text-gray-600">{t('feature_secure_description')}</p>
             </div>
           </div>
         </div>
@@ -55,7 +59,7 @@ export const LandingPage: React.FC = () => {
       <section className="py-12 lg:py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-8 lg:mb-12">
-            Why Choose Al-Abraar?
+            {t('why_choose_heading')}
           </h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
@@ -65,8 +69,8 @@ export const LandingPage: React.FC = () => {
                   <Users className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Verified Teachers</h3>
-                  <p className="text-gray-600">All Ustaadhs undergo thorough verification and approval process</p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('why_choose_verified_title')}</h3>
+                  <p className="text-gray-600">{t('why_choose_verified_description')}</p>
                 </div>
               </div>
 
@@ -75,8 +79,8 @@ export const LandingPage: React.FC = () => {
                   <Star className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Rating System</h3>
-                  <p className="text-gray-600">Student reviews and ratings help you choose the best teacher</p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('why_choose_rating_title')}</h3>
+                  <p className="text-gray-600">{t('why_choose_rating_description')}</p>
                 </div>
               </div>
 
@@ -85,24 +89,30 @@ export const LandingPage: React.FC = () => {
                   <Globe className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Global Access</h3>
-                  <p className="text-gray-600">Connect with teachers from around the world, learn from anywhere</p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('why_choose_global_title')}</h3>
+                  <p className="text-gray-600">{t('why_choose_global_description')}</p>
                 </div>
               </div>
             </div>
 
             <div className="bg-gradient-to-br from-green-50 to-yellow-50 p-6 lg:p-8 rounded-2xl">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Course Packages</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">{t('packages_heading')}</h3>
               <div className="space-y-4">
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h4 className="font-semibold text-green-600 mb-2">Qur'an & Tajweed</h4>
-                  <p className="text-2xl font-bold text-gray-800">$5<span className="text-sm text-gray-600">/hour</span></p>
-                  <p className="text-gray-600 text-sm">Perfect for beginners and intermediate learners</p>
+                  <h4 className="font-semibold text-green-600 mb-2">{t('packages_quran_title')}</h4>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {t('packages_quran_price')}
+                    <span className="text-sm text-gray-600 ltr:ml-2 rtl:mr-2">{t('packages_price_suffix')}</span>
+                  </p>
+                  <p className="text-gray-600 text-sm">{t('packages_quran_description')}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h4 className="font-semibold text-yellow-600 mb-2">Complete Islamic Studies</h4>
-                  <p className="text-2xl font-bold text-gray-800">$7<span className="text-sm text-gray-600">/hour</span></p>
-                  <p className="text-gray-600 text-sm">Qur'an, Tajweed, Hadeeth & Arabic language</p>
+                  <h4 className="font-semibold text-yellow-600 mb-2">{t('packages_complete_title')}</h4>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {t('packages_complete_price')}
+                    <span className="text-sm text-gray-600 ltr:ml-2 rtl:mr-2">{t('packages_price_suffix')}</span>
+                  </p>
+                  <p className="text-gray-600 text-sm">{t('packages_complete_description')}</p>
                 </div>
               </div>
             </div>
@@ -113,13 +123,13 @@ export const LandingPage: React.FC = () => {
       {/* Call to Action */}
       <section className="py-12 lg:py-16 px-4 bg-gradient-to-r from-green-600 to-green-700">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6">Ready to Begin Your Islamic Learning Journey?</h2>
-          <p className="text-base sm:text-lg lg:text-xl text-green-100 mb-8">Join thousands of students learning with verified Islamic teachers worldwide</p>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6">{t('cta_heading')}</h2>
+          <p className="text-base sm:text-lg lg:text-xl text-green-100 mb-8">{t('cta_subheading')}</p>
           <Link
             to="/register"
             className="inline-block bg-white text-green-600 text-base sm:text-lg font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
           >
-            Get Started Today
+            {t('cta_primary')}
           </Link>
         </div>
       </section>
