@@ -123,13 +123,13 @@ export const LandingPage: React.FC = () => {
       {/* Call to Action */}
       <section className="py-12 lg:py-16 px-4 bg-gradient-to-r from-green-600 to-green-700">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6">Ready to Begin Your Islamic Learning Journey?</h2>
-          <p className="text-base sm:text-lg lg:text-xl text-green-100 mb-8">Join thousands of students learning with verified Islamic teachers worldwide</p>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6">{t('cta_heading')}</h2>
+          <p className="text-base sm:text-lg lg:text-xl text-green-100 mb-8">{t('cta_subheading')}</p>
           <Link
             to="/register"
             className="inline-block bg-white text-green-600 text-base sm:text-lg font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
           >
-            Get Started Today
+            {t('cta_primary')}
           </Link>
         </div>
       </section>
