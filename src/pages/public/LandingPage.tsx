@@ -96,7 +96,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div className="bg-gradient-to-br from-green-50 to-yellow-50 p-6 lg:p-8 rounded-2xl">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">Course Packages</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">{t('packages_heading')}</h3>
               <div className="space-y-4">
                 <div className="bg-white p-4 rounded-lg shadow-md">
                   <h4 className="font-semibold text-green-600 mb-2">Qur'an & Tajweed</h4>
