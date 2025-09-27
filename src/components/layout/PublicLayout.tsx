@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BookOpen, LogIn, UserPlus } from 'lucide-react';
+import { useI18n, type Lang } from '../../contexts/LanguageContext';
 
 interface PublicLayoutProps {
   children: React.ReactNode;
