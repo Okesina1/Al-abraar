@@ -89,8 +89,8 @@ export const LandingPage: React.FC = () => {
                   <Globe className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Global Access</h3>
-                  <p className="text-gray-600">Connect with teachers from around the world, learn from anywhere</p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('why_choose_global_title')}</h3>
+                  <p className="text-gray-600">{t('why_choose_global_description')}</p>
                 </div>
               </div>
             </div>
