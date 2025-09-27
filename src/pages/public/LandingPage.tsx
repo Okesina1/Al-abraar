@@ -4,6 +4,8 @@ import { BookOpen, Users, Star, Shield, Clock, Globe } from 'lucide-react';
 import { useI18n } from '../../contexts/LanguageContext';
 
 export const LandingPage: React.FC = () => {
+  const { t } = useI18n();
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
