@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { NotificationCenter } from '../notifications/NotificationCenter';
+import { NotificationCenter, type Notification } from '../notifications/NotificationCenter';
 import { 
   BookOpen, 
   LogOut, 
@@ -47,6 +47,41 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      title: 'Lesson Reminder',
+      message: 'Your lesson with Ahmed Al-Hafiz starts in 30 minutes',
+      type: 'info',
+      isRead: false,
+      createdAt: '2024-01-15T13:30:00Z'
+    },
+    {
+      id: '2',
+      title: 'Payment Successful',
+      message: 'Your payment of $126 has been processed successfully',
+      type: 'success',
+      isRead: false,
+      createdAt: '2024-01-15T10:00:00Z'
+    },
+    {
+      id: '3',
+      title: 'Schedule Change',
+      message: 'Your lesson has been rescheduled to tomorrow at 2 PM',
+      type: 'warning',
+      isRead: true,
+      createdAt: '2024-01-14T16:45:00Z'
+    }
+  ]);
+  const unread = notifications.filter(n => !n.isRead).length;
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, isRead: true } : n)));
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+  };
 
   const getNavigationItems = () => {
     if (!user) return [];
@@ -238,9 +273,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
       </div>
 
       {/* Notification Center */}
-      <NotificationCenter 
-        isOpen={notificationOpen} 
-        onClose={() => setNotificationOpen(false)} 
+      <NotificationCenter
+        isOpen={notificationOpen}
+        onClose={() => setNotificationOpen(false)}
+        notifications={notifications}
+        onMarkAsRead={markNotificationAsRead}
+        onMarkAllAsRead={markAllNotificationsAsRead}
       />
     </div>
   );
