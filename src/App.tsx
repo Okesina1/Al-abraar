@@ -19,6 +19,7 @@ import { AdminBookingsPage } from './pages/admin/AdminBookingsPage';
 import { AdminPaymentsPage } from './pages/admin/AdminPaymentsPage';
 import { AdminApprovalsPage } from './pages/admin/AdminApprovalsPage';
 import { AdminReportsPage } from './pages/admin/AdminReportsPage';
+import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 
 // Ustaadh Pages
 import { UstaadhDashboardPage } from './pages/ustaadh/UstaadhDashboardPage';
