@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import React, { useState } from 'react';
 import { CreditCard, Download, Search, Filter, Calendar, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { Booking } from '../../types';
