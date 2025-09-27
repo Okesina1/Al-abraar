@@ -3,6 +3,7 @@ import { Calendar, Clock, Star, MessageCircle, Video, FileText, Search, Filter, 
 import { Booking, ScheduleSlot } from '../../types';
 import { useBooking } from '../../contexts/BookingContext';
 import { MaterialsModal } from '../common/MaterialsModal';
+import { useToast } from '../../contexts/ToastContext';
 
 interface LessonHistoryProps {
   bookings: Booking[];
@@ -15,9 +16,13 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<{booking: Booking, slot: ScheduleSlot} | null>(null);
   const [rating, setRating] = useState(0);
-  const { updateBooking } = (require('../../contexts/BookingContext') as any).useBooking?.() || { updateBooking: async () => {} };
+  const toast = useToast();
+  const { updateBooking, checkTimeSlotAvailability } = useBooking();
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [comment, setComment] = useState('');
+  const [showReschedule, setShowReschedule] = useState(false);
+  const [newDate, setNewDate] = useState('');
+  const [newTime, setNewTime] = useState('');
 
   // Get all lesson slots from bookings
   const allLessons = bookings.flatMap(booking => 
@@ -279,6 +284,13 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
                           >
                             <XCircle className="h-4 w-4" />
                           </button>
+                          <button
+                            onClick={() => { setSelectedLesson(lesson); setShowReschedule(true); setNewDate(lesson.slot.date); setNewTime(lesson.slot.startTime); }}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Reschedule"
+                          >
+                            <Calendar className="h-4 w-4" />
+                          </button>
                         </>
                       )}
 
@@ -331,6 +343,47 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
       </div>
 
       {showRatingModal && <RatingModal />}
+      {showReschedule && selectedLesson && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-800">Reschedule Lesson</h3>
+              <button onClick={()=>setShowReschedule(false)} className="p-1 hover:bg-gray-100 rounded-full">×</button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Date</label>
+                <input type="date" value={newDate} onChange={(e)=>setNewDate(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Start Time</label>
+                <input type="time" value={newTime} onChange={(e)=>setNewTime(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button onClick={()=>setShowReschedule(false)} className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+                <button
+                  onClick={async ()=>{
+                    if (!selectedLesson) return;
+                    const endTime = (()=>{
+                      const [h, m] = newTime.split(':').map(Number);
+                      const minutes = h*60 + m + Math.round(selectedLesson.slot.endTime.split(':').map(Number)[0]*60 + Number(selectedLesson.slot.endTime.split(':')[1]) - (selectedLesson.slot.startTime.split(':').map(Number)[0]*60 + Number(selectedLesson.slot.startTime.split(':')[1])));
+                      const nh = Math.floor(minutes/60)%24; const nm = minutes%60; return `${nh.toString().padStart(2,'0')}:${nm.toString().padStart(2,'0')}`;
+                    })();
+                    const ok = checkTimeSlotAvailability(selectedLesson.booking.ustaadhId, newDate, newTime, endTime);
+                    if (!ok) { toast.error('Selected time conflicts with availability or existing bookings.'); return; }
+                    const updated = selectedLesson.booking.schedule.map(s => s.id === selectedLesson.slot.id ? { ...s, date: newDate, startTime: newTime, endTime } : s);
+                    await updateBooking(selectedLesson.booking.id, { schedule: updated });
+                    setShowReschedule(false);
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {materialsOpen && (
         <MaterialsModal onClose={() => setMaterialsOpen(false)} canUpload={false} />
       )}

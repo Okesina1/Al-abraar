@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { CheckCircle, XCircle, BookOpen, Eye, Download } from 'lucide-react';
+import { useToast } from '../../contexts/ToastContext';
 
 export const AdminApprovalsPage: React.FC = () => {
+  const toast = useToast();
   const [pendingApprovals, setPendingApprovals] = useState([
     {
       id: '4',
@@ -49,12 +51,12 @@ export const AdminApprovalsPage: React.FC = () => {
 
   const handleApprove = (ustaadhId: string) => {
     setPendingApprovals(prev => prev.filter(u => u.id !== ustaadhId));
-    alert('Ustaadh approved successfully! Confirmation email sent.');
+    toast.success('Ustaadh approved successfully! Confirmation email sent.');
   };
 
   const handleReject = (ustaadhId: string) => {
     setPendingApprovals(prev => prev.filter(u => u.id !== ustaadhId));
-    alert('Ustaadh application rejected. Notification email sent.');
+    toast.info('Ustaadh application rejected. Notification email sent.');
   };
 
   const UstaadhModal = () => {

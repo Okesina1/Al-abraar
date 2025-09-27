@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DollarSign, TrendingUp, Calendar, Download, CreditCard, Clock, Users } from 'lucide-react';
 import { Booking } from '../../types';
+import { useToast } from '../../contexts/ToastContext';
 
 interface EarningsTrackerProps {
   bookings: Booking[];
@@ -8,6 +9,7 @@ interface EarningsTrackerProps {
 
 export const EarningsTracker: React.FC<EarningsTrackerProps> = ({ bookings }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const toast = useToast();
 
   // Calculate earnings
   const paidBookings = bookings.filter(b => b.paymentStatus === 'paid');
@@ -60,7 +62,7 @@ export const EarningsTracker: React.FC<EarningsTrackerProps> = ({ bookings }) =>
 
   const downloadEarningsReport = () => {
     // In a real app, this would generate and download a PDF report
-    alert('Downloading earnings report...');
+    toast.info('Downloading earnings report...');
   };
 
   return (

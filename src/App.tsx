@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
 import { MessagingProvider } from './contexts/MessagingContext';
 import { I18nProvider } from './contexts/LanguageContext';
+import { ToastProvider } from './contexts/ToastContext';
 
 // Auth Pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -19,6 +20,7 @@ import { AdminBookingsPage } from './pages/admin/AdminBookingsPage';
 import { AdminPaymentsPage } from './pages/admin/AdminPaymentsPage';
 import { AdminApprovalsPage } from './pages/admin/AdminApprovalsPage';
 import { AdminReportsPage } from './pages/admin/AdminReportsPage';
+import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 
 // Ustaadh Pages
 import { UstaadhDashboardPage } from './pages/ustaadh/UstaadhDashboardPage';
@@ -120,6 +122,11 @@ function AppRoutes() {
           <DashboardLayout><AdminReportsPage /></DashboardLayout>
         </ProtectedRoute>
       } />
+      <Route path="/admin/settings" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><AdminSettingsPage /></DashboardLayout>
+        </ProtectedRoute>
+      } />
 
       {/* Ustaadh Routes */}
       <Route path="/ustaadh" element={
@@ -189,9 +196,11 @@ function App() {
       <BookingProvider>
         <MessagingProvider>
           <I18nProvider>
-            <Router>
-              <AppRoutes />
-            </Router>
+            <ToastProvider>
+              <Router>
+                <AppRoutes />
+              </Router>
+            </ToastProvider>
           </I18nProvider>
         </MessagingProvider>
       </BookingProvider>
