@@ -17,6 +17,8 @@ const strings = {
     ar: 'تواصل مع معلمين إسلاميين موثوقين لدروس شخصية في القرآن والتجويد والحديث واللغة العربية',
   },
   hero_cta: { en: 'Start Your Journey', ar: 'ابدأ رحلتك' },
+
+  // Features
   feature_quality_title: { en: 'Quality Education', ar: 'تعليم ذو جودة' },
   feature_quality_description: {
     en: 'Learn from certified Ustaadhs with proven expertise in Islamic studies',
@@ -32,6 +34,8 @@ const strings = {
     en: 'All teachers are verified and approved by our administration team',
     ar: 'يتم التحقق من جميع المعلمين والموافقة عليهم من قبل فريق الإدارة لدينا',
   },
+
+  // Why choose
   why_choose_heading: { en: 'Why Choose Al-Abraar?', ar: 'لماذا تختار البراء؟' },
   why_choose_verified_title: { en: 'Verified Teachers', ar: 'معلمون موثوقون' },
   why_choose_verified_description: {
@@ -48,11 +52,13 @@ const strings = {
     en: 'Connect with teachers from around the world, learn from anywhere',
     ar: 'اتصل بالمعلمين من أنحاء العالم وتعلم من أي مكان',
   },
+
+  // Packages
   packages_heading: { en: 'Course Packages', ar: 'باقات الدورات' },
   packages_quran_title: { en: "Qur'an & Tajweed", ar: 'القرآن والتجويد' },
   packages_quran_description: {
     en: 'Perfect for beginners and intermediate learners',
-    ar: 'مثالية للمبتدئين والمتعلمين من المستوى المتوسط',
+    ar: 'مثالية للمبتدئين والمتعلمين من المست��ى المتوسط',
   },
   packages_quran_price: { en: '$5', ar: '$5' },
   packages_complete_title: { en: 'Complete Islamic Studies', ar: 'الدراسات الإسلامية الشاملة' },
@@ -62,6 +68,8 @@ const strings = {
   },
   packages_complete_price: { en: '$7', ar: '$7' },
   packages_price_suffix: { en: '/hour', ar: 'لكل ساعة' },
+
+  // CTA
   cta_heading: {
     en: 'Ready to Begin Your Islamic Learning Journey?',
     ar: 'هل أنت مستعد لبدء رحلتك التعليمية الإسلامية؟',
@@ -71,6 +79,8 @@ const strings = {
     ar: 'انضم إلى آلاف الطلاب الذين يتعلمون مع معلمين إسلاميين موثوقين حول العالم',
   },
   cta_primary: { en: 'Get Started Today', ar: 'ابدأ اليوم' },
+
+  // Dashboard misc
   welcome_back: { en: 'Welcome back, Sarah!', ar: 'مرحباً بعودتك يا سارة!' },
   continue_journey: {
     en: 'Continue your Islamic learning journey with Al-Abraar',
@@ -80,6 +90,30 @@ const strings = {
   view_all: { en: 'View All', ar: 'عرض الجميع' },
   manage_schedule: { en: 'Manage Schedule', ar: 'إدارة الجدول' },
   notifications: { en: 'Notifications', ar: 'الإشعارات' },
+
+  // New: Landing enhancements
+  stats_students_label: { en: 'Students', ar: 'طلاب' },
+  stats_ustaadhs_label: { en: 'Ustaadhs', ar: 'معلمون' },
+  stats_countries_label: { en: 'Countries', ar: 'دول' },
+
+  trust_heading: { en: 'Trusted by learners worldwide', ar: 'موثوق من المتعلمين حول العالم' },
+  trust_subheading: { en: 'Secure payments, verified teachers, and 24/7 support', ar: 'مدفوعات آمنة، معلمون موثوقون، ودعم على مدار الساعة' },
+
+  how_heading: { en: 'How it works', ar: 'كيف تعمل المنصة' },
+  how_step1_title: { en: 'Browse verified Ustaadhs', ar: 'تصفح المعلمين الموثوقين' },
+  how_step1_description: { en: 'Filter by expertise, language, and availability', ar: 'فلتر حسب التخصص واللغة والتوفر' },
+  how_step2_title: { en: 'Book your schedule', ar: 'احجز جدولك' },
+  how_step2_description: { en: 'Pick times that match your routine', ar: 'اختر الأوقات التي تناسب روتينك' },
+  how_step3_title: { en: 'Learn and progress', ar: 'تعلّم وتقدم' },
+  how_step3_description: { en: '1:1 sessions with clear goals and materials', ar: 'جلسات فردية بأهداف واضحة ومواد تعليمية' },
+
+  testimonials_heading: { en: 'What students say', ar: 'ماذا يقول الطلاب' },
+  testimonial_1_quote: { en: 'My Tajweed improved drastically within weeks.', ar: 'تحسن تجويدي بشكل كبير خلال أسابيع.' },
+  testimonial_1_name: { en: 'Sarah A.', ar: 'سارة أ.' },
+  testimonial_1_country: { en: 'Canada', ar: 'كندا' },
+  testimonial_2_quote: { en: 'Flexible timings and excellent teachers.', ar: 'أوقات مرنة ومعلمون ممتازون.' },
+  testimonial_2_name: { en: 'Omar R.', ar: 'عمر ر.' },
+  testimonial_2_country: { en: 'UAE', ar: 'الإمارات' },
 } satisfies Dict;
 
 export type TranslationKey = keyof typeof strings;
