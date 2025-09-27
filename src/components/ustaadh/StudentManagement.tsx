@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Search, MessageCircle, Calendar, Star, TrendingUp, Clock, BookOpen } from 'lucide-react';
 import { Booking } from '../../types';
+import { MaterialsModal } from '../common/MaterialsModal';
 
 interface StudentManagementProps {
   bookings: Booking[];

@@ -25,6 +25,22 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
+const LangToggle: React.FC = () => {
+  const { lang, setLang } = (require('../../contexts/LanguageContext') as any).useI18n();
+  return (
+    <div className="flex items-center border rounded-md overflow-hidden">
+      <button
+        onClick={() => setLang('en')}
+        className={`px-2 py-1 text-sm ${lang === 'en' ? 'bg-gray-100 text-gray-800' : 'text-gray-500'}`}
+      >EN</button>
+      <button
+        onClick={() => setLang('ar')}
+        className={`px-2 py-1 text-sm ${lang === 'ar' ? 'bg-gray-100 text-gray-800' : 'text-gray-500'}`}
+      >AR</button>
+    </div>
+  );
+};
+
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();

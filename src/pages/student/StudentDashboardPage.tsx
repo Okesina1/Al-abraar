@@ -192,6 +192,16 @@ export const StudentDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Achievements */}
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Achievements</h3>
+        <div className="flex flex-wrap gap-3">
+          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">7-day Streak</span>
+          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">3 Months Completed</span>
+          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Top Reviewer</span>
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link

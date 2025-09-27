@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
 import { MessagingProvider } from './contexts/MessagingContext';
+import { I18nProvider } from './contexts/LanguageContext';
 
 // Auth Pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -187,9 +188,11 @@ function App() {
     <AuthProvider>
       <BookingProvider>
         <MessagingProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
+          <I18nProvider>
+            <Router>
+              <AppRoutes />
+            </Router>
+          </I18nProvider>
         </MessagingProvider>
       </BookingProvider>
     </AuthProvider>
