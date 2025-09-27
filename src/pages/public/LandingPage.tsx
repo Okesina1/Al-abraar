@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Users, Star, Shield, Clock, Globe } from 'lucide-react';
+import { useI18n } from '../../contexts/LanguageContext';
 
 export const LandingPage: React.FC = () => {
   return (
