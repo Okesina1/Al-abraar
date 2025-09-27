@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-type Lang = 'en' | 'ar';
+export type Lang = 'en' | 'ar';
 
 type Dict = Record<string, { en: string; ar: string }>;
 
@@ -47,7 +47,7 @@ const strings = {
     ar: 'اتصل بالمعلمين من أنحاء العالم وتعلم من أي مكان',
   },
   packages_heading: { en: 'Course Packages', ar: 'باقات الدورات' },
-  packages_quran_title: { en: "Qur'an & Tajweed", ar: 'ا��قرآن والتجويد' },
+  packages_quran_title: { en: "Qur'an & Tajweed", ar: 'القرآن والتجويد' },
   packages_quran_description: {
     en: 'Perfect for beginners and intermediate learners',
     ar: 'مثالية للمبتدئين والمتعلمين من المستوى المتوسط',
