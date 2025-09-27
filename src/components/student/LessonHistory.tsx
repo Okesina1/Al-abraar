@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Star, MessageCircle, Video, FileText, Search, Filter } from 'lucide-react';
+import { Calendar, Clock, Star, MessageCircle, Video, FileText, Search, Filter, CheckCircle, XCircle } from 'lucide-react';
 import { Booking, ScheduleSlot } from '../../types';
+import { useBooking } from '../../contexts/BookingContext';
+import { MaterialsModal } from '../common/MaterialsModal';
 
 interface LessonHistoryProps {
   bookings: Booking[];
@@ -13,6 +15,8 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<{booking: Booking, slot: ScheduleSlot} | null>(null);
   const [rating, setRating] = useState(0);
+  const { updateBooking } = (require('../../contexts/BookingContext') as any).useBooking?.() || { updateBooking: async () => {} };
+  const [materialsOpen, setMaterialsOpen] = useState(false);
   const [comment, setComment] = useState('');
 
   // Get all lesson slots from bookings
@@ -253,6 +257,31 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
                     </span>
 
                     <div className="flex space-x-2">
+                      {lesson.slot.status === 'scheduled' && (
+                        <>
+                          <button
+                            onClick={async () => {
+                              const updated = lesson.booking.schedule.map(s => s.id === lesson.slot.id ? { ...s, status: 'completed' as const } : s);
+                              await updateBooking(lesson.booking.id, { schedule: updated });
+                            }}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Mark Completed"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const updated = lesson.booking.schedule.map(s => s.id === lesson.slot.id ? { ...s, status: 'missed' as const } : s);
+                              await updateBooking(lesson.booking.id, { schedule: updated });
+                            }}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Mark Missed"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+
                       {lesson.slot.status === 'completed' && (
                         <button
                           onClick={() => {
@@ -279,6 +308,7 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
                       )}
 
                       <button
+                        onClick={() => setMaterialsOpen(true)}
                         className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                         title="View Materials"
                       >
@@ -301,6 +331,9 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
       </div>
 
       {showRatingModal && <RatingModal />}
+      {materialsOpen && (
+        <MaterialsModal onClose={() => setMaterialsOpen(false)} canUpload={false} />
+      )}
     </div>
   );
 };

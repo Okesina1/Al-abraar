@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
 import { MessagingProvider } from './contexts/MessagingContext';
+import { I18nProvider } from './contexts/LanguageContext';
 
 // Auth Pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -17,6 +18,7 @@ import { AdminUsersPage } from './pages/admin/AdminUsersPage';
 import { AdminBookingsPage } from './pages/admin/AdminBookingsPage';
 import { AdminPaymentsPage } from './pages/admin/AdminPaymentsPage';
 import { AdminApprovalsPage } from './pages/admin/AdminApprovalsPage';
+import { AdminReportsPage } from './pages/admin/AdminReportsPage';
 
 // Ustaadh Pages
 import { UstaadhDashboardPage } from './pages/ustaadh/UstaadhDashboardPage';
@@ -113,6 +115,11 @@ function AppRoutes() {
           <DashboardLayout><AdminApprovalsPage /></DashboardLayout>
         </ProtectedRoute>
       } />
+      <Route path="/admin/reports" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><AdminReportsPage /></DashboardLayout>
+        </ProtectedRoute>
+      } />
 
       {/* Ustaadh Routes */}
       <Route path="/ustaadh" element={
@@ -181,9 +188,11 @@ function App() {
     <AuthProvider>
       <BookingProvider>
         <MessagingProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
+          <I18nProvider>
+            <Router>
+              <AppRoutes />
+            </Router>
+          </I18nProvider>
         </MessagingProvider>
       </BookingProvider>
     </AuthProvider>
