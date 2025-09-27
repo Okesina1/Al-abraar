@@ -107,9 +107,12 @@ export const LandingPage: React.FC = () => {
                   <p className="text-gray-600 text-sm">{t('packages_quran_description')}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <h4 className="font-semibold text-yellow-600 mb-2">Complete Islamic Studies</h4>
-                  <p className="text-2xl font-bold text-gray-800">$7<span className="text-sm text-gray-600">/hour</span></p>
-                  <p className="text-gray-600 text-sm">Qur'an, Tajweed, Hadeeth & Arabic language</p>
+                  <h4 className="font-semibold text-yellow-600 mb-2">{t('packages_complete_title')}</h4>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {t('packages_complete_price')}
+                    <span className="text-sm text-gray-600 ltr:ml-2 rtl:mr-2">{t('packages_price_suffix')}</span>
+                  </p>
+                  <p className="text-gray-600 text-sm">{t('packages_complete_description')}</p>
                 </div>
               </div>
             </div>
