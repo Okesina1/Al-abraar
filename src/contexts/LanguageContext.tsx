@@ -58,7 +58,7 @@ const strings = {
   packages_quran_title: { en: "Qur'an & Tajweed", ar: 'القرآن والتجويد' },
   packages_quran_description: {
     en: 'Perfect for beginners and intermediate learners',
-    ar: 'مثالية للمبتدئين والمتعلمين من المست��ى المتوسط',
+    ar: 'مثالية للمبتدئين والمتعلمين من المستوى المتوسط',
   },
   packages_quran_price: { en: '$5', ar: '$5' },
   packages_complete_title: { en: 'Complete Islamic Studies', ar: 'الدراسات الإسلامية الشاملة' },
@@ -111,9 +111,20 @@ const strings = {
   testimonial_1_quote: { en: 'My Tajweed improved drastically within weeks.', ar: 'تحسن تجويدي بشكل كبير خلال أسابيع.' },
   testimonial_1_name: { en: 'Sarah A.', ar: 'سارة أ.' },
   testimonial_1_country: { en: 'Canada', ar: 'كندا' },
-  testimonial_2_quote: { en: 'Flexible timings and excellent teachers.', ar: 'أوقات مرنة ومعلمون ممتازون.' },
+  testimonial_2_quote: { en: 'Flexible timings and excellent teachers.', ar: 'أوقات مرنة ومعلمون مم��ازون.' },
   testimonial_2_name: { en: 'Omar R.', ar: 'عمر ر.' },
   testimonial_2_country: { en: 'UAE', ar: 'الإمارات' },
+
+  // Landing search
+  search_heading: { en: 'Find an Ustaadh', ar: 'ابحث عن معلم' },
+  search_placeholder: { en: 'Search by name or specialty…', ar: 'ابحث بالاسم أو التخصص…' },
+  browse_all_ustaadhs: { en: 'Browse all Ustaadhs', ar: 'تصفح جميع المعلمين' },
+
+  // Footer
+  footer_about_heading: { en: 'About', ar: 'نبذة' },
+  footer_quick_links: { en: 'Quick Links', ar: 'روابط سريعة' },
+  footer_contact_heading: { en: 'Contact', ar: 'تواصل' },
+  footer_rights: { en: 'All rights reserved.', ar: 'جميع الحقوق محفوظة.' },
 } satisfies Dict;
 
 export type TranslationKey = keyof typeof strings;
