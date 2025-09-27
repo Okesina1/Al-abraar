@@ -72,7 +72,7 @@ const strings = {
   welcome_back: { en: 'Welcome back, Sarah!', ar: 'مرحباً بعودتك يا سارة!' },
   continue_journey: {
     en: 'Continue your Islamic learning journey with Al-Abraar',
-    ar: 'واصلي رحلتك التعليمي�� الإسلامية مع البراء',
+    ar: 'واصلي رحلتك التعليمية الإسلامية مع البراء',
   },
   upcoming_lessons: { en: 'Upcoming Lessons', ar: 'الدروس القادمة' },
   view_all: { en: 'View All', ar: 'عرض الجميع' },
@@ -85,7 +85,8 @@ export type TranslationKey = keyof typeof strings;
 interface I18nCtx {
   lang: Lang;
   setLang: (l: Lang) => void;
-  t: (key: keyof typeof strings) => string;
+  t: (key: TranslationKey, fallback?: string) => string;
+  hasKey: (key: string) => key is TranslationKey;
 }
 
 const I18nContext = createContext<I18nCtx | null>(null);
