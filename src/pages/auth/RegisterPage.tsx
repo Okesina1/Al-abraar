@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { BookOpen, User, Mail, Phone, MapPin, Calendar, Upload, AlertCircle, CheckCircle } from 'lucide-react';
+import { BookOpen, User, Mail, Phone, MapPin, Calendar, Upload, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
-interface RegisterProps {
-  onSwitchToLogin: () => void;
-}
-
-export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
+export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -18,10 +15,13 @@ export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
     age: '',
     role: 'student' as 'student' | 'ustaadh'
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const { register, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -63,7 +63,7 @@ export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
     }
 
     try {
-      await register({
+      const result = await register({
         ...formData,
         age: parseInt(formData.age),
         cv: cvFile || undefined
@@ -71,35 +71,37 @@ export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
       
       if (formData.role === 'ustaadh') {
         setSuccess('Registration submitted! Your application is under review. You will receive an email once approved.');
+        setTimeout(() => navigate('/login'), 3000);
       } else {
         setSuccess('Registration successful! You can now start booking lessons.');
+        // Student will be auto-logged in and redirected
       }
-    } catch (err) {
-      setError('Registration failed. Please try again.');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
     }
   };
 
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen py-8 lg:py-12 px-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 lg:p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center mx-auto mb-4">
             <BookOpen className="h-8 w-8 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-800">Join Al-Abraar</h2>
+          <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Join Al-Abraar</h2>
           <p className="text-gray-600 mt-2">Create your account to start learning</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-center space-x-2">
-            <AlertCircle className="h-5 w-5 text-red-500" />
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start space-x-2">
+            <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
             <span className="text-red-700 text-sm">{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 flex items-center space-x-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 flex items-start space-x-2">
+            <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
             <span className="text-green-700 text-sm">{success}</span>
           </div>
         )}
@@ -109,7 +111,7 @@ export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">I want to register as</label>
             <div className="grid grid-cols-2 gap-4">
-              <label className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${formData.role === 'student' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+              <label className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${formData.role === 'student' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}>
                 <input
                   type="radio"
                   name="role"
@@ -123,7 +125,7 @@ export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                   <span className="font-medium">Student</span>
                 </div>
               </label>
-              <label className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${formData.role === 'ustaadh' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+              <label className={`cursor-pointer p-4 border-2 rounded-lg transition-all ${formData.role === 'ustaadh' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}`}>
                 <input
                   type="radio"
                   name="role"
@@ -173,26 +175,46 @@ export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Create a password"
-              />
+              <div className="relative">
+                <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Create a password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password *</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Confirm your password"
-              />
+              <div className="relative">
+                <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Confirm your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -264,7 +286,7 @@ export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                   type="file"
                   accept=".pdf,.doc,.docx"
                   onChange={handleFileChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                 />
               </div>
               <p className="text-sm text-gray-500 mt-1">Upload your CV (PDF, DOC, or DOCX format)</p>
@@ -283,12 +305,12 @@ export const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
         <div className="mt-6 text-center">
           <p className="text-gray-600">
             Already have an account?{' '}
-            <button
-              onClick={onSwitchToLogin}
+            <Link
+              to="/login"
               className="text-green-600 hover:text-green-700 font-medium"
             >
               Sign in here
-            </button>
+            </Link>
           </p>
         </div>
       </div>

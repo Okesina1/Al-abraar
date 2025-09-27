@@ -62,23 +62,54 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Mock authentication for demo
+      const mockUsers = {
+        'admin@al-abraar.com': {
+          id: '1',
+          email: 'admin@al-abraar.com',
+          fullName: 'System Administrator',
+          role: 'admin' as const,
+          phoneNumber: '+1234567890',
+          country: 'USA',
+          city: 'New York',
+          age: 35,
+          isApproved: true,
+          createdAt: '2023-01-01T00:00:00Z'
         },
-        body: JSON.stringify({ email, password }),
-      });
+        'ahmed.alhafiz@email.com': {
+          id: '2',
+          email: 'ahmed.alhafiz@email.com',
+          fullName: 'Ahmed Al-Hafiz',
+          role: 'ustaadh' as const,
+          phoneNumber: '+966123456789',
+          country: 'Saudi Arabia',
+          city: 'Riyadh',
+          age: 35,
+          isApproved: true,
+          createdAt: '2023-01-15T10:00:00Z'
+        },
+        'student@al-abraar.com': {
+          id: '3',
+          email: 'student@al-abraar.com',
+          fullName: 'Sarah Ahmed',
+          role: 'student' as const,
+          phoneNumber: '+1987654321',
+          country: 'Canada',
+          city: 'Toronto',
+          age: 28,
+          isApproved: true,
+          createdAt: '2023-02-01T14:30:00Z'
+        }
+      };
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
+      const user = mockUsers[email as keyof typeof mockUsers];
+      if (!user || password !== 'password') {
+        throw new Error('Invalid credentials');
       }
 
-      const data = await response.json();
-      setUser(data.user);
-      localStorage.setItem('al-abraar-user', JSON.stringify(data.user));
-      localStorage.setItem('al-abraar-token', data.access_token);
+      setUser(user);
+      localStorage.setItem('al-abraar-user', JSON.stringify(user));
+      localStorage.setItem('al-abraar-token', 'mock-token');
     } catch (error) {
       throw error;
     } finally {
@@ -89,29 +120,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (userData: RegisterData) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
+      // Mock registration for demo
+      const newUser = {
+        id: Date.now().toString(),
+        email: userData.email,
+        fullName: userData.fullName,
+        role: userData.role,
+        phoneNumber: userData.phoneNumber,
+        country: userData.country,
+        city: userData.city,
+        age: userData.age,
+        isApproved: userData.role === 'student',
+        createdAt: new Date().toISOString()
+      };
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
+      if (userData.role === 'student') {
+        // Auto-login students
+        setUser(newUser);
+        localStorage.setItem('al-abraar-user', JSON.stringify(newUser));
+        localStorage.setItem('al-abraar-token', 'mock-token');
+        return { user: newUser, access_token: 'mock-token' };
+      } else {
+        // Ustaadhs need approval
+        return { message: 'Registration submitted! Your application is under review.', requiresApproval: true };
       }
-
-      const data = await response.json();
-      
-      if (data.user) {
-        // Student auto-login
-        setUser(data.user);
-        localStorage.setItem('al-abraar-user', JSON.stringify(data.user));
-        localStorage.setItem('al-abraar-token', data.access_token);
-      }
-      
-      return data;
     } catch (error) {
       throw error;
     } finally {

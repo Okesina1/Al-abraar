@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import { Search, MapPin, Star, BookOpen, MessageCircle, Filter, Clock, Award } from 'lucide-react';
+import { BookingModal } from '../../components/booking/BookingModal';
+import { MessageCenter } from '../../components/messaging/MessageCenter';
 import { User } from '../../types';
 
-interface UstaadhBrowserProps {
-  onBookUstaadh: (ustaadh: User) => void;
-  onMessageUstaadh: (ustaadhId: string, ustaadhName: string) => void;
-}
-
-export const UstaadhBrowser: React.FC<UstaadhBrowserProps> = ({ onBookUstaadh, onMessageUstaadh }) => {
+export const StudentBrowsePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedPackage, setSelectedPackage] = useState('');
   const [sortBy, setSortBy] = useState('rating');
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedUstaadh, setSelectedUstaadh] = useState<User | null>(null);
+  const [showMessageCenter, setShowMessageCenter] = useState(false);
+  const [messageRecipient, setMessageRecipient] = useState<{id: string, name: string} | null>(null);
 
   // Mock Ustaadh data
-  const [ustaadhs] = useState<User[]>([
+  const ustaadhs: User[] = [
     {
       id: '2',
       email: 'ahmed.alhafiz@email.com',
@@ -91,7 +92,7 @@ export const UstaadhBrowser: React.FC<UstaadhBrowserProps> = ({ onBookUstaadh, o
       isVerified: true,
       avatar: 'https://images.pexels.com/photos/3763152/pexels-photo-3763152.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
     }
-  ]);
+  ];
 
   const countries = [...new Set(ustaadhs.map(u => u.country))];
 
@@ -119,11 +120,28 @@ export const UstaadhBrowser: React.FC<UstaadhBrowserProps> = ({ onBookUstaadh, o
       }
     });
 
+  const handleBookUstaadh = (ustaadh: User) => {
+    setSelectedUstaadh(ustaadh);
+    setShowBookingModal(true);
+  };
+
+  const handleMessageUstaadh = (ustaadhId: string, ustaadhName: string) => {
+    setMessageRecipient({ id: ustaadhId, name: ustaadhName });
+    setShowMessageCenter(true);
+  };
+
   return (
     <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
+        <h1 className="text-2xl font-bold text-gray-900">Browse Ustaadhs</h1>
+        <div className="text-sm text-gray-600">
+          {filteredUstaadhs.length} teacher{filteredUstaadhs.length !== 1 ? 's' : ''} available
+        </div>
+      </div>
+
       {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-white rounded-xl shadow-md p-4 lg:p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="relative">
             <Search className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input
@@ -174,7 +192,7 @@ export const UstaadhBrowser: React.FC<UstaadhBrowserProps> = ({ onBookUstaadh, o
           <div key={ustaadh.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
             <div className="p-6">
               <div className="flex items-start space-x-4 mb-4">
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <img
                     src={ustaadh.avatar}
                     alt={ustaadh.fullName}
@@ -186,21 +204,21 @@ export const UstaadhBrowser: React.FC<UstaadhBrowserProps> = ({ onBookUstaadh, o
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-semibold text-gray-800">{ustaadh.fullName}</h3>
-                    <div className="flex items-center space-x-1">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
+                    <h3 className="text-xl font-semibold text-gray-800 truncate">{ustaadh.fullName}</h3>
+                    <div className="flex items-center space-x-1 mt-1 sm:mt-0">
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
                       <span className="text-sm font-medium text-gray-700">{ustaadh.rating}</span>
                       <span className="text-sm text-gray-500">({ustaadh.reviewCount})</span>
                     </div>
                   </div>
                   <div className="flex items-center text-gray-600 mb-2">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{ustaadh.city}, {ustaadh.country}</span>
+                    <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+                    <span className="text-sm truncate">{ustaadh.city}, {ustaadh.country}</span>
                   </div>
                   <div className="flex items-center text-gray-600 mb-3">
-                    <Clock className="h-4 w-4 mr-1" />
+                    <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
                     <span className="text-sm">{ustaadh.experience} experience</span>
                   </div>
                 </div>
@@ -219,17 +237,17 @@ export const UstaadhBrowser: React.FC<UstaadhBrowserProps> = ({ onBookUstaadh, o
                 </div>
               </div>
 
-              <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                 <button
-                  onClick={() => onBookUstaadh(ustaadh)}
+                  onClick={() => handleBookUstaadh(ustaadh)}
                   className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center space-x-2"
                 >
                   <BookOpen className="h-4 w-4" />
                   <span>Book Lesson</span>
                 </button>
                 <button
-                  onClick={() => onMessageUstaadh(ustaadh.id, ustaadh.fullName)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-1"
+                  onClick={() => handleMessageUstaadh(ustaadh.id, ustaadh.fullName)}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-1"
                 >
                   <MessageCircle className="h-4 w-4" />
                   <span>Message</span>
@@ -246,6 +264,30 @@ export const UstaadhBrowser: React.FC<UstaadhBrowserProps> = ({ onBookUstaadh, o
           <p className="text-gray-600 mb-2">No Ustaadhs found matching your criteria</p>
           <p className="text-gray-500 text-sm">Try adjusting your search filters</p>
         </div>
+      )}
+
+      {/* Modals */}
+      {showBookingModal && selectedUstaadh && (
+        <BookingModal
+          isOpen={showBookingModal}
+          onClose={() => {
+            setShowBookingModal(false);
+            setSelectedUstaadh(null);
+          }}
+          ustaadh={selectedUstaadh}
+        />
+      )}
+
+      {showMessageCenter && (
+        <MessageCenter
+          isOpen={showMessageCenter}
+          onClose={() => {
+            setShowMessageCenter(false);
+            setMessageRecipient(null);
+          }}
+          recipientId={messageRecipient?.id}
+          recipientName={messageRecipient?.name}
+        />
       )}
     </div>
   );
