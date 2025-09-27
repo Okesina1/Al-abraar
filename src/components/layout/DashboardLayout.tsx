@@ -226,9 +226,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 </div>
               </div>
 
-              <button className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
-                <Settings className="h-5 w-5" />
-              </button>
+              <LangToggle />
             </div>
           </div>
         </header>
