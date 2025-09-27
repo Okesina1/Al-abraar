@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   Users,
@@ -15,9 +15,81 @@ import {
   Search
 } from 'lucide-react';
 import { useI18n } from '../../contexts/LanguageContext';
+import { UstaadhCard } from '../../components/student/UstaadhCard';
+import { User } from '../../types';
 
 export const LandingPage: React.FC = () => {
   const { t } = useI18n();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+
+  const ustaadhs: User[] = [
+    {
+      id: '2',
+      email: 'ahmed.alhafiz@email.com',
+      fullName: 'Ahmed Al-Hafiz',
+      role: 'ustaadh',
+      phoneNumber: '+966123456789',
+      country: 'Saudi Arabia',
+      city: 'Riyadh',
+      age: 35,
+      isApproved: true,
+      createdAt: '2023-01-15T10:00:00Z',
+      bio: "Certified Qur'an teacher with 15 years of experience. Specializing in Tajweed and Arabic language instruction.",
+      experience: '15 years',
+      specialties: ["Qur'an", 'Tajweed', 'Arabic', 'Islamic Studies'],
+      rating: 4.9,
+      reviewCount: 127,
+      isVerified: true,
+      avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
+    },
+    {
+      id: '6',
+      email: 'fatima.alzahra@email.com',
+      fullName: 'Dr. Fatima Al-Zahra',
+      role: 'ustaadh',
+      phoneNumber: '+20123456789',
+      country: 'Egypt',
+      city: 'Cairo',
+      age: 42,
+      isApproved: true,
+      createdAt: '2023-02-20T14:30:00Z',
+      bio: 'PhD in Islamic Studies with expertise in Hadeeth and Fiqh. Passionate about teaching Islamic principles to students worldwide.',
+      experience: '18 years',
+      specialties: ['Hadeeth', 'Fiqh', 'Arabic', 'Islamic History'],
+      rating: 4.8,
+      reviewCount: 89,
+      isVerified: true,
+      avatar: 'https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
+    },
+    {
+      id: '7',
+      email: 'omar.hassan@email.com',
+      fullName: 'Ustadh Omar Hassan',
+      role: 'ustaadh',
+      phoneNumber: '+60123456789',
+      country: 'Malaysia',
+      city: 'Kuala Lumpur',
+      age: 38,
+      isApproved: true,
+      createdAt: '2023-03-10T09:15:00Z',
+      bio: "International Qur'an competition judge and certified Tajweed instructor. Fluent in English, Arabic, and Malay.",
+      experience: '12 years',
+      specialties: ["Qur'an", 'Tajweed', 'Memorization'],
+      rating: 4.7,
+      reviewCount: 156,
+      isVerified: true,
+      avatar: 'https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
+    }
+  ];
+
+  const filtered = ustaadhs.filter(u =>
+    u.fullName.toLowerCase().includes(query.toLowerCase()) ||
+    (u.specialties || []).some(s => s.toLowerCase().includes(query.toLowerCase()))
+  ).slice(0, 3);
+
+  const handleBook = () => navigate('/login');
+  const handleMessage = () => navigate('/login');
 
   return (
     <div className="min-h-screen">
@@ -175,6 +247,37 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Find Ustaadh */}
+      <section className="py-12 lg:py-16 px-4 bg-gradient-to-b from-green-50 to-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl lg:text-4xl font-bold text-center text-gray-800">{t('search_heading')}</h2>
+          <div className="mt-6 bg-white rounded-xl shadow-md p-4 lg:p-6">
+            <div className="relative max-w-2xl mx-auto">
+              <Search className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t('search_placeholder')}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              {filtered.map((u) => (
+                <UstaadhCard key={u.id} ustaadh={u} onBook={handleBook} onMessage={handleMessage} />
+              ))}
+            </div>
+
+            <div className="mt-6 text-center">
+              <Link to="/student/browse" className="inline-flex items-center px-4 py-2 rounded-lg text-green-700 ring-1 ring-green-200 hover:bg-green-50 font-medium">
+                {t('browse_all_ustaadhs')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="py-12 lg:py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
@@ -266,6 +369,53 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-green-700 rounded-lg flex items-center justify-center">
+                <BookOpen className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-lg font-bold text-gray-800">Al-Abraar</span>
+            </div>
+            <p className="text-sm text-gray-600">{t('hero_description')}</p>
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">{t('footer_quick_links')}</h4>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li><Link to="/" className="hover:text-green-700">Home</Link></li>
+              <li><Link to="/student/browse" className="hover:text-green-700">Browse Ustaadhs</Link></li>
+              <li><Link to="/login" className="hover:text-green-700">Sign In</Link></li>
+              <li><Link to="/register" className="hover:text-green-700">Register</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">{t('footer_about_heading')}</h4>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li>Verified teachers</li>
+              <li>Secure payments</li>
+              <li>Flexible scheduling</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">{t('footer_contact_heading')}</h4>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li>support@al-abraar.com</li>
+              <li>+1 (555) 123-4567</li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-gray-200">
+          <div className="max-w-6xl mx-auto px-4 py-4 text-sm text-gray-500 flex items-center justify-between">
+            <span>© {new Date().getFullYear()} Al-Abraar. {t('footer_rights')}</span>
+            <div className="hidden sm:flex items-center gap-4">
+              <Link to="/terms" className="hover:text-gray-700">Terms</Link>
+              <Link to="/privacy" className="hover:text-gray-700">Privacy</Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
