@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { CreditCard, Download, Search, Filter, Calendar, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { useToast } from '../../contexts/ToastContext';
 import { Booking } from '../../types';
 
 interface PaymentHistoryProps {
@@ -7,6 +9,7 @@ interface PaymentHistoryProps {
 }
 
 export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ bookings }) => {
+  const { success } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
@@ -51,7 +54,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ bookings }) => {
 
   const downloadReceipt = (bookingId: string) => {
     // In a real app, this would generate and download a PDF receipt
-    alert(`Downloading receipt for booking ${bookingId}`);
+    success(`Starting receipt download for booking ${bookingId}`);
   };
 
   return (
