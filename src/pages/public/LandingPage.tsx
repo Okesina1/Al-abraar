@@ -79,8 +79,8 @@ export const LandingPage: React.FC = () => {
                   <Star className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Rating System</h3>
-                  <p className="text-gray-600">Student reviews and ratings help you choose the best teacher</p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('why_choose_rating_title')}</h3>
+                  <p className="text-gray-600">{t('why_choose_rating_description')}</p>
                 </div>
               </div>
 
