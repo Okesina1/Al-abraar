@@ -11,7 +11,8 @@ import {
   GraduationCap,
   MessageCircle,
   CalendarRange,
-  CreditCard
+  CreditCard,
+  Search
 } from 'lucide-react';
 import { useI18n } from '../../contexts/LanguageContext';
 
