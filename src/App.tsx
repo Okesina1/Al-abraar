@@ -121,6 +121,11 @@ function AppRoutes() {
           <DashboardLayout><AdminReportsPage /></DashboardLayout>
         </ProtectedRoute>
       } />
+      <Route path="/admin/settings" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><AdminSettingsPage /></DashboardLayout>
+        </ProtectedRoute>
+      } />
 
       {/* Ustaadh Routes */}
       <Route path="/ustaadh" element={
