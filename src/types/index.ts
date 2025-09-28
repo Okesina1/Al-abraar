@@ -35,6 +35,37 @@ export interface Booking {
   createdAt: string;
 }
 
+export type SalaryAdjustmentType = 'bonus' | 'deduction';
+
+export interface SalaryAdjustment {
+  id: string;
+  type: SalaryAdjustmentType;
+  label: string;
+  amount: number;
+  note?: string;
+  createdAt: string;
+}
+
+export interface SalaryRecord {
+  id: string;
+  month: string; // YYYY-MM
+  amount: number;
+  status: 'paid' | 'scheduled' | 'processing';
+  scheduledPayoutDate: string;
+  paidOn?: string;
+  adjustments?: SalaryAdjustment[];
+}
+
+export interface CompensationPlan {
+  ustaadhId: string;
+  monthlySalary: number;
+  currency: string;
+  paymentDayOfMonth: number;
+  effectiveFrom: string;
+  nextReviewDate?: string;
+  salaryHistory: SalaryRecord[];
+}
+
 export interface ScheduleSlot {
   id: string;
   dayOfWeek: number; // 0-6 (Sunday-Saturday)
