@@ -294,10 +294,10 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Choose Your <span className="text-green-600">Learning Path</span>
+              {t('packages_heading_v2')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Flexible packages designed to meet your Islamic education goals, from beginner to advanced levels
+              {t('packages_subheading_v2')}
             </p>
           </div>
 
@@ -312,37 +312,37 @@ export const LandingPage: React.FC = () => {
                       <BookOpen className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900">Qur'an & Tajweed</h3>
-                      <p className="text-green-600 font-medium">Foundation Package</p>
+                      <h3 className="text-2xl font-bold text-gray-900">{t('packages_quran_title')}</h3>
+                      <p className="text-green-600 font-medium">{t('packages_foundation_label')}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-4xl font-bold text-green-600">$5</div>
-                    <div className="text-gray-500 text-sm">per hour</div>
+                    <div className="text-gray-500 text-sm">{t('per_hour')}</div>
                   </div>
                 </div>
 
                 <div className="space-y-4 mb-8">
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700">Qur'an recitation with proper pronunciation</span>
+                    <span className="text-gray-700">{t('pkg_quran_b1')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700">Tajweed rules and application</span>
+                    <span className="text-gray-700">{t('pkg_quran_b2')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700">Personalized feedback and correction</span>
+                    <span className="text-gray-700">{t('pkg_quran_b3')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700">Progress tracking and assessments</span>
+                    <span className="text-gray-700">{t('pkg_quran_b4')}</span>
                   </div>
                 </div>
 
                 <button className="w-full bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                  Start with Foundation
+                  {t('packages_start_foundation')}
                 </button>
               </div>
             </div>
@@ -363,41 +363,41 @@ export const LandingPage: React.FC = () => {
                       <GraduationCap className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-900">Complete Islamic Studies</h3>
-                      <p className="text-amber-600 font-medium">Comprehensive Package</p>
+                      <h3 className="text-2xl font-bold text-gray-900">{t('packages_complete_title')}</h3>
+                      <p className="text-amber-600 font-medium">{t('packages_comprehensive_label')}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-4xl font-bold text-amber-600">$7</div>
-                    <div className="text-gray-500 text-sm">per hour</div>
+                    <div className="text-gray-500 text-sm">{t('per_hour')}</div>
                   </div>
                 </div>
 
                 <div className="space-y-4 mb-8">
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
-                    <span className="text-gray-700">Everything in Foundation Package</span>
+                    <span className="text-gray-700">{t('pkg_complete_b1')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
-                    <span className="text-gray-700">Hadeeth studies and interpretation</span>
+                    <span className="text-gray-700">{t('pkg_complete_b2')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
-                    <span className="text-gray-700">Arabic language mastery</span>
+                    <span className="text-gray-700">{t('pkg_complete_b3')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
-                    <span className="text-gray-700">Islamic history and culture</span>
+                    <span className="text-gray-700">{t('pkg_complete_b4')}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
-                    <span className="text-gray-700">Priority support and materials</span>
+                    <span className="text-gray-700">{t('pkg_complete_b5')}</span>
                   </div>
                 </div>
 
                 <button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                  Choose Complete Package
+                  {t('packages_choose_complete')}
                 </button>
               </div>
             </div>
