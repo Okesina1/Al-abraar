@@ -353,7 +353,7 @@ export const LandingPage: React.FC = () => {
               <div className="relative bg-white rounded-3xl p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1">
                 <div className="absolute top-4 right-4">
                   <span className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                    MOST POPULAR
+                    {t('most_popular_badge')}
                   </span>
                 </div>
 
