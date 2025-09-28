@@ -99,102 +99,118 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen overflow-hidden">
-      {/* Hero Section - Redesigned */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-white to-amber-50">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-amber-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
-        </div>
+      {/* Hero Section - Image Collage */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-green-50 via-white to-amber-50">
+        <div className="absolute -top-24 -left-24 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-pulse"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-amber-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-pulse animation-delay-2000"></div>
 
-        {/* Floating Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="w-16 h-16 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center animate-float">
-              <BookOpen className="h-8 w-8 text-green-600" />
-            </div>
-          </div>
-          <div className="absolute top-1/3 right-1/4 transform translate-x-1/2 -translate-y-1/2">
-            <div className="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg flex items-center justify-center animate-float animation-delay-1000">
-              <Star className="h-6 w-6 text-amber-500" />
-            </div>
-          </div>
-          <div className="absolute bottom-1/3 left-1/3 transform -translate-x-1/2 translate-y-1/2">
-            <div className="w-14 h-14 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center animate-float animation-delay-2000">
-              <Users className="h-7 w-7 text-blue-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Trust Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-green-100 mb-8 animate-fade-in">
-            <Shield className="h-4 w-4 text-green-600" />
-            <span className="text-sm font-medium text-gray-700">Trusted by 10,000+ students worldwide</span>
-            <div className="flex -space-x-1">
-              <div className="w-6 h-6 rounded-full bg-green-500 border-2 border-white"></div>
-              <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-white"></div>
-              <div className="w-6 h-6 rounded-full bg-amber-500 border-2 border-white"></div>
-            </div>
-          </div>
-
-          {/* Main Headline */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 animate-fade-in-up">
-            <span className="block">Master the</span>
-            <span className="block bg-gradient-to-r from-green-600 via-green-700 to-amber-600 bg-clip-text text-transparent">
-              Qur'an & Arabic
-            </span>
-            <span className="block text-4xl sm:text-5xl lg:text-6xl mt-2">with Expert Teachers</span>
-          </h1>
-
-          <p className="text-xl sm:text-2xl text-gray-600 max-w-4xl mx-auto mb-10 leading-relaxed animate-fade-in-up animation-delay-200">
-            Connect with verified Islamic scholars for personalized one-on-one lessons. 
-            <span className="text-green-700 font-semibold"> Learn at your own pace, anywhere in the world.</span>
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in-up animation-delay-400">
-            <Link
-              to="/register"
-              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                Start Learning Today
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-green-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </Link>
-            
-            <button className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-700 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl border border-gray-200 hover:border-green-300 transition-all duration-300">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3 group-hover:bg-green-200 transition-colors">
-                <Play className="h-6 w-6 text-green-600 ml-1" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-28">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Copy */}
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-green-100 mb-6 animate-fade-in">
+                <Shield className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium text-gray-700">Trusted by 10,000+ students worldwide</span>
               </div>
-              Watch Demo
-            </button>
-          </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 mb-6 animate-fade-in-up">
+                Learn the
+                <span className="block bg-gradient-to-r from-green-600 via-green-700 to-amber-600 bg-clip-text text-transparent">Qur'an & Arabic</span>
+                with Expert Teachers
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-600 max-w-xl mb-8 leading-relaxed animate-fade-in-up animation-delay-200">
+                One‑to‑one lessons with verified scholars. Flexible schedules, clear progress, and tailored materials.
+              </p>
 
-          {/* Live Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto animate-fade-in-up animation-delay-600">
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">10K+</div>
-              <div className="text-sm text-gray-600">Active Students</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">300+</div>
-              <div className="text-sm text-gray-600">Expert Teachers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">40+</div>
-              <div className="text-sm text-gray-600">Countries</div>
-            </div>
-          </div>
-        </div>
+              <div className="flex flex-col sm:flex-row items-center gap-4 animate-fade-in-up animation-delay-400">
+                <Link
+                  to="/register"
+                  className="group relative inline-flex items-center justify-center px-7 py-4 text-base sm:text-lg font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    Start Learning Today
+                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-green-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </Link>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-pulse"></div>
+                <button className="group inline-flex items-center justify-center px-7 py-4 text-base sm:text-lg font-semibold text-gray-700 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl border border-gray-200 hover:border-green-300 transition-all duration-300">
+                  <div className="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center mr-3 group-hover:bg-green-200 transition-colors">
+                    <Play className="h-6 w-6 text-green-600 ml-1" />
+                  </div>
+                  Watch Demo
+                </button>
+              </div>
+
+              <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">10K+</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Active Students</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">300+</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Expert Teachers</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">40+</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Countries</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Collage */}
+            <div className="relative">
+              {/* Floating icons */}
+              <div className="pointer-events-none">
+                <div className="absolute -top-4 -left-4 w-14 h-14 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center animate-float">
+                  <BookOpen className="h-7 w-7 text-green-600" />
+                </div>
+                <div className="absolute -bottom-6 right-6 w-12 h-12 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg flex items-center justify-center animate-float animation-delay-1000">
+                  <Star className="h-6 w-6 text-amber-500" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 grid-rows-6 gap-4 sm:gap-5">
+                <div className="col-span-2 row-span-4 relative">
+                  <img
+                    src="https://images.pexels.com/photos/8164722/pexels-photo-8164722.jpeg"
+                    alt="A Muslim girl in hijab sitting indoors, reading Quran during Ramadan. Peaceful religious moment."
+                    className="w-full h-full object-cover rounded-2xl shadow-2xl"
+                    loading="eager"
+                  />
+                  <div className="absolute inset-0 rounded-2xl ring-1 ring-black/5"></div>
+                </div>
+                <div className="col-span-1 row-span-3 relative">
+                  <img
+                    src="https://images.pexels.com/photos/7427800/pexels-photo-7427800.jpeg"
+                    alt="Close-up of detailed Arabic calligraphy in traditional Islamic wall decor with rich gold and black patterns."
+                    className="w-full h-full object-cover rounded-2xl shadow-xl"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="col-span-1 row-span-3 relative">
+                  <img
+                    src="https://images.pexels.com/photos/7261978/pexels-photo-7261978.jpeg"
+                    alt="A close-up of hands holding an open Quran on a wooden table, showcasing Arabic script."
+                    className="w-full h-full object-cover rounded-2xl shadow-xl"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="col-span-2 row-span-2 relative">
+                  <img
+                    src="https://images.pexels.com/photos/7593802/pexels-photo-7593802.jpeg"
+                    alt="Young man in casual attire attentively participating in an online class from home."
+                    className="w-full h-full object-cover rounded-2xl shadow-xl"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="col-span-3 row-span-1 relative">
+                  <img
+                    src="https://images.pexels.com/photos/4491461/pexels-photo-4491461.jpeg"
+                    alt="A professional woman engaged in a virtual meeting setup at her home desk, using a computer and camera."
+                    className="w-full h-28 sm:h-32 lg:h-full object-cover rounded-2xl shadow-xl"/>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
