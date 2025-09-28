@@ -101,6 +101,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           { name: 'Users', href: '/admin/users', icon: Users },
           { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
           { name: 'Payments', href: '/admin/payments', icon: DollarSign },
+          { name: 'Payroll', href: '/admin/payroll', icon: ClipboardList },
           { name: 'Reports', href: '/admin/reports', icon: TrendingUp },
           { name: 'Settings', href: '/admin/settings', icon: Settings },
           ...baseItems,
