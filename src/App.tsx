@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
 import { MessagingProvider } from './contexts/MessagingContext';
@@ -44,6 +45,18 @@ import { ProfilePage } from './pages/shared/ProfilePage';
 // Layout Components
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
+  }, [pathname]);
+
+  return null;
+}
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
   const { user, loading } = useAuth();
@@ -206,6 +219,7 @@ function App() {
           <I18nProvider>
             <ToastProvider>
               <Router>
+                <ScrollToTop />
                 <AppRoutes />
               </Router>
             </ToastProvider>
