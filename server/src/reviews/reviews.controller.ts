@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
+import { CreateReviewDto } from './dto/create-review.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -14,14 +15,14 @@ export class ReviewsController {
   @Post()
   async createReview(
     @Request() req,
-    @Body() body: { ustaadhId: string; rating: number; comment: string; bookingId?: string }
+    @Body() createReviewDto: CreateReviewDto
   ) {
     return this.reviewsService.createReview(
       req.user.userId,
-      body.ustaadhId,
-      body.rating,
-      body.comment,
-      body.bookingId
+      createReviewDto.ustaadhId,
+      createReviewDto.rating,
+      createReviewDto.comment,
+      createReviewDto.bookingId
     );
   }
 

@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, Patch, UseGuards, Request } from '@nestjs/common';
 import { MessagingService } from './messaging.service';
+import { SendMessageDto } from './dto/send-message.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('messages')
@@ -10,13 +11,13 @@ export class MessagingController {
   @Post()
   async sendMessage(
     @Request() req,
-    @Body() body: { receiverId: string; content: string; bookingId?: string }
+    @Body() sendMessageDto: SendMessageDto
   ) {
     return this.messagingService.sendMessage(
       req.user.userId,
-      body.receiverId,
-      body.content,
-      body.bookingId
+      sendMessageDto.receiverId,
+      sendMessageDto.content,
+      sendMessageDto.bookingId
     );
   }
 

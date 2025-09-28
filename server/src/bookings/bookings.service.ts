@@ -3,10 +3,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Booking, BookingStatus, PaymentStatus } from './schemas/booking.schema';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { UpdateBookingDto } from './dto/update-booking.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class BookingsService {
-  constructor(@InjectModel(Booking.name) private bookingModel: Model<Booking>) {}
+  constructor(
+    @InjectModel(Booking.name) private bookingModel: Model<Booking>,
+    private notificationsService: NotificationsService,
+  ) {}
 
   async create(createBookingDto: CreateBookingDto): Promise<Booking> {
     // Check for time conflicts
@@ -20,7 +25,17 @@ export class BookingsService {
     }
 
     const booking = new this.bookingModel(createBookingDto);
-    return booking.save();
+    const savedBooking = await booking.save();
+    
+    // Send notification to Ustaadh about new booking
+    await this.notificationsService.createNotification(
+      createBookingDto.ustaadhId,
+      'New Booking Request',
+      'You have received a new booking request. Please review and confirm.',
+      'info'
+    );
+    
+    return savedBooking;
   }
 
   async findAll(): Promise<Booking[]> {
@@ -28,6 +43,7 @@ export class BookingsService {
       .find()
       .populate('studentId', 'fullName email')
       .populate('ustaadhId', 'fullName email')
+      .sort({ createdAt: -1 })
       .exec();
   }
 
@@ -35,6 +51,7 @@ export class BookingsService {
     return this.bookingModel
       .find({ studentId })
       .populate('ustaadhId', 'fullName email country city')
+      .sort({ createdAt: -1 })
       .exec();
   }
 
@@ -42,6 +59,7 @@ export class BookingsService {
     return this.bookingModel
       .find({ ustaadhId })
       .populate('studentId', 'fullName email country city')
+      .sort({ createdAt: -1 })
       .exec();
   }
 
@@ -59,6 +77,19 @@ export class BookingsService {
     return booking;
   }
 
+  async updateBooking(id: string, updateBookingDto: UpdateBookingDto): Promise<Booking> {
+    const booking = await this.bookingModel.findByIdAndUpdate(
+      id,
+      updateBookingDto,
+      { new: true }
+    );
+
+    if (!booking) {
+      throw new NotFoundException('Booking not found');
+    }
+
+    return booking;
+  }
   async updateStatus(id: string, status: BookingStatus): Promise<Booking> {
     const booking = await this.bookingModel.findByIdAndUpdate(
       id,
@@ -109,6 +140,40 @@ export class BookingsService {
     return booking;
   }
 
+  async getBookingStats(): Promise<any> {
+    const totalBookings = await this.bookingModel.countDocuments();
+    const pendingBookings = await this.bookingModel.countDocuments({ status: BookingStatus.PENDING });
+    const confirmedBookings = await this.bookingModel.countDocuments({ status: BookingStatus.CONFIRMED });
+    const cancelledBookings = await this.bookingModel.countDocuments({ status: BookingStatus.CANCELLED });
+    const completedBookings = await this.bookingModel.countDocuments({ status: BookingStatus.COMPLETED });
+    
+    const totalRevenue = await this.bookingModel.aggregate([
+      { $match: { paymentStatus: PaymentStatus.PAID } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    ]);
+
+    const thisMonthRevenue = await this.bookingModel.aggregate([
+      { 
+        $match: { 
+          paymentStatus: PaymentStatus.PAID,
+          createdAt: { 
+            $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) 
+          }
+        } 
+      },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    ]);
+
+    return {
+      totalBookings,
+      pendingBookings,
+      confirmedBookings,
+      cancelledBookings,
+      completedBookings,
+      totalRevenue: totalRevenue[0]?.total || 0,
+      thisMonthRevenue: thisMonthRevenue[0]?.total || 0
+    };
+  }
   private async checkTimeConflicts(ustaadhId: string, schedule: any[]): Promise<any[]> {
     const conflicts = [];
     

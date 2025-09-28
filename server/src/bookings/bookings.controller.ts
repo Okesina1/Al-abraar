@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Patch, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, UseGuards, Request, Query, Put } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { UpdateBookingDto } from './dto/update-booking.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -24,6 +25,12 @@ export class BookingsController {
     return this.bookingsService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('stats')
+  async getBookingStats() {
+    return this.bookingsService.getBookingStats();
+  }
   @UseGuards(JwtAuthGuard)
   @Get('my-bookings')
   async getMyBookings(@Request() req) {
@@ -49,6 +56,11 @@ export class BookingsController {
     return this.bookingsService.findById(id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async updateBooking(@Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
+    return this.bookingsService.updateBooking(id, updateBookingDto);
+  }
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.USTAADH)
   @Patch(':id/status')

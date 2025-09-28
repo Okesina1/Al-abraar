@@ -7,6 +7,11 @@ export enum UserRole {
   STUDENT = 'student',
 }
 
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',
+}
 @Schema({ timestamps: true })
 export class User extends Document {
   @Prop({ required: true, unique: true })
@@ -60,5 +65,10 @@ export class User extends Document {
   @Prop()
   cvUrl: string;
 }
+  @Prop({ enum: UserStatus, default: UserStatus.ACTIVE })
+  status: UserStatus;
+
+  @Prop({ default: Date.now })
+  lastLogin: Date;
 
 export const UserSchema = SchemaFactory.createForClass(User);

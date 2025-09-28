@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
@@ -10,6 +11,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private notificationsService: NotificationsService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -32,6 +34,8 @@ export class AuthService {
       throw new UnauthorizedException('Your account is pending approval');
     }
 
+    // Update last login
+    await this.usersService.updateLastLogin(user._id);
     const payload = { email: user.email, sub: user._id, role: user.role };
     return {
       access_token: this.jwtService.sign(payload),
@@ -45,6 +49,14 @@ export class AuthService {
         city: user.city,
         age: user.age,
         isApproved: user.isApproved,
+        status: user.status,
+        avatar: user.avatar,
+        bio: user.bio,
+        experience: user.experience,
+        specialties: user.specialties,
+        rating: user.rating,
+        reviewCount: user.reviewCount,
+        isVerified: user.isVerified,
         createdAt: user.createdAt,
       },
     };
@@ -74,6 +86,19 @@ export class AuthService {
       return this.login({ email: user.email, password: registerDto.password });
     } else {
       // Ustaadhs need approval
+      // Send notification to admins about new Ustaadh application
+      const admins = await this.usersService.findAll();
+      const adminUsers = admins.filter(u => u.role === 'admin');
+      
+      for (const admin of adminUsers) {
+        await this.notificationsService.createNotification(
+          admin._id.toString(),
+          'New Ustaadh Application',
+          `${user.fullName} has submitted an application for review.`,
+          'info'
+        );
+      }
+
       return {
         message: 'Registration submitted! Your application is under review.',
         requiresApproval: true,
@@ -82,10 +107,35 @@ export class AuthService {
   }
 
   async approveUstaadh(ustaadhId: string) {
-    return this.usersService.approveUstaadh(ustaadhId);
+    const user = await this.usersService.approveUstaadh(ustaadhId);
+    
+    // Send approval notification
+    await this.notificationsService.notifyUstaadhApproval(
+      ustaadhId,
+      user.email,
+      user.fullName
+    );
+    
+    return user;
   }
 
   async rejectUstaadh(ustaadhId: string) {
+    const user = await this.usersService.findById(ustaadhId);
+    if (user) {
+      // Send rejection notification email
+      await this.notificationsService.sendEmail(
+        user.email,
+        'Al-Abraar - Application Update',
+        `
+          <h2>Application Update</h2>
+          <p>Dear ${user.fullName},</p>
+          <p>Thank you for your interest in joining Al-Abraar as an Ustaadh. After careful review, we are unable to approve your application at this time.</p>
+          <p>You are welcome to reapply in the future with updated credentials.</p>
+          <p>Best regards,<br>Al-Abraar Team</p>
+        `
+      );
+    }
+    
     return this.usersService.rejectUstaadh(ustaadhId);
   }
 }

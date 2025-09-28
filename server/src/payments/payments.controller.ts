@@ -1,5 +1,7 @@
 import { Controller, Post, Body, Headers, RawBodyRequest, Req, UseGuards } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
+import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
+import { RefundPaymentDto } from './dto/refund-payment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('payments')
@@ -8,8 +10,12 @@ export class PaymentsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create-intent')
-  async createPaymentIntent(@Body() body: { bookingId: string; amount: number }) {
-    return this.paymentsService.createPaymentIntent(body.bookingId, body.amount);
+  async createPaymentIntent(@Body() createPaymentIntentDto: CreatePaymentIntentDto) {
+    return this.paymentsService.createPaymentIntent(
+      createPaymentIntentDto.bookingId, 
+      createPaymentIntentDto.amount,
+      createPaymentIntentDto.currency
+    );
   }
 
   @Post('webhook')
@@ -22,7 +28,10 @@ export class PaymentsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('refund')
-  async refundPayment(@Body() body: { paymentIntentId: string; amount?: number }) {
-    return this.paymentsService.refundPayment(body.paymentIntentId, body.amount);
+  async refundPayment(@Body() refundPaymentDto: RefundPaymentDto) {
+    return this.paymentsService.refundPayment(
+      refundPaymentDto.paymentIntentId, 
+      refundPaymentDto.amount
+    );
   }
 }

@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserRole } from './schemas/user.schema';
+import { User, UserRole, UserStatus } from './schemas/user.schema';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -35,6 +36,7 @@ export class UsersService {
     const query: any = { 
       role: UserRole.USTAADH, 
       isApproved: true 
+      status: UserStatus.ACTIVE
     };
 
     if (filters.country) {
@@ -55,7 +57,7 @@ export class UsersService {
   async approveUstaadh(ustaadhId: string): Promise<User> {
     const user = await this.userModel.findByIdAndUpdate(
       ustaadhId,
-      { isApproved: true },
+      { isApproved: true, isVerified: true },
       { new: true }
     ).select('-password');
 
@@ -73,7 +75,7 @@ export class UsersService {
     }
   }
 
-  async updateProfile(userId: string, updateData: any): Promise<User> {
+  async updateProfile(userId: string, updateData: UpdateUserDto): Promise<User> {
     const user = await this.userModel.findByIdAndUpdate(
       userId,
       updateData,
@@ -87,6 +89,55 @@ export class UsersService {
     return user;
   }
 
+  async suspendUser(userId: string): Promise<User> {
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      { status: UserStatus.SUSPENDED },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async activateUser(userId: string): Promise<User> {
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      { status: UserStatus.ACTIVE },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async updateLastLogin(userId: string): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, { lastLogin: new Date() });
+  }
+
+  async getUserStats(): Promise<any> {
+    const totalUsers = await this.userModel.countDocuments();
+    const totalStudents = await this.userModel.countDocuments({ role: UserRole.STUDENT });
+    const totalUstaadhss = await this.userModel.countDocuments({ role: UserRole.USTAADH, isApproved: true });
+    const pendingApprovals = await this.userModel.countDocuments({ role: UserRole.USTAADH, isApproved: false });
+    const activeToday = await this.userModel.countDocuments({
+      lastLogin: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+    });
+
+    return {
+      totalUsers,
+      totalStudents,
+      totalUstaadhss,
+      pendingApprovals,
+      activeToday
+    };
+  }
   async updateRating(ustaadhId: string, newRating: number): Promise<void> {
     const user = await this.userModel.findById(ustaadhId);
     if (!user) {
