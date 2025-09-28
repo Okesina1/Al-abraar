@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { BookingProvider } from './contexts/BookingContext';
+import { PayrollProvider } from './contexts/PayrollContext';
 import { MessagingProvider } from './contexts/MessagingContext';
 import { I18nProvider } from './contexts/LanguageContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -215,16 +216,18 @@ function App() {
   return (
     <AuthProvider>
       <BookingProvider>
-        <MessagingProvider>
-          <I18nProvider>
-            <ToastProvider>
-              <Router>
-                <ScrollToTop />
-                <AppRoutes />
-              </Router>
-            </ToastProvider>
-          </I18nProvider>
-        </MessagingProvider>
+        <PayrollProvider>
+          <MessagingProvider>
+            <I18nProvider>
+              <ToastProvider>
+                <Router>
+                  <ScrollToTop />
+                  <AppRoutes />
+                </Router>
+              </ToastProvider>
+            </I18nProvider>
+          </MessagingProvider>
+        </PayrollProvider>
       </BookingProvider>
     </AuthProvider>
   );
