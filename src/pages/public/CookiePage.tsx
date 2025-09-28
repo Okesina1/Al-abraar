@@ -24,6 +24,27 @@ export const CookiePage: React.FC = () => {
           </p>
         </section>
 
+        <section id="ethical-use" className="space-y-4 rounded-xl border border-green-100 bg-green-50/60 p-6">
+          <h3 className="text-xl font-semibold text-green-900">Transparency with Taqwa (God-Consciousness)</h3>
+          <p>
+            We aim to collect and utilize data in a manner that aligns with God-conscious accountability. Every digital
+            interaction is treated as a trust, prompting us to explain our use of cookies with clarity and honesty.
+          </p>
+          <figure className="space-y-2">
+            <blockquote className="text-gray-700 italic">
+              “And do not pursue that of which you have no knowledge. Indeed, the hearing, the sight, and the heart—about
+              all those [one] will be questioned.”
+            </blockquote>
+            <figcaption className="text-sm text-gray-600">Qur'an 17:36</figcaption>
+          </figure>
+          <figure className="space-y-2">
+            <blockquote className="text-gray-700 italic">
+              “There should be neither harm nor reciprocating harm.”
+            </blockquote>
+            <figcaption className="text-sm text-gray-600">Prophet Muhammad ﷺ, Sunan Ibn Majah 2341</figcaption>
+          </figure>
+        </section>
+
         <section id="how-we-use-cookies" className="space-y-3">
           <h2 className="text-2xl font-bold text-gray-900">2. How We Use Cookies</h2>
           <ul className="list-disc pl-6 space-y-2">
