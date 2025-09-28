@@ -49,6 +49,12 @@ const monthKeyNow = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
 
+const MOCK_USTAADHS: UstaadhUser[] = [
+  { id: '2', fullName: 'Ahmed Al-Hafiz', email: 'ahmed.hafiz@example.com' },
+  { id: '3', fullName: 'Dr. Fatima Al-Zahra', email: 'fatima.zahra@example.com' },
+  { id: '4', fullName: 'Ustadh Omar Hassan', email: 'omar.hassan@example.com' },
+];
+
 export const AdminPayrollPage: React.FC = () => {
   const [ustaadhs, setUstaadhs] = useState<UstaadhUser[]>([]);
   const [search, setSearch] = useState('');
@@ -64,11 +70,7 @@ export const AdminPayrollPage: React.FC = () => {
   }, [ustaadhs, search]);
 
   useEffect(() => {
-    const loadUstaadhs = async () => {
-      const data = await apiClient.get(API_ENDPOINTS.APPROVED_USTAADHSS);
-      setUstaadhs(data || []);
-    };
-    loadUstaadhs().catch((e) => setError(String(e)));
+    setUstaadhs(MOCK_USTAADHS);
   }, []);
 
   useEffect(() => {
