@@ -536,10 +536,10 @@ export const LandingPage: React.FC = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
-              Loved by Students <span className="text-green-200">Worldwide</span>
+              {t('testimonials_heading_v2')}
             </h2>
             <p className="text-xl text-green-100 max-w-3xl mx-auto">
-              Join thousands of satisfied learners who have transformed their Islamic knowledge with Al-Abraar
+              {t('testimonials_subheading')}
             </p>
           </div>
 
@@ -552,7 +552,7 @@ export const LandingPage: React.FC = () => {
                 ))}
               </div>
               <p className="text-gray-700 mb-6 leading-relaxed">
-                "My Tajweed improved drastically within weeks. The personalized attention and expert guidance made all the difference in my Qur'an recitation."
+                "{t('testimonial_1_quote')}"
               </p>
               <div className="flex items-center space-x-3">
                 <img 
@@ -561,8 +561,8 @@ export const LandingPage: React.FC = () => {
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900">Sarah A.</div>
-                  <div className="text-sm text-gray-600">Student from Canada</div>
+                  <div className="font-semibold text-gray-900">{t('testimonial_1_name')}</div>
+                  <div className="text-sm text-gray-600">{t('student_from_canada')}</div>
                 </div>
               </div>
             </div>
@@ -575,7 +575,7 @@ export const LandingPage: React.FC = () => {
                 ))}
               </div>
               <p className="text-gray-700 mb-6 leading-relaxed">
-                "The flexibility to learn at my own pace while having access to world-class teachers has been incredible. Highly recommend Al-Abraar!"
+                "{t('testimonial_2_quote')}"
               </p>
               <div className="flex items-center space-x-3">
                 <img 
@@ -584,8 +584,8 @@ export const LandingPage: React.FC = () => {
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900">Omar R.</div>
-                  <div className="text-sm text-gray-600">Student from UAE</div>
+                  <div className="font-semibold text-gray-900">{t('testimonial_2_name')}</div>
+                  <div className="text-sm text-gray-600">{t('student_from_uae')}</div>
                 </div>
               </div>
             </div>
@@ -598,7 +598,7 @@ export const LandingPage: React.FC = () => {
                 ))}
               </div>
               <p className="text-gray-700 mb-6 leading-relaxed">
-                "As a busy professional, the scheduling flexibility and quality of teaching at Al-Abraar has allowed me to continue my Islamic education seamlessly."
+                "{t('testimonial_3_quote')}"
               </p>
               <div className="flex items-center space-x-3">
                 <img 
@@ -607,8 +607,8 @@ export const LandingPage: React.FC = () => {
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>
-                  <div className="font-semibold text-gray-900">Aisha M.</div>
-                  <div className="text-sm text-gray-600">Student from Malaysia</div>
+                  <div className="font-semibold text-gray-900">{t('testimonial_3_name', 'Aisha M.')}</div>
+                  <div className="text-sm text-gray-600">{t('student_from_malaysia')}</div>
                 </div>
               </div>
             </div>
