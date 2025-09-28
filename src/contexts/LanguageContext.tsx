@@ -27,7 +27,7 @@ const strings = {
   feature_flexible_title: { en: 'Flexible Scheduling', ar: 'جدولة مرنة' },
   feature_flexible_description: {
     en: 'Book lessons at your convenience with our smart scheduling system',
-    ar: 'احجز ال��روس في الوقت الذي يناسبك عبر نظام الجدولة الذكي لدينا',
+    ar: 'احجز الدروس في الوقت الذي يناسبك عبر نظام الجدولة الذكي لدينا',
   },
   feature_secure_title: { en: 'Safe & Secure', ar: 'آمن وموثوق' },
   feature_secure_description: {
@@ -76,7 +76,7 @@ const strings = {
   },
   cta_subheading: {
     en: 'Join thousands of students learning with verified Islamic teachers worldwide',
-    ar: 'انضم إلى آلاف الطلاب ال��ين يتعلمون مع معلمين إسلاميين موثوقين حول العالم',
+    ar: 'انضم إلى آلاف الطلاب الذين يتعلمون مع معلمين إسلاميين موثوقين حول العالم',
   },
   cta_primary: { en: 'Get Started Today', ar: 'ابدأ اليوم' },
 
@@ -111,7 +111,7 @@ const strings = {
   testimonial_1_quote: { en: 'My Tajweed improved drastically within weeks.', ar: 'تحسن تجويدي بشكل كبير خلال أسابيع.' },
   testimonial_1_name: { en: 'Sarah A.', ar: 'سارة أ.' },
   testimonial_1_country: { en: 'Canada', ar: 'كندا' },
-  testimonial_2_quote: { en: 'Flexible timings and excellent teachers.', ar: 'أوقات مرنة ومعلمون مم��ازون.' },
+  testimonial_2_quote: { en: 'Flexible timings and excellent teachers.', ar: 'أوقات مرنة ومعلمون ممتازون.' },
   testimonial_2_name: { en: 'Omar R.', ar: 'عمر ر.' },
   testimonial_2_country: { en: 'UAE', ar: 'الإمارات' },
 
@@ -221,7 +221,7 @@ const strings = {
 
   /* Landing v2 - Final CTA */
   cta_badge_text: { en: 'Join 10,000+ students already learning', ar: 'انضم إلى أكثر من 10,000 طالب يتعلمون بالفعل' },
-  cta_paragraph_v2: { en: 'Start today with a free consultation and discover how our personalized approach can transform your understanding of Islamic knowledge.', ar: 'ابدأ اليوم باستشارة مجانية واكتشف كيف يمكن لنهجنا المخصص أن يغيّر فهمك للعلوم الإسلامية.' },
+  cta_paragraph_v2: { en: 'Start today with a free consultation and discover how our personalized approach can transform your understanding of Islamic knowledge.', ar: 'ابدأ اليوم باستشا��ة مجانية واكتشف كيف يمكن لنهجنا المخصص أن يغيّر فهمك للعلوم الإسلامية.' },
   cta_get_started_free: { en: 'Get Started Free', ar: 'ابدأ مجانًا' },
   cta_book_consultation: { en: 'Book a Consultation', ar: 'احجز استشارة' },
   cta_heading_prefix: { en: 'Ready to Begin Your', ar: 'هل أنت مستعد لبدء' },
