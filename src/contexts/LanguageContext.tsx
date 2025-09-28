@@ -27,7 +27,7 @@ const strings = {
   feature_flexible_title: { en: 'Flexible Scheduling', ar: 'جدولة مرنة' },
   feature_flexible_description: {
     en: 'Book lessons at your convenience with our smart scheduling system',
-    ar: 'احجز الدروس في الوقت الذي يناسبك عبر نظام الجدولة الذكي لدينا',
+    ar: 'احجز ال��روس في الوقت الذي يناسبك عبر نظام الجدولة الذكي لدينا',
   },
   feature_secure_title: { en: 'Safe & Secure', ar: 'آمن وموثوق' },
   feature_secure_description: {
@@ -76,7 +76,7 @@ const strings = {
   },
   cta_subheading: {
     en: 'Join thousands of students learning with verified Islamic teachers worldwide',
-    ar: 'انضم ��لى آلاف الطلاب الذين يتعلمون مع معلمين إسلاميين موثوقين حول العالم',
+    ar: 'انضم إلى آلاف الطلاب ال��ين يتعلمون مع معلمين إسلاميين موثوقين حول العالم',
   },
   cta_primary: { en: 'Get Started Today', ar: 'ابدأ اليوم' },
 
@@ -133,7 +133,7 @@ const strings = {
   hero_title_suffix: { en: 'with Expert Teachers', ar: 'مع معلمين خبراء' },
   hero_description_v2: {
     en: 'One-to-one lessons with verified scholars. Flexible schedules, clear progress, and tailored materials.',
-    ar: 'دروس فردية مع علماء موثوقين. جداول مرنة، تقدم و��ضح، ومواد تعليمية مخصصة.',
+    ar: 'دروس فردية مع علماء موثوقين. جداول مرنة، تقدم واضح، ومواد تعليمية مخصصة.',
   },
   cta_start_learning: { en: 'Start Learning Today', ar: 'ابدأ التعلم اليوم' },
   cta_watch_demo: { en: 'Watch Demo', ar: 'مشاهدة العرض' },
@@ -176,6 +176,7 @@ const strings = {
   per_hour: { en: 'per hour', ar: 'لكل ساعة' },
   packages_start_foundation: { en: 'Start with Foundation', ar: 'ابدأ بالأساس' },
   packages_choose_complete: { en: 'Choose Complete Package', ar: 'اختر الباقة الشاملة' },
+  most_popular_badge: { en: 'MOST POPULAR', ar: 'الأكثر شيوعًا' },
   pkg_quran_b1: { en: 'Qur\'an recitation with proper pronunciation', ar: 'تلاوة القرآن بالنطق الصحيح' },
   pkg_quran_b2: { en: 'Tajweed rules and application', ar: 'قواعد التجويد وتطبيقها' },
   pkg_quran_b3: { en: 'Personalized feedback and correction', ar: 'ملاحظات شخصية وتصحيح' },
@@ -210,7 +211,7 @@ const strings = {
   trust_heading_v2: { en: 'Built on Trust & Excellence', ar: 'مبني على الثقة والتميّز' },
   trust_subheading_v2: { en: 'Your security and learning experience are our top priorities', ar: 'أمانك وتجربتك التعليمية هما أولويتنا القصوى' },
   trust_secure_payments: { en: 'Secure Payments', ar: 'مدفوعات آمنة' },
-  trust_secure_payments_desc: { en: 'Bank-level encryption with Stripe', ar: 'تشفير بمستو�� البنوك عبر سترايب' },
+  trust_secure_payments_desc: { en: 'Bank-level encryption with Stripe', ar: 'تشفير بمستوى البنوك عبر سترايب' },
   trust_certified_teachers: { en: 'Certified Teachers', ar: 'معلمون معتمدون' },
   trust_certified_teachers_desc: { en: 'Verified credentials and experience', ar: 'اعتمادات وخبرة موثوقة' },
   trust_247_support: { en: '24/7 Support', ar: 'دعم 24/7' },
@@ -222,7 +223,7 @@ const strings = {
   cta_badge_text: { en: 'Join 10,000+ students already learning', ar: 'انضم إلى أكثر من 10,000 طالب يتعلمون بالفعل' },
   cta_paragraph_v2: { en: 'Start today with a free consultation and discover how our personalized approach can transform your understanding of Islamic knowledge.', ar: 'ابدأ اليوم باستشارة مجانية واكتشف كيف يمكن لنهجنا المخصص أن يغيّر فهمك للعلوم الإسلامية.' },
   cta_get_started_free: { en: 'Get Started Free', ar: 'ابدأ مجانًا' },
-  cta_book_consultation: { en: 'Book a Consultation', ar: 'احجز اس��شارة' },
+  cta_book_consultation: { en: 'Book a Consultation', ar: 'احجز استشارة' },
   cta_heading_prefix: { en: 'Ready to Begin Your', ar: 'هل أنت مستعد لبدء' },
   cta_heading_suffix: { en: 'Islamic Learning Journey?', ar: 'رحلتك التعليمية الإسلامية؟' },
   avg_rating: { en: 'Average Rating', ar: 'متوسط التقييم' },
