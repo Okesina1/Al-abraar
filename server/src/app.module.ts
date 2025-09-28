@@ -25,6 +25,7 @@ import { UploadsModule } from './uploads/uploads.module';
     ReviewsModule,
     NotificationsModule,
     PayrollModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}
