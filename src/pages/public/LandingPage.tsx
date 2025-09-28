@@ -222,10 +222,10 @@ export const LandingPage: React.FC = () => {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Why Choose <span className="text-green-600">Al-Abraar?</span>
+              {t('why_choose_heading')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Experience the future of Islamic education with our innovative platform designed for modern learners
+              {t('why_choose_subheading')}
             </p>
           </div>
 
@@ -237,12 +237,12 @@ export const LandingPage: React.FC = () => {
                 <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Shield className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Verified Excellence</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('feature_verified_excellence_title')}</h3>
                 <p className="text-gray-600 leading-relaxed mb-6">
-                  Every teacher undergoes rigorous verification. Learn from certified scholars with proven expertise in Islamic studies and pedagogy.
+                  {t('feature_verified_excellence_description')}
                 </p>
                 <div className="flex items-center text-green-600 font-medium group-hover:text-green-700 transition-colors">
-                  <span>Learn more</span>
+                  <span>{t('feature_learn_more')}</span>
                   <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -255,12 +255,12 @@ export const LandingPage: React.FC = () => {
                 <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Clock className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Flexible Learning</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('feature_flexible_learning_title')}</h3>
                 <p className="text-gray-600 leading-relaxed mb-6">
-                  Schedule lessons that fit your lifestyle. Our smart booking system adapts to your timezone and preferences seamlessly.
+                  {t('feature_flexible_learning_description')}
                 </p>
                 <div className="flex items-center text-blue-600 font-medium group-hover:text-blue-700 transition-colors">
-                  <span>Explore scheduling</span>
+                  <span>{t('feature_explore_scheduling')}</span>
                   <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -273,12 +273,12 @@ export const LandingPage: React.FC = () => {
                 <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Globe className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Global Community</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('feature_global_community_title')}</h3>
                 <p className="text-gray-600 leading-relaxed mb-6">
-                  Join a worldwide community of learners. Connect with teachers and students from over 40 countries around the globe.
+                  {t('feature_global_community_description')}
                 </p>
                 <div className="flex items-center text-amber-600 font-medium group-hover:text-amber-700 transition-colors">
-                  <span>Join community</span>
+                  <span>{t('feature_join_community')}</span>
                   <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
