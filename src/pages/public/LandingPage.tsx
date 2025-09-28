@@ -110,15 +110,15 @@ export const LandingPage: React.FC = () => {
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-green-100 mb-6 animate-fade-in">
                 <Shield className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-gray-700">Trusted by 10,000+ students worldwide</span>
+                <span className="text-sm font-medium text-gray-700">{t('hero_trust_badge')}</span>
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 mb-6 animate-fade-in-up">
-                Learn the
-                <span className="block bg-gradient-to-r from-green-600 via-green-700 to-amber-600 bg-clip-text text-transparent">Qur'an & Arabic</span>
-                with Expert Teachers
+                {t('hero_title_prefix')}
+                <span className="block bg-gradient-to-r from-green-600 via-green-700 to-amber-600 bg-clip-text text-transparent">{t('hero_title_highlight_v2')}</span>
+                {t('hero_title_suffix')}
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 max-w-xl mb-8 leading-relaxed animate-fade-in-up animation-delay-200">
-                One‑to‑one lessons with verified scholars. Flexible schedules, clear progress, and tailored materials.
+                {t('hero_description_v2')}
               </p>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 animate-fade-in-up animation-delay-400">
@@ -127,7 +127,7 @@ export const LandingPage: React.FC = () => {
                   className="group relative inline-flex items-center justify-center px-7 py-4 text-base sm:text-lg font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
                 >
                   <span className="relative z-10 flex items-center gap-2">
-                    Start Learning Today
+                    {t('cta_start_learning')}
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-green-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -137,22 +137,22 @@ export const LandingPage: React.FC = () => {
                   <div className="w-11 h-11 bg-green-100 rounded-full flex items-center justify-center mr-3 group-hover:bg-green-200 transition-colors">
                     <Play className="h-6 w-6 text-green-600 ml-1" />
                   </div>
-                  Watch Demo
+                  {t('cta_watch_demo')}
                 </button>
               </div>
 
               <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">10K+</div>
-                  <div className="text-xs sm:text-sm text-gray-600">Active Students</div>
+                  <div className="text-xs sm:text-sm text-gray-600">{t('stats_active_students')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">300+</div>
-                  <div className="text-xs sm:text-sm text-gray-600">Expert Teachers</div>
+                  <div className="text-xs sm:text-sm text-gray-600">{t('stats_expert_teachers')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">40+</div>
-                  <div className="text-xs sm:text-sm text-gray-600">Countries</div>
+                  <div className="text-xs sm:text-sm text-gray-600">{t('stats_countries')}</div>
                 </div>
               </div>
             </div>
