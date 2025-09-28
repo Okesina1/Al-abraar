@@ -25,6 +25,29 @@ export const TermsPage: React.FC = () => {
           </p>
         </section>
 
+        <section id="spiritual-foundation" className="space-y-4 rounded-xl border border-green-100 bg-green-50/60 p-6">
+          <h3 className="text-xl font-semibold text-green-900">Guided by Sacred Teachings</h3>
+          <p>
+            Our commitment to transparent agreements and respectful conduct is rooted in the Qur'an and the Sunnah.
+            We encourage every member of the Al-Abraar community to honor their pledges and uphold justice in every
+            interaction on our platform.
+          </p>
+          <figure className="space-y-2">
+            <blockquote className="text-gray-700 italic">
+              “And fulfill the covenant of Allah when you have taken it, and do not break oaths after confirming them while
+              you have made Allah, over you, a witness.”
+            </blockquote>
+            <figcaption className="text-sm text-gray-600">Qur'an 16:91</figcaption>
+          </figure>
+          <figure className="space-y-2">
+            <blockquote className="text-gray-700 italic">
+              “The Muslims are bound by their conditions, except a condition that makes the lawful unlawful or the
+              unlawful lawful.”
+            </blockquote>
+            <figcaption className="text-sm text-gray-600">Prophet Muhammad ﷺ, Sunan Abi Dawud 3594</figcaption>
+          </figure>
+        </section>
+
         <section id="eligibility" className="space-y-3">
           <h2 className="text-2xl font-bold text-gray-900">2. Eligibility</h2>
           <p>

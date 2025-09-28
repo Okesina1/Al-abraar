@@ -24,6 +24,28 @@ export const PrivacyPage: React.FC = () => {
           </p>
         </section>
 
+        <section id="privacy-ethic" className="space-y-4 rounded-xl border border-green-100 bg-green-50/60 p-6">
+          <h3 className="text-xl font-semibold text-green-900">An Amanah (Trust) We Safeguard</h3>
+          <p>
+            Respecting your privacy is more than a legal duty—it is a trust entrusted to us by Allah ﷻ and reinforced by
+            the teachings of His Messenger ﷺ. We strive to prevent intrusive data practices and foster a safe learning
+            environment grounded in compassion and integrity.
+          </p>
+          <figure className="space-y-2">
+            <blockquote className="text-gray-700 italic">
+              “O you who have believed, avoid much suspicion. Indeed, some suspicion is sin. And do not spy or backbite
+              one another.”
+            </blockquote>
+            <figcaption className="text-sm text-gray-600">Qur'an 49:12</figcaption>
+          </figure>
+          <figure className="space-y-2">
+            <blockquote className="text-gray-700 italic">
+              “When a person tells you something and then leaves, it is a trust.”
+            </blockquote>
+            <figcaption className="text-sm text-gray-600">Prophet Muhammad ﷺ, Sunan Abi Dawud 4869</figcaption>
+          </figure>
+        </section>
+
         <section id="data-we-collect" className="space-y-3">
           <h2 className="text-2xl font-bold text-gray-900">2. Information We Collect</h2>
           <ul className="list-disc pl-6 space-y-2">

@@ -1,80 +1,234 @@
-import React, { useState } from 'react';
-import { DollarSign, TrendingUp, Calendar, Download, CreditCard, Clock, Users } from 'lucide-react';
-import { Booking } from '../../types';
+import React, { useMemo, useState } from 'react';
+import { DollarSign, TrendingUp, Calendar, Download, Clock, Users } from 'lucide-react';
+import { Booking, CompensationPlan, SalaryRecord } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
 
 interface EarningsTrackerProps {
   bookings: Booking[];
+  compensationPlan: CompensationPlan | null;
 }
 
-export const EarningsTracker: React.FC<EarningsTrackerProps> = ({ bookings }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState('month');
+const formatCurrency = (amount: number, currency: string) =>
+  new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
+
+const formatMonthKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+const formatMonthLabel = (monthKey: string) => {
+  const [year, month] = monthKey.split('-').map((value) => parseInt(value, 10));
+  const date = new Date(Date.UTC(year, month - 1, 1));
+  return date.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+};
+
+const toScheduledDateISO = (monthKey: string, paymentDay: number) => {
+  const [year, month] = monthKey.split('-').map((value) => parseInt(value, 10));
+  const daysInTargetMonth = new Date(year, month, 0).getDate();
+  const day = Math.min(paymentDay, daysInTargetMonth);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.toISOString();
+};
+
+const toDisplayDate = (iso?: string) =>
+  iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+
+const getAdjustmentTotal = (record: SalaryRecord) =>
+  (record.adjustments ?? []).reduce((sum, adjustment) => {
+    return adjustment.type === 'deduction' ? sum - adjustment.amount : sum + adjustment.amount;
+  }, 0);
+
+const getNetAmount = (record: SalaryRecord) => record.amount + getAdjustmentTotal(record);
+
+const buildRevenueSeries = (monthsCount: number, bookings: Booking[]) => {
+  const now = new Date();
+  const revenueMap = new Map<string, number>();
+
+  bookings.forEach((booking) => {
+    const createdAt = new Date(booking.createdAt);
+    const key = formatMonthKey(createdAt);
+    revenueMap.set(key, (revenueMap.get(key) ?? 0) + booking.totalAmount);
+  });
+
+  return Array.from({ length: monthsCount }, (_, index) => {
+    const monthDate = new Date(Date.UTC(now.getFullYear(), now.getMonth() - (monthsCount - 1 - index), 1));
+    const key = formatMonthKey(monthDate);
+    const label = monthDate.toLocaleDateString(undefined, { month: 'short' });
+    return {
+      month: label,
+      revenue: revenueMap.get(key) ?? 0,
+    };
+  });
+};
+
+export const EarningsTracker: React.FC<EarningsTrackerProps> = ({ bookings, compensationPlan }) => {
   const toast = useToast();
+  const [selectedRange, setSelectedRange] = useState<'6m' | '12m'>('6m');
 
-  // Calculate earnings
-  const paidBookings = bookings.filter(b => b.paymentStatus === 'paid');
-  const totalEarnings = paidBookings.reduce((sum, b) => sum + b.totalAmount, 0);
-  
-  // Assuming 70% goes to Ustaadh, 30% platform fee
-  const platformFeeRate = 0.30;
-  const ustaadhEarnings = totalEarnings * (1 - platformFeeRate);
-  const platformFees = totalEarnings * platformFeeRate;
+  const paidBookings = useMemo(
+    () => bookings.filter((booking) => booking.paymentStatus === 'paid'),
+    [bookings]
+  );
 
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-  
-  const thisMonthEarnings = paidBookings
-    .filter(b => {
-      const bookingDate = new Date(b.createdAt);
-      return bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear;
-    })
-    .reduce((sum, b) => sum + b.totalAmount, 0) * (1 - platformFeeRate);
+  const revenueStats = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const lastMonthDate = new Date(Date.UTC(currentYear, currentMonth - 1, 1));
 
-  const lastMonthEarnings = paidBookings
-    .filter(b => {
-      const bookingDate = new Date(b.createdAt);
-      const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-      const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-      return bookingDate.getMonth() === lastMonth && bookingDate.getFullYear() === lastMonthYear;
-    })
-    .reduce((sum, b) => sum + b.totalAmount, 0) * (1 - platformFeeRate);
+    let totalRevenue = 0;
+    let thisMonthRevenue = 0;
+    let lastMonthRevenue = 0;
 
-  const growthRate = lastMonthEarnings > 0 
-    ? ((thisMonthEarnings - lastMonthEarnings) / lastMonthEarnings) * 100 
-    : 0;
+    paidBookings.forEach((booking) => {
+      const bookingDate = new Date(booking.createdAt);
+      const amount = booking.totalAmount;
+      totalRevenue += amount;
 
-  // Mock monthly data for chart
-  const monthlyData = [
-    { month: 'Jan', earnings: 850 },
-    { month: 'Feb', earnings: 1200 },
-    { month: 'Mar', earnings: 980 },
-    { month: 'Apr', earnings: 1450 },
-    { month: 'May', earnings: 1680 },
-    { month: 'Jun', earnings: 1920 },
-  ];
+      if (bookingDate.getFullYear() === currentYear && bookingDate.getMonth() === currentMonth) {
+        thisMonthRevenue += amount;
+      }
 
-  const pendingPayouts = bookings
-    .filter(b => b.paymentStatus === 'paid' && b.status === 'confirmed')
-    .reduce((sum, b) => sum + b.totalAmount, 0) * (1 - platformFeeRate);
+      if (
+        bookingDate.getFullYear() === lastMonthDate.getFullYear() &&
+        bookingDate.getMonth() === lastMonthDate.getMonth()
+      ) {
+        lastMonthRevenue += amount;
+      }
+    });
 
-  const totalStudents = new Set(bookings.map(b => b.studentId)).size;
-  const activeSubscriptions = bookings.filter(b => b.status === 'confirmed').length;
+    const growth = lastMonthRevenue > 0 ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
 
-  const downloadEarningsReport = () => {
-    // In a real app, this would generate and download a PDF report
-    toast.info('Downloading earnings report...');
+    return {
+      totalRevenue,
+      thisMonthRevenue,
+      lastMonthRevenue,
+      growth,
+    };
+  }, [paidBookings]);
+
+  const chartData = useMemo(
+    () => buildRevenueSeries(selectedRange === '12m' ? 12 : 6, paidBookings),
+    [selectedRange, paidBookings]
+  );
+
+  const salaryStats = useMemo(() => {
+    if (!compensationPlan) {
+      return null;
+    }
+
+    const now = new Date();
+    const currentMonthKey = formatMonthKey(now);
+    const history = [...compensationPlan.salaryHistory].sort((a, b) => a.month.localeCompare(b.month));
+    const historyMap = new Map(history.map((record) => [record.month, record]));
+
+    const ensureRecord = (monthKey: string): SalaryRecord =>
+      historyMap.get(monthKey) ?? {
+        id: `${compensationPlan.ustaadhId}-${monthKey}`,
+        month: monthKey,
+        amount: compensationPlan.monthlySalary,
+        status: 'scheduled',
+        scheduledPayoutDate: toScheduledDateISO(monthKey, compensationPlan.paymentDayOfMonth),
+        adjustments: [],
+      };
+
+    const currentRecord = ensureRecord(currentMonthKey);
+    const isCurrentTracked = historyMap.has(currentMonthKey);
+    const normalisedHistory = isCurrentTracked ? history : [...history, currentRecord];
+    normalisedHistory.sort((a, b) => b.month.localeCompare(a.month));
+
+    const ytdPaid = normalisedHistory.reduce((sum, record) => {
+      const yearMatches = record.month.startsWith(`${now.getFullYear()}-`);
+      return record.status === 'paid' && yearMatches ? sum + getNetAmount(record) : sum;
+    }, 0);
+
+    const pendingAmount = normalisedHistory.reduce((sum, record) => {
+      return record.status !== 'paid' ? sum + getNetAmount(record) : sum;
+    }, 0);
+
+    const paidHistory = normalisedHistory.filter((record) => record.status === 'paid');
+    const lastPaidRecord = paidHistory.length > 0 ? paidHistory[0] : null;
+
+    const upcomingRecord = (() => {
+      const futureRecords = [...normalisedHistory]
+        .filter((record) => record.status !== 'paid')
+        .sort((a, b) => a.scheduledPayoutDate.localeCompare(b.scheduledPayoutDate));
+      if (futureRecords.length > 0) {
+        return futureRecords[0];
+      }
+      const nextMonthKey = formatMonthKey(new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1)));
+      return ensureRecord(nextMonthKey);
+    })();
+
+    return {
+      currency: compensationPlan.currency,
+      monthlySalary: compensationPlan.monthlySalary,
+      currentRecord,
+      ytdPaid,
+      pendingAmount,
+      lastPaidRecord,
+      upcomingRecord,
+      history: normalisedHistory,
+      paymentDay: compensationPlan.paymentDayOfMonth,
+      nextReviewDate: compensationPlan.nextReviewDate,
+      effectiveFrom: compensationPlan.effectiveFrom,
+    };
+  }, [compensationPlan]);
+
+  const totalStudents = useMemo(() => new Set(bookings.map((booking) => booking.studentId)).size, [bookings]);
+  const activeSubscriptions = useMemo(
+    () => bookings.filter((booking) => booking.status === 'confirmed').length,
+    [bookings]
+  );
+
+  const downloadPayrollStatement = () => {
+    toast.info('Preparing payroll statement for download...');
   };
+
+  if (!compensationPlan || !salaryStats) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl shadow-md p-6 border border-amber-200">
+          <h2 className="text-xl font-semibold text-amber-800 mb-2">Salary plan pending configuration</h2>
+          <p className="text-sm text-amber-700">
+            Your administrator has not yet assigned a monthly salary plan. Please reach out to the admin team to have a
+            compensation package configured. The revenue overview below remains available for reference only.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-800">Revenue Overview</h3>
+          </div>
+          <p className="text-sm text-gray-600">
+            Once a salary plan is established, your payroll summary will appear here with administrator-approved
+            disbursements.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const { currency, monthlySalary, currentRecord, ytdPaid, pendingAmount, lastPaidRecord, upcomingRecord, history } =
+    salaryStats;
+
+  const currentAdjustmentsTotal = getAdjustmentTotal(currentRecord);
+  const currentNetSalary = getNetAmount(currentRecord);
+  const statusLabels: Record<SalaryRecord['status'], string> = {
+    paid: 'Paid',
+    processing: 'Processing',
+    scheduled: 'Scheduled',
+  };
+
+  const chartCurrencyFormatter = (value: number) => formatCurrency(value, currency);
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Earnings</p>
-              <p className="text-2xl font-bold text-green-600">${ustaadhEarnings.toFixed(2)}</p>
-              <p className="text-xs text-gray-500 mt-1">After platform fees</p>
+              <p className="text-sm text-gray-600 mb-1">Base Monthly Salary</p>
+              <p className="text-2xl font-bold text-green-600">{formatCurrency(monthlySalary, currency)}</p>
+              <p className="text-xs text-gray-500 mt-1">Set by system administration</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
               <DollarSign className="h-6 w-6 text-green-600" />
@@ -85,14 +239,11 @@ export const EarningsTracker: React.FC<EarningsTrackerProps> = ({ bookings }) =>
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">This Month</p>
-              <p className="text-2xl font-bold text-blue-600">${thisMonthEarnings.toFixed(2)}</p>
-              <div className="flex items-center mt-1">
-                <TrendingUp className={`h-3 w-3 mr-1 ${growthRate >= 0 ? 'text-green-500' : 'text-red-500'}`} />
-                <span className={`text-xs ${growthRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {growthRate >= 0 ? '+' : ''}{growthRate.toFixed(1)}%
-                </span>
-              </div>
+              <p className="text-sm text-gray-600 mb-1">Current Cycle Net Pay</p>
+              <p className="text-2xl font-bold text-blue-600">{formatCurrency(currentNetSalary, currency)}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Status: {statusLabels[currentRecord.status]} • Scheduled {toDisplayDate(currentRecord.scheduledPayoutDate)}
+              </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <Calendar className="h-6 w-6 text-blue-600" />
@@ -103,12 +254,14 @@ export const EarningsTracker: React.FC<EarningsTrackerProps> = ({ bookings }) =>
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Pending Payouts</p>
-              <p className="text-2xl font-bold text-yellow-600">${pendingPayouts.toFixed(2)}</p>
-              <p className="text-xs text-gray-500 mt-1">Next payout: 1st</p>
+              <p className="text-sm text-gray-600 mb-1">Year-to-Date Payroll</p>
+              <p className="text-2xl font-bold text-purple-600">{formatCurrency(ytdPaid, currency)}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Last paid {toDisplayDate(lastPaidRecord?.paidOn)}
+              </p>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <Clock className="h-6 w-6 text-yellow-600" />
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <TrendingUp className="h-6 w-6 text-purple-600" />
             </div>
           </div>
         </div>
@@ -117,51 +270,52 @@ export const EarningsTracker: React.FC<EarningsTrackerProps> = ({ bookings }) =>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Active Students</p>
-              <p className="text-2xl font-bold text-purple-600">{totalStudents}</p>
-              <p className="text-xs text-gray-500 mt-1">{activeSubscriptions} subscriptions</p>
+              <p className="text-2xl font-bold text-amber-600">{totalStudents}</p>
+              <p className="text-xs text-gray-500 mt-1">{activeSubscriptions} active subscriptions</p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Users className="h-6 w-6 text-purple-600" />
+            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+              <Users className="h-6 w-6 text-amber-600" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Earnings Chart */}
+      {/* Revenue Overview */}
       <div className="bg-white rounded-xl shadow-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-800">Earnings Overview</h3>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800">Revenue Overview</h3>
+            <p className="text-sm text-gray-500">Platform bookings revenue for reference (not directly disbursed)</p>
+          </div>
           <div className="flex space-x-2">
             <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
+              value={selectedRange}
+              onChange={(event) => setSelectedRange(event.target.value as '6m' | '12m')}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
             >
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
+              <option value="6m">Last 6 Months</option>
+              <option value="12m">Last 12 Months</option>
             </select>
             <button
-              onClick={downloadEarningsReport}
+              onClick={downloadPayrollStatement}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-sm"
             >
               <Download className="h-4 w-4" />
-              <span>Export</span>
+              <span>Download payroll statement</span>
             </button>
           </div>
         </div>
 
-        {/* Simple Bar Chart */}
         <div className="space-y-4">
-          {monthlyData.map((data, index) => (
-            <div key={index} className="flex items-center space-x-4">
-              <div className="w-12 text-sm text-gray-600">{data.month}</div>
+          {chartData.map((dataPoint, index) => (
+            <div key={`${dataPoint.month}-${index}`} className="flex items-center space-x-4">
+              <div className="w-12 text-sm text-gray-600">{dataPoint.month}</div>
               <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
-                <div 
+                <div
                   className="bg-green-600 h-6 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
-                  style={{ width: `${(data.earnings / 2000) * 100}%` }}
+                  style={{ width: `${Math.min(100, dataPoint.revenue === 0 ? 4 : (dataPoint.revenue / Math.max(...chartData.map((entry) => entry.revenue || 1), 1)) * 100)}%` }}
                 >
-                  <span className="text-white text-xs font-medium">${data.earnings}</span>
+                  <span className="text-white text-xs font-medium">{chartCurrencyFormatter(dataPoint.revenue)}</span>
                 </div>
               </div>
             </div>
@@ -169,134 +323,180 @@ export const EarningsTracker: React.FC<EarningsTrackerProps> = ({ bookings }) =>
         </div>
       </div>
 
-      {/* Earnings Breakdown */}
+      {/* Compensation & Revenue Snapshot */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Earnings Breakdown</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Compensation Breakdown</h3>
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <DollarSign className="h-4 w-4 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">Gross Revenue</p>
-                  <p className="text-sm text-gray-600">Before platform fees</p>
-                </div>
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">Base salary</span>
+                <span className="font-semibold text-gray-900">{formatCurrency(currentRecord.amount, currency)}</span>
               </div>
-              <span className="font-semibold text-green-600">${totalEarnings.toFixed(2)}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Adjustments</span>
+                <span className={`font-medium ${currentAdjustmentsTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {currentAdjustmentsTotal === 0
+                    ? '—'
+                    : `${currentAdjustmentsTotal >= 0 ? '+' : ''}${formatCurrency(Math.abs(currentAdjustmentsTotal), currency)}`}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mt-3 pt-3 border-t border-dashed border-gray-200">
+                <span className="text-sm font-medium text-gray-700">Net payout</span>
+                <span className="font-semibold text-blue-600">{formatCurrency(currentNetSalary, currency)}</span>
+              </div>
             </div>
 
-            <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                  <CreditCard className="h-4 w-4 text-red-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">Platform Fees</p>
-                  <p className="text-sm text-gray-600">{(platformFeeRate * 100)}% of gross revenue</p>
-                </div>
-              </div>
-              <span className="font-semibold text-red-600">-${platformFees.toFixed(2)}</span>
-            </div>
-
-            <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border-2 border-blue-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">Net Earnings</p>
-                  <p className="text-sm text-gray-600">Your total earnings</p>
-                </div>
-              </div>
-              <span className="font-semibold text-blue-600">${ustaadhEarnings.toFixed(2)}</span>
+            <div className="p-4 bg-gray-50 rounded-lg space-y-1 text-sm text-gray-600">
+              <p>• Effective since {toDisplayDate(salaryStats.effectiveFrom)}</p>
+              <p>• Payment scheduled every month on day {salaryStats.paymentDay}</p>
+              <p>
+                • Next review date {salaryStats.nextReviewDate ? toDisplayDate(salaryStats.nextReviewDate) : 'to be determined'}
+              </p>
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Schedule</h3>
-          <div className="space-y-4">
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium text-gray-800">Next Payout</span>
-                <span className="text-sm text-gray-600">January 1st, 2024</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Amount</span>
-                <span className="font-semibold text-green-600">${pendingPayouts.toFixed(2)}</span>
-              </div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Platform Revenue Snapshot</h3>
+          <div className="space-y-3 text-sm text-gray-700">
+            <div className="flex justify-between items-center">
+              <span>Gross revenue collected</span>
+              <span className="font-semibold text-gray-900">{formatCurrency(revenueStats.totalRevenue, currency)}</span>
             </div>
-
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-medium text-gray-800 mb-2">Payout Information</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Payouts are processed monthly on the 1st</li>
-                <li>• Minimum payout amount: $50</li>
-                <li>• Processing time: 3-5 business days</li>
-                <li>• Payment method: Bank transfer</li>
-              </ul>
+            <div className="flex justify-between items-center">
+              <span>Revenue this month</span>
+              <span className="font-semibold text-gray-900">{formatCurrency(revenueStats.thisMonthRevenue, currency)}</span>
             </div>
-
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium text-gray-800">Last Payout</span>
-                <span className="text-sm text-gray-600">December 1st, 2023</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Amount</span>
-                <span className="font-semibold text-gray-800">${lastMonthEarnings.toFixed(2)}</span>
-              </div>
+            <div className="flex justify-between items-center">
+              <span>Pending payroll obligations</span>
+              <span className="font-semibold text-blue-600">{formatCurrency(pendingAmount, currency)}</span>
             </div>
+            <div className="flex justify-between items-center">
+              <span>Month-over-month revenue change</span>
+              <span className={`font-semibold ${revenueStats.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {revenueStats.growth >= 0 ? '+' : ''}{revenueStats.growth.toFixed(1)}%
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 pt-2">
+              Revenue figures are provided for awareness. Salaries are issued independently by the admin team according to
+              approved payroll schedules.
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Recent Transactions */}
+      {/* Payment Schedule */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Schedule</h3>
+          <div className="space-y-4 text-sm text-gray-700">
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium text-gray-800">Next payout</span>
+                <span className="text-gray-600">{toDisplayDate(upcomingRecord.scheduledPayoutDate)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Amount</span>
+                <span className="font-semibold text-green-600">{formatCurrency(getNetAmount(upcomingRecord), currency)}</span>
+              </div>
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-gray-600">Status</span>
+                <span className="font-semibold text-gray-900">{statusLabels[upcomingRecord.status]}</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-medium text-gray-800 mb-2">Payroll guidelines</h4>
+              <ul className="space-y-1 text-gray-600">
+                <li>• Salaries are released by the admin team on the scheduled date once attendance is confirmed.</li>
+                <li>• Adjustments (bonuses or deductions) are reviewed and approved before disbursement.</li>
+                <li>• Reach out to finance@al-abraar.com for payroll inquiries or updates.</li>
+              </ul>
+            </div>
+
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-medium text-gray-800">Most recent payout</span>
+                <span className="text-gray-600">{toDisplayDate(lastPaidRecord?.paidOn)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Amount</span>
+                <span className="font-semibold text-gray-900">
+                  {lastPaidRecord ? formatCurrency(getNetAmount(lastPaidRecord), currency) : '—'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Adjustment log (current cycle)</h3>
+          {currentRecord.adjustments && currentRecord.adjustments.length > 0 ? (
+            <ul className="space-y-3 text-sm text-gray-700">
+              {currentRecord.adjustments.map((adjustment) => (
+                <li key={adjustment.id} className="p-4 border border-gray-200 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-gray-800">{adjustment.label}</span>
+                    <span
+                      className={`font-semibold ${adjustment.type === 'bonus' ? 'text-green-600' : 'text-red-600'}`}
+                    >
+                      {adjustment.type === 'bonus' ? '+' : '-'}
+                      {formatCurrency(adjustment.amount, currency)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Recorded {toDisplayDate(adjustment.createdAt)}</p>
+                  {adjustment.note && <p className="text-xs text-gray-600 mt-2">{adjustment.note}</p>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="p-4 border border-dashed border-gray-300 rounded-lg text-sm text-gray-500">
+              No bonuses or deductions have been recorded for this cycle.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Salary History */}
       <div className="bg-white rounded-xl shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Transactions</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Salary history</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Student
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Package
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Gross Amount
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Your Earnings
-                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base salary</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adjustments</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Net amount</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid / scheduled</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paidBookings.slice(0, 5).map((booking) => (
-                <tr key={booking.id}>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(booking.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                    Student #{booking.studentId}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {booking.packageType === 'basic' ? 'Qur\'an & Tajweed' : 'Complete Package'}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${booking.totalAmount}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                    ${(booking.totalAmount * (1 - platformFeeRate)).toFixed(2)}
-                  </td>
-                </tr>
-              ))}
+              {history.map((record) => {
+                const adjustmentTotal = getAdjustmentTotal(record);
+                return (
+                  <tr key={record.id}>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatMonthLabel(record.month)}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{statusLabels[record.status]}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatCurrency(record.amount, currency)}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                      {adjustmentTotal === 0
+                        ? '—'
+                        : `${adjustmentTotal > 0 ? '+' : '-'}${formatCurrency(Math.abs(adjustmentTotal), currency)}`}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold">
+                      {formatCurrency(getNetAmount(record), currency)}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {toDisplayDate(record.status === 'paid' ? record.paidOn : record.scheduledPayoutDate)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
