@@ -12,7 +12,13 @@ import {
   MessageCircle,
   CalendarRange,
   CreditCard,
-  Search
+  Search,
+  Play,
+  ArrowRight,
+  Award,
+  Heart,
+  Zap,
+  Target
 } from 'lucide-react';
 import { useI18n } from '../../contexts/LanguageContext';
 import { UstaadhCard } from '../../components/student/UstaadhCard';
@@ -92,326 +98,683 @@ export const LandingPage: React.FC = () => {
   const handleMessage = () => navigate('/login');
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-14 lg:py-24 px-4">
-        {/* Decorative background */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-32 -right-24 h-72 w-72 rounded-full bg-gradient-to-tr from-green-400/20 to-orange-400/20 blur-3xl" />
-          <div className="absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-gradient-to-tr from-green-600/10 to-green-400/10 blur-3xl" />
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px bg-gradient-to-r from-transparent via-green-200/60 to-transparent" />
+    <div className="min-h-screen overflow-hidden">
+      {/* Hero Section - Redesigned */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-white to-amber-50">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-amber-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
         </div>
 
-        <div className="relative max-w-6xl mx-auto text-center">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 ring-1 ring-orange-200">
-            <Shield className="h-4 w-4" /> {t('feature_secure_title')}
-          </span>
+        {/* Floating Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2">
+            <div className="w-16 h-16 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center animate-float">
+              <BookOpen className="h-8 w-8 text-green-600" />
+            </div>
+          </div>
+          <div className="absolute top-1/3 right-1/4 transform translate-x-1/2 -translate-y-1/2">
+            <div className="w-12 h-12 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg flex items-center justify-center animate-float animation-delay-1000">
+              <Star className="h-6 w-6 text-amber-500" />
+            </div>
+          </div>
+          <div className="absolute bottom-1/3 left-1/3 transform -translate-x-1/2 translate-y-1/2">
+            <div className="w-14 h-14 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg flex items-center justify-center animate-float animation-delay-2000">
+              <Users className="h-7 w-7 text-blue-600" />
+            </div>
+          </div>
+        </div>
 
-          <h1 className="mt-5 text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900">
-            {t('hero_title_main')}{' '}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-700">
-              {t('hero_title_highlight')}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {/* Trust Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border border-green-100 mb-8 animate-fade-in">
+            <Shield className="h-4 w-4 text-green-600" />
+            <span className="text-sm font-medium text-gray-700">Trusted by 10,000+ students worldwide</span>
+            <div className="flex -space-x-1">
+              <div className="w-6 h-6 rounded-full bg-green-500 border-2 border-white"></div>
+              <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-white"></div>
+              <div className="w-6 h-6 rounded-full bg-amber-500 border-2 border-white"></div>
+            </div>
+          </div>
+
+          {/* Main Headline */}
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 animate-fade-in-up">
+            <span className="block">Master the</span>
+            <span className="block bg-gradient-to-r from-green-600 via-green-700 to-amber-600 bg-clip-text text-transparent">
+              Qur'an & Arabic
             </span>
+            <span className="block text-4xl sm:text-5xl lg:text-6xl mt-2">with Expert Teachers</span>
           </h1>
 
-          <p className="mt-5 text-lg md:text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto">
-            {t('hero_description')}
+          <p className="text-xl sm:text-2xl text-gray-600 max-w-4xl mx-auto mb-10 leading-relaxed animate-fade-in-up animation-delay-200">
+            Connect with verified Islamic scholars for personalized one-on-one lessons. 
+            <span className="text-green-700 font-semibold"> Learn at your own pace, anywhere in the world.</span>
           </p>
 
-          <div className="mt-8 flex items-center justify-center gap-3">
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-in-up animation-delay-400">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-base sm:text-lg font-semibold py-3 sm:py-3.5 px-6 sm:px-7 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
             >
-              {t('hero_cta')}
+              <span className="relative z-10 flex items-center gap-2">
+                Start Learning Today
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-green-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
-            <Link
-              to="/login"
-              className="inline-flex items-center justify-center gap-2 bg-white text-green-700 ring-1 ring-green-200 hover:ring-green-300 hover:bg-green-50 text-base sm:text-lg font-semibold py-3 sm:py-3.5 px-6 sm:px-7 rounded-xl transition-all duration-300"
+            
+            <button className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-700 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl border border-gray-200 hover:border-green-300 transition-all duration-300">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3 group-hover:bg-green-200 transition-colors">
+                <Play className="h-6 w-6 text-green-600 ml-1" />
+              </div>
+              Watch Demo
+            </button>
+          </div>
+
+          {/* Live Stats */}
+          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto animate-fade-in-up animation-delay-600">
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">10K+</div>
+              <div className="text-sm text-gray-600">Active Students</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">300+</div>
+              <div className="text-sm text-gray-600">Expert Teachers</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">40+</div>
+              <div className="text-sm text-gray-600">Countries</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-pulse"></div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Redesigned */}
+      <section className="py-20 lg:py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-green-50/30 to-white"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Why Choose <span className="text-green-600">Al-Abraar?</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Experience the future of Islamic education with our innovative platform designed for modern learners
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+            {/* Feature 1 */}
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-700 rounded-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+              <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Shield className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Verified Excellence</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Every teacher undergoes rigorous verification. Learn from certified scholars with proven expertise in Islamic studies and pedagogy.
+                </p>
+                <div className="flex items-center text-green-600 font-medium group-hover:text-green-700 transition-colors">
+                  <span>Learn more</span>
+                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+              <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Clock className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Flexible Learning</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Schedule lessons that fit your lifestyle. Our smart booking system adapts to your timezone and preferences seamlessly.
+                </p>
+                <div className="flex items-center text-blue-600 font-medium group-hover:text-blue-700 transition-colors">
+                  <span>Explore scheduling</span>
+                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-amber-700 rounded-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+              <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Globe className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Global Community</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Join a worldwide community of learners. Connect with teachers and students from over 40 countries around the globe.
+                </p>
+                <div className="flex items-center text-amber-600 font-medium group-hover:text-amber-700 transition-colors">
+                  <span>Join community</span>
+                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Course Packages - Redesigned */}
+      <section className="py-20 lg:py-32 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Choose Your <span className="text-green-600">Learning Path</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Flexible packages designed to meet your Islamic education goals, from beginner to advanced levels
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Basic Package */}
+            <div className="group relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-700 rounded-3xl opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
+              <div className="relative bg-white rounded-3xl p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                      <BookOpen className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Qur'an & Tajweed</h3>
+                      <p className="text-green-600 font-medium">Foundation Package</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-4xl font-bold text-green-600">$5</div>
+                    <div className="text-gray-500 text-sm">per hour</div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">Qur'an recitation with proper pronunciation</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">Tajweed rules and application</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">Personalized feedback and correction</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">Progress tracking and assessments</span>
+                  </div>
+                </div>
+
+                <button className="w-full bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                  Start with Foundation
+                </button>
+              </div>
+            </div>
+
+            {/* Complete Package */}
+            <div className="group relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-amber-600 via-green-600 to-amber-600 rounded-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+              <div className="relative bg-white rounded-3xl p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1">
+                <div className="absolute top-4 right-4">
+                  <span className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                    MOST POPULAR
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
+                      <GraduationCap className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Complete Islamic Studies</h3>
+                      <p className="text-amber-600 font-medium">Comprehensive Package</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-4xl font-bold text-amber-600">$7</div>
+                    <div className="text-gray-500 text-sm">per hour</div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                    <span className="text-gray-700">Everything in Foundation Package</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                    <span className="text-gray-700">Hadeeth studies and interpretation</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                    <span className="text-gray-700">Arabic language mastery</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                    <span className="text-gray-700">Islamic history and culture</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                    <span className="text-gray-700">Priority support and materials</span>
+                  </div>
+                </div>
+
+                <button className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                  Choose Complete Package
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works - Redesigned */}
+      <section className="py-20 lg:py-32 bg-white relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Your Learning Journey in <span className="text-green-600">3 Simple Steps</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              From browsing teachers to mastering Islamic knowledge - we've made it beautifully simple
+            </p>
+          </div>
+
+          <div className="relative">
+            {/* Connection Lines */}
+            <div className="hidden lg:block absolute top-1/2 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-green-200 via-blue-200 to-amber-200 transform -translate-y-1/2"></div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-8">
+              {/* Step 1 */}
+              <div className="relative text-center group">
+                <div className="relative inline-block mb-8">
+                  <div className="w-24 h-24 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-xl group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
+                    <Search className="h-12 w-12 text-white" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-sm font-bold text-green-600">1</span>
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Discover Your Teacher</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Browse our curated selection of verified Islamic scholars. Filter by expertise, language, location, and teaching style to find your perfect match.
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="relative text-center group">
+                <div className="relative inline-block mb-8">
+                  <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-xl group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
+                    <CalendarRange className="h-12 w-12 text-white" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-sm font-bold text-blue-600">2</span>
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Book Your Schedule</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Choose your preferred times and frequency. Our intelligent system prevents conflicts and sends automatic reminders for all your sessions.
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="relative text-center group">
+                <div className="relative inline-block mb-8">
+                  <div className="w-24 h-24 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full flex items-center justify-center shadow-xl group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
+                    <GraduationCap className="h-12 w-12 text-white" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-sm font-bold text-amber-600">3</span>
+                  </div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Learn & Excel</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Engage in personalized one-on-one sessions with clear goals, interactive materials, and continuous progress tracking.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Teachers */}
+      <section className="py-20 lg:py-32 bg-gradient-to-b from-green-50/50 to-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Meet Our <span className="text-green-600">Expert Teachers</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+              Learn from the best Islamic scholars and educators from around the world
+            </p>
+
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto">
+              <div className="relative group">
+                <Search className="h-6 w-6 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-green-500 transition-colors" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search by name, specialty, or country..."
+                  className="w-full pl-12 pr-6 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filtered.map((ustaadh) => (
+              <div key={ustaadh.id} className="transform hover:scale-105 transition-transform duration-300">
+                <UstaadhCard
+                  ustaadh={ustaadh}
+                  onBook={handleBook}
+                  onMessage={handleMessage}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link 
+              to="/student/browse" 
+              className="inline-flex items-center px-8 py-4 bg-white text-green-700 rounded-2xl shadow-lg hover:shadow-xl border-2 border-green-200 hover:border-green-300 font-semibold transition-all duration-300 transform hover:scale-105"
             >
-              <BookOpen className="h-5 w-5" /> Learn More
+              <span>Browse All Teachers</span>
+              <ArrowRight className="h-5 w-5 ml-2" />
             </Link>
           </div>
+        </div>
+      </section>
 
-          {/* Stats strip */}
-          <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-xl bg-white/60 backdrop-blur border border-green-100 p-5">
-              <div className="flex items-center justify-center gap-2 text-gray-700">
-                <Users className="h-5 w-5 text-green-600" />
-                <span className="text-sm">{t('stats_students_label')}</span>
+      {/* Testimonials - Redesigned */}
+      <section className="py-20 lg:py-32 bg-gradient-to-r from-green-600 to-green-700 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
+          <div className="absolute bottom-10 right-10 w-40 h-40 border border-white/20 rounded-full"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 border border-white/10 rounded-full"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+              Loved by Students <span className="text-green-200">Worldwide</span>
+            </h2>
+            <p className="text-xl text-green-100 max-w-3xl mx-auto">
+              Join thousands of satisfied learners who have transformed their Islamic knowledge with Al-Abraar
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Testimonial 1 */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+              <div className="flex items-center gap-1 text-amber-400 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 fill-current" />
+                ))}
               </div>
-              <p className="mt-2 text-2xl font-bold text-gray-900">10,000+</p>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                "My Tajweed improved drastically within weeks. The personalized attention and expert guidance made all the difference in my Qur'an recitation."
+              </p>
+              <div className="flex items-center space-x-3">
+                <img 
+                  src="https://images.pexels.com/photos/3763152/pexels-photo-3763152.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop" 
+                  alt="Sarah A." 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">Sarah A.</div>
+                  <div className="text-sm text-gray-600">Student from Canada</div>
+                </div>
+              </div>
             </div>
-            <div className="rounded-xl bg-white/60 backdrop-blur border border-green-100 p-5">
-              <div className="flex items-center justify-center gap-2 text-gray-700">
-                <GraduationCap className="h-5 w-5 text-green-600" />
-                <span className="text-sm">{t('stats_ustaadhs_label')}</span>
+
+            {/* Testimonial 2 */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+              <div className="flex items-center gap-1 text-amber-400 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 fill-current" />
+                ))}
               </div>
-              <p className="mt-2 text-2xl font-bold text-gray-900">300+</p>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                "The flexibility to learn at my own pace while having access to world-class teachers has been incredible. Highly recommend Al-Abraar!"
+              </p>
+              <div className="flex items-center space-x-3">
+                <img 
+                  src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop" 
+                  alt="Omar R." 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">Omar R.</div>
+                  <div className="text-sm text-gray-600">Student from UAE</div>
+                </div>
+              </div>
             </div>
-            <div className="rounded-xl bg-white/60 backdrop-blur border border-green-100 p-5">
-              <div className="flex items-center justify-center gap-2 text-gray-700">
-                <Globe className="h-5 w-5 text-green-600" />
-                <span className="text-sm">{t('stats_countries_label')}</span>
+
+            {/* Testimonial 3 */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 md:col-span-2 lg:col-span-1">
+              <div className="flex items-center gap-1 text-amber-400 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 fill-current" />
+                ))}
               </div>
-              <p className="mt-2 text-2xl font-bold text-gray-900">40+</p>
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                "As a busy professional, the scheduling flexibility and quality of teaching at Al-Abraar has allowed me to continue my Islamic education seamlessly."
+              </p>
+              <div className="flex items-center space-x-3">
+                <img 
+                  src="https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop" 
+                  alt="Aisha M." 
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <div className="font-semibold text-gray-900">Aisha M.</div>
+                  <div className="text-sm text-gray-600">Student from Malaysia</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why + Packages */}
-      <section className="py-12 lg:py-16 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-8 lg:mb-12">
-            {t('why_choose_heading')}
+      {/* Trust & Security */}
+      <section className="py-20 lg:py-32 bg-gray-50 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Built on <span className="text-green-600">Trust & Excellence</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Your security and learning experience are our top priorities
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition-colors duration-300">
+                <Shield className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Secure Payments</h3>
+              <p className="text-gray-600 text-sm">Bank-level encryption with Stripe</p>
+            </div>
+
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors duration-300">
+                <Award className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Certified Teachers</h3>
+              <p className="text-gray-600 text-sm">Verified credentials and experience</p>
+            </div>
+
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-amber-200 transition-colors duration-300">
+                <Heart className="h-8 w-8 text-amber-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">24/7 Support</h3>
+              <p className="text-gray-600 text-sm">Always here to help you succeed</p>
+            </div>
+
+            <div className="text-center group">
+              <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition-colors duration-300">
+                <Target className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Progress Tracking</h3>
+              <p className="text-gray-600 text-sm">Monitor your learning journey</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA - Redesigned */}
+      <section className="py-20 lg:py-32 bg-gradient-to-br from-gray-900 via-green-900 to-gray-900 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-green-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+        </div>
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-300 text-sm font-medium mb-8">
+            <Zap className="h-4 w-4" />
+            <span>Join 10,000+ students already learning</span>
+          </div>
+
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+            Ready to Begin Your
+            <span className="block bg-gradient-to-r from-green-400 to-amber-400 bg-clip-text text-transparent">
+              Islamic Learning Journey?
+            </span>
           </h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('why_choose_verified_title')}</h3>
-                  <p className="text-gray-600">{t('why_choose_verified_description')}</p>
-                </div>
-              </div>
+          <p className="text-xl text-gray-300 max-w-4xl mx-auto mb-12 leading-relaxed">
+            Start today with a free consultation and discover how our personalized approach can transform your understanding of Islamic knowledge.
+          </p>
 
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Star className="h-6 w-6 text-orange-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('why_choose_rating_title')}</h3>
-                  <p className="text-gray-600">{t('why_choose_rating_description')}</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Globe className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{t('why_choose_global_title')}</h3>
-                  <p className="text-gray-600">{t('why_choose_global_description')}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-50 to-orange-50 p-6 lg:p-8 rounded-2xl">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">{t('packages_heading')}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-green-100">
-                  <h4 className="font-semibold text-green-700 mb-1">{t('packages_quran_title')}</h4>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {t('packages_quran_price')}
-                    <span className="text-sm text-gray-600 ltr:ml-2 rtl:mr-2">{t('packages_price_suffix')}</span>
-                  </p>
-                  <p className="text-gray-600 text-sm mt-1">{t('packages_quran_description')}</p>
-                </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-orange-100">
-                  <h4 className="font-semibold text-orange-700 mb-1">{t('packages_complete_title')}</h4>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {t('packages_complete_price')}
-                    <span className="text-sm text-gray-600 ltr:ml-2 rtl:mr-2">{t('packages_price_suffix')}</span>
-                  </p>
-                  <p className="text-gray-600 text-sm mt-1">{t('packages_complete_description')}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust strip */}
-      <section className="py-10 px-4 bg-gradient-to-r from-green-600 to-green-700">
-        <div className="max-w-6xl mx-auto text-center text-white">
-          <h3 className="text-2xl font-bold">{t('trust_heading')}</h3>
-          <p className="mt-1 text-green-100">{t('trust_subheading')}</p>
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="flex items-center justify-center gap-2 bg-white/10 rounded-lg px-3 py-2">
-              <Shield className="h-5 w-5" /> SSL
-            </div>
-            <div className="flex items-center justify-center gap-2 bg-white/10 rounded-lg px-3 py-2">
-              <CreditCard className="h-5 w-5" /> Stripe
-            </div>
-            <div className="flex items-center justify-center gap-2 bg-white/10 rounded-lg px-3 py-2">
-              <CheckCircle className="h-5 w-5" /> KYC
-            </div>
-            <div className="flex items-center justify-center gap-2 bg-white/10 rounded-lg px-3 py-2">
-              <MessageCircle className="h-5 w-5" /> Support
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Find Ustaadh */}
-      <section className="py-12 lg:py-16 px-4 bg-gradient-to-b from-green-50 to-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl lg:text-4xl font-bold text-center text-gray-800">{t('search_heading')}</h2>
-          <div className="mt-6 bg-white rounded-xl shadow-md p-4 lg:p-6">
-            <div className="relative max-w-2xl mx-auto">
-              <Search className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t('search_placeholder')}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-              {filtered.map((u) => (
-                <UstaadhCard key={u.id} ustaadh={u} onBook={handleBook} onMessage={handleMessage} />
-              ))}
-            </div>
-
-            <div className="mt-6 text-center">
-              <Link to="/student/browse" className="inline-flex items-center px-4 py-2 rounded-lg text-green-700 ring-1 ring-green-200 hover:bg-green-50 font-medium">
-                {t('browse_all_ustaadhs')}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="py-12 lg:py-16 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-10">
-            {t('how_heading')}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white border border-green-100 rounded-2xl p-6 hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mb-3">
-                <Search className="hidden" />
-                <Users className="h-6 w-6 text-green-600" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-800">{t('how_step1_title')}</h4>
-              <p className="text-gray-600 mt-1">{t('how_step1_description')}</p>
-            </div>
-            <div className="bg-white border border-orange-100 rounded-2xl p-6 hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center mb-3">
-                <CalendarRange className="h-6 w-6 text-orange-600" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-800">{t('how_step2_title')}</h4>
-              <p className="text-gray-600 mt-1">{t('how_step2_description')}</p>
-            </div>
-            <div className="bg-white border border-green-100 rounded-2xl p-6 hover:shadow-lg transition-shadow">
-              <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mb-3">
-                <BookOpen className="h-6 w-6 text-green-600" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-800">{t('how_step3_title')}</h4>
-              <p className="text-gray-600 mt-1">{t('how_step3_description')}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-12 lg:py-16 px-4 bg-gradient-to-b from-white to-green-50">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl lg:text-4xl font-bold text-center text-gray-800 mb-10">
-            {t('testimonials_heading')}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-2xl border border-green-100 shadow-sm">
-              <div className="flex items-center gap-2 text-yellow-500">
-                <Star className="h-5 w-5 fill-current" />
-                <Star className="h-5 w-5 fill-current" />
-                <Star className="h-5 w-5 fill-current" />
-                <Star className="h-5 w-5 fill-current" />
-                <Star className="h-5 w-5 fill-current" />
-              </div>
-              <p className="mt-3 text-gray-700">“{t('testimonial_1_quote')}”</p>
-              <div className="mt-4 text-sm text-gray-500">
-                {t('testimonial_1_name')} • {t('testimonial_1_country')}
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-2xl border border-orange-100 shadow-sm">
-              <div className="flex items-center gap-2 text-yellow-500">
-                <Star className="h-5 w-5 fill-current" />
-                <Star className="h-5 w-5 fill-current" />
-                <Star className="h-5 w-5 fill-current" />
-                <Star className="h-5 w-5 fill-current" />
-                <Star className="h-5 w-5 fill-current" />
-              </div>
-              <p className="mt-3 text-gray-700">“{t('testimonial_2_quote')}”</p>
-              <div className="mt-4 text-sm text-gray-500">
-                {t('testimonial_2_name')} • {t('testimonial_2_country')}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Final Call to Action */}
-      <section className="py-12 lg:py-16 px-4 bg-gradient-to-r from-green-600 to-green-700">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">{t('cta_heading')}</h2>
-          <p className="text-base sm:text-lg lg:text-xl text-green-100 mb-8">{t('cta_subheading')}</p>
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center bg-white text-green-700 hover:text-green-800 hover:bg-green-50 text-base sm:text-lg font-semibold py-3 sm:py-3.5 px-6 sm:px-7 rounded-xl transition-all duration-300 shadow-lg"
+              className="group relative inline-flex items-center justify-center px-10 py-5 text-xl font-bold text-gray-900 bg-gradient-to-r from-green-400 to-amber-400 rounded-2xl shadow-2xl hover:shadow-green-500/25 transition-all duration-300 transform hover:scale-105 overflow-hidden"
             >
-              {t('cta_primary')}
+              <span className="relative z-10 flex items-center gap-3">
+                Get Started Free
+                <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
+
             <Link
               to="/login"
-              className="inline-flex items-center justify-center gap-2 bg-white/10 text-white ring-1 ring-white/30 hover:bg-white/15 text-base sm:text-lg font-semibold py-3 sm:py-3.5 px-6 sm:px-7 rounded-xl transition-all duration-300"
+              className="inline-flex items-center justify-center px-10 py-5 text-xl font-semibold text-white bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:scale-105"
             >
-              <Clock className="h-5 w-5" /> Book a lesson
+              <MessageCircle className="h-6 w-6 mr-3" />
+              Book a Consultation
             </Link>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-60">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white mb-1">4.9★</div>
+              <div className="text-sm text-gray-400">Average Rating</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white mb-1">50K+</div>
+              <div className="text-sm text-gray-400">Lessons Completed</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white mb-1">98%</div>
+              <div className="text-sm text-gray-400">Success Rate</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white mb-1">24/7</div>
+              <div className="text-sm text-gray-400">Support Available</div>
+            </div>
           </div>
         </div>
       </section>
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-green-700 rounded-lg flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-white" />
+
+      {/* Footer - Enhanced */}
+      <footer className="bg-gray-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-green-900/20 to-amber-900/20"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            {/* Brand */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                  <BookOpen className="h-7 w-7 text-white" />
+                </div>
+                <span className="text-2xl font-bold">Al-Abraar</span>
               </div>
-              <span className="text-lg font-bold text-gray-800">Al-Abraar</span>
+              <p className="text-gray-300 leading-relaxed max-w-md mb-6">
+                Empowering Muslims worldwide with authentic Islamic education through verified teachers and modern technology.
+              </p>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-green-400">
+                  <CheckCircle className="h-5 w-5" />
+                  <span className="text-sm">Verified Teachers</span>
+                </div>
+                <div className="flex items-center space-x-2 text-green-400">
+                  <Shield className="h-5 w-5" />
+                  <span className="text-sm">Secure Platform</span>
+                </div>
+              </div>
             </div>
-            <p className="text-sm text-gray-600">{t('hero_description')}</p>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
+              <ul className="space-y-3">
+                <li><Link to="/student/browse" className="text-gray-300 hover:text-green-400 transition-colors">Browse Teachers</Link></li>
+                <li><Link to="/register" className="text-gray-300 hover:text-green-400 transition-colors">Sign Up</Link></li>
+                <li><Link to="/login" className="text-gray-300 hover:text-green-400 transition-colors">Sign In</Link></li>
+                <li><a href="#" className="text-gray-300 hover:text-green-400 transition-colors">How it Works</a></li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h4 className="text-lg font-semibold mb-6">Get in Touch</h4>
+              <ul className="space-y-3">
+                <li className="text-gray-300">support@al-abraar.com</li>
+                <li className="text-gray-300">+1 (555) 123-4567</li>
+                <li className="text-gray-300">Available 24/7</li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">{t('footer_quick_links')}</h4>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li><Link to="/" className="hover:text-green-700">Home</Link></li>
-              <li><Link to="/student/browse" className="hover:text-green-700">Browse Ustaadhs</Link></li>
-              <li><Link to="/login" className="hover:text-green-700">Sign In</Link></li>
-              <li><Link to="/register" className="hover:text-green-700">Register</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">{t('footer_about_heading')}</h4>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>Verified teachers</li>
-              <li>Secure payments</li>
-              <li>Flexible scheduling</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">{t('footer_contact_heading')}</h4>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>support@al-abraar.com</li>
-              <li>+1 (555) 123-4567</li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-gray-200">
-          <div className="max-w-6xl mx-auto px-4 py-4 text-sm text-gray-500 flex items-center justify-between">
-            <span>© {new Date().getFullYear()} Al-Abraar. {t('footer_rights')}</span>
-            <div className="hidden sm:flex items-center gap-4">
-              <Link to="/terms" className="hover:text-gray-700">Terms</Link>
-              <Link to="/privacy" className="hover:text-gray-700">Privacy</Link>
+
+          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between">
+            <div className="text-gray-400 text-sm mb-4 md:mb-0">
+              © {new Date().getFullYear()} Al-Abraar. All rights reserved.
+            </div>
+            <div className="flex items-center space-x-6 text-sm">
+              <Link to="/terms" className="text-gray-400 hover:text-green-400 transition-colors">Terms of Service</Link>
+              <Link to="/privacy" className="text-gray-400 hover:text-green-400 transition-colors">Privacy Policy</Link>
+              <Link to="/cookies" className="text-gray-400 hover:text-green-400 transition-colors">Cookie Policy</Link>
             </div>
           </div>
         </div>
