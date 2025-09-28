@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useI18n } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { NotificationCenter, type Notification } from '../notifications/NotificationCenter';
-import { 
-  BookOpen, 
-  LogOut, 
-  Bell, 
-  User, 
-  Settings, 
-  Menu, 
+import {
+  BookOpen,
+  LogOut,
+  Bell,
+  User,
+  Settings,
+  Menu,
   X,
   Home,
   Users,
@@ -19,7 +19,8 @@ import {
   Search,
   TrendingUp,
   CheckCircle,
-  DollarSign
+  DollarSign,
+  ClipboardList
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
