@@ -12,6 +12,9 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 
 // Public Pages
 import { LandingPage } from './pages/public/LandingPage';
+import { TermsPage } from './pages/public/TermsPage';
+import { PrivacyPage } from './pages/public/PrivacyPage';
+import { CookiePage } from './pages/public/CookiePage';
 
 // Admin Pages
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
@@ -87,9 +90,14 @@ function AppRoutes() {
         <PublicLayout><LoginPage /></PublicLayout>
       } />
       <Route path="/register" element={
-        user ? <Navigate to={`/${user.role}`} replace /> : 
+        user ? <Navigate to={`/${user.role}`} replace /> :
         <PublicLayout><RegisterPage /></PublicLayout>
       } />
+
+      {/* Legal */}
+      <Route path="/terms" element={<PublicLayout><TermsPage /></PublicLayout>} />
+      <Route path="/privacy" element={<PublicLayout><PrivacyPage /></PublicLayout>} />
+      <Route path="/cookies" element={<PublicLayout><CookiePage /></PublicLayout>} />
 
       {/* Admin Routes */}
       <Route path="/admin" element={
