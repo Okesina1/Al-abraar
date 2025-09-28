@@ -19,10 +19,10 @@ const strings = {
   hero_cta: { en: 'Start Your Journey', ar: 'ابدأ رحلتك' },
 
   // Features
-  feature_quality_title: { en: 'Quality Education', ar: 'تعليم ذو ��ودة' },
+  feature_quality_title: { en: 'Quality Education', ar: 'تعليم ذو جودة' },
   feature_quality_description: {
     en: 'Learn from certified Ustaadhs with proven expertise in Islamic studies',
-    ar: 'تعلم من معلمين معتمدين يتمتعون بخبرة مثبتة في العلوم الإسلامية',
+    ar: 'تعلم من معلمين معتمدين يت��تعون بخبرة مثبتة في العلوم الإسلامية',
   },
   feature_flexible_title: { en: 'Flexible Scheduling', ar: 'جدولة مرنة' },
   feature_flexible_description: {
@@ -96,7 +96,7 @@ const strings = {
   stats_ustaadhs_label: { en: 'Ustaadhs', ar: 'معلمون' },
   stats_countries_label: { en: 'Countries', ar: 'دول' },
 
-  trust_heading: { en: 'Trusted by learners worldwide', ar: 'موثوق ��ن المتعلمين حول العالم' },
+  trust_heading: { en: 'Trusted by learners worldwide', ar: 'موثوق من المتعلمين حول العالم' },
   trust_subheading: { en: 'Secure payments, verified teachers, and 24/7 support', ar: 'مدفوعات آمنة، معلمون موثوقون، ودعم على مدار الساعة' },
 
   how_heading: { en: 'How it works', ar: 'كيف تعمل المنصة' },
@@ -130,7 +130,7 @@ const strings = {
   hero_trust_badge: { en: 'Trusted by 10,000+ students worldwide', ar: 'موثوق من قِبل أكثر من 10,000 طالب حول العالم' },
   hero_title_prefix: { en: 'Learn the', ar: 'تعلّم' },
   hero_title_highlight_v2: { en: "Qur'an & Arabic", ar: 'القرآن واللغة العربية' },
-  hero_title_suffix: { en: 'with Expert Teachers', ar: 'مع معلمين خ��راء' },
+  hero_title_suffix: { en: 'with Expert Teachers', ar: 'مع معلمين خبراء' },
   hero_description_v2: {
     en: 'One-to-one lessons with verified scholars. Flexible schedules, clear progress, and tailored materials.',
     ar: 'دروس فردية مع علماء موثوقين. جداول مرنة، تقدم واضح، ومواد تعليمية مخصصة.',
@@ -149,7 +149,7 @@ const strings = {
   feature_verified_excellence_title: { en: 'Verified Excellence', ar: 'تميّز موثّق' },
   feature_verified_excellence_description: {
     en: 'Every teacher undergoes rigorous verification. Learn from certified scholars with proven expertise in Islamic studies and pedagogy.',
-    ar: 'يخضع كل مع��م لعملية تحقق صارمة. تعلّم مع علماء معتمدين ذوي خبرة مثبتة في العلوم الإسلامية وطرق التدريس.',
+    ar: 'يخضع كل معلم لعملية تحقق صارمة. تعلّم مع علماء معتمدين ذوي خبرة مثبتة في العلوم الإسلامية وطرق التدريس.',
   },
   feature_flexible_learning_title: { en: 'Flexible Learning', ar: 'تعلّم مرن' },
   feature_flexible_learning_description: {
@@ -163,7 +163,7 @@ const strings = {
   },
   feature_learn_more: { en: 'Learn more', ar: 'اعرف المزيد' },
   feature_explore_scheduling: { en: 'Explore scheduling', ar: 'استكشف الجدولة' },
-  feature_join_community: { en: 'Join community', ar: 'انضم إلى المجتمع' },
+  feature_join_community: { en: 'Join community', ar: 'انضم إلى المجت��ع' },
 
   /* Landing v2 - Packages */
   packages_heading_v2: { en: 'Choose Your Learning Path', ar: 'اختر مسارك التعليمي' },
@@ -207,7 +207,7 @@ const strings = {
 
   /* Landing v2 - Trust */
   trust_heading_v2: { en: 'Built on Trust & Excellence', ar: 'مبني على الثقة والتميّز' },
-  trust_subheading_v2: { en: 'Your security and learning experience are our top priorities', ar: 'أمانك وتجربتك التعليمية هما أولويتنا القصوى' },
+  trust_subheading_v2: { en: 'Your security and learning experience are our top priorities', ar: 'أمانك وتجربتك التعليمية هما أولويتنا ��لقصوى' },
   trust_secure_payments: { en: 'Secure Payments', ar: 'مدفوعات آمنة' },
   trust_secure_payments_desc: { en: 'Bank-level encryption with Stripe', ar: 'تشفير بمستوى البنوك عبر سترايب' },
   trust_certified_teachers: { en: 'Certified Teachers', ar: 'معلمون معتمدون' },
@@ -219,9 +219,11 @@ const strings = {
 
   /* Landing v2 - Final CTA */
   cta_badge_text: { en: 'Join 10,000+ students already learning', ar: 'انضم إلى أكثر من 10,000 طالب يتعلمون بالفعل' },
-  cta_paragraph_v2: { en: 'Start today with a free consultation and discover how our personalized approach can transform your understanding of Islamic knowledge.', ar: 'ابدأ اليوم باستشارة مجانية واكتشف كيف يمكن لنهجنا المخصص أن يغيّر فهمك للعل��م الإسلامية.' },
+  cta_paragraph_v2: { en: 'Start today with a free consultation and discover how our personalized approach can transform your understanding of Islamic knowledge.', ar: 'ابدأ اليوم باستشارة مجانية واكتشف كيف يمكن لنهجنا المخصص أن يغيّر ��همك للعلوم الإسلامية.' },
   cta_get_started_free: { en: 'Get Started Free', ar: 'ابدأ مجانًا' },
   cta_book_consultation: { en: 'Book a Consultation', ar: 'احجز استشارة' },
+  cta_heading_prefix: { en: 'Ready to Begin Your', ar: 'هل أنت مستعد لبدء' },
+  cta_heading_suffix: { en: 'Islamic Learning Journey?', ar: 'رحلتك التعليمية الإسلامية؟' },
   avg_rating: { en: 'Average Rating', ar: 'متوسط التقييم' },
   lessons_completed: { en: 'Lessons Completed', ar: 'دروس مكتملة' },
   success_rate: { en: 'Success Rate', ar: 'معدل النجاح' },
