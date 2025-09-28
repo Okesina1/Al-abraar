@@ -744,53 +744,53 @@ export const LandingPage: React.FC = () => {
                 <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center">
                   <BookOpen className="h-7 w-7 text-white" />
                 </div>
-                <span className="text-2xl font-bold">Al-Abraar</span>
+                <span className="text-2xl font-bold">{t('brand_name')}</span>
               </div>
               <p className="text-gray-300 leading-relaxed max-w-md mb-6">
-                Empowering Muslims worldwide with authentic Islamic education through verified teachers and modern technology.
+                {t('footer_brand_blurb')}
               </p>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2 text-green-400">
                   <CheckCircle className="h-5 w-5" />
-                  <span className="text-sm">Verified Teachers</span>
+                  <span className="text-sm">{t('badge_verified_teachers')}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-green-400">
                   <Shield className="h-5 w-5" />
-                  <span className="text-sm">Secure Platform</span>
+                  <span className="text-sm">{t('badge_secure_platform')}</span>
                 </div>
               </div>
             </div>
 
             {/* Quick Links */}
             <div>
-              <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
+              <h4 className="text-lg font-semibold mb-6">{t('footer_quick_links')}</h4>
               <ul className="space-y-3">
-                <li><Link to="/student/browse" className="text-gray-300 hover:text-green-400 transition-colors">Browse Teachers</Link></li>
-                <li><Link to="/register" className="text-gray-300 hover:text-green-400 transition-colors">Sign Up</Link></li>
-                <li><Link to="/login" className="text-gray-300 hover:text-green-400 transition-colors">Sign In</Link></li>
-                <li><a href="#" className="text-gray-300 hover:text-green-400 transition-colors">How it Works</a></li>
+                <li><Link to="/student/browse" className="text-gray-300 hover:text-green-400 transition-colors">{t('link_browse_teachers')}</Link></li>
+                <li><Link to="/register" className="text-gray-300 hover:text-green-400 transition-colors">{t('link_sign_up')}</Link></li>
+                <li><Link to="/login" className="text-gray-300 hover:text-green-400 transition-colors">{t('link_sign_in')}</Link></li>
+                <li><a href="#" className="text-gray-300 hover:text-green-400 transition-colors">{t('link_how_it_works')}</a></li>
               </ul>
             </div>
 
             {/* Contact */}
             <div>
-              <h4 className="text-lg font-semibold mb-6">Get in Touch</h4>
+              <h4 className="text-lg font-semibold mb-6">{t('footer_contact_heading')}</h4>
               <ul className="space-y-3">
                 <li className="text-gray-300">support@al-abraar.com</li>
                 <li className="text-gray-300">+1 (555) 123-4567</li>
-                <li className="text-gray-300">Available 24/7</li>
+                <li className="text-gray-300">{t('footer_available_247')}</li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between">
             <div className="text-gray-400 text-sm mb-4 md:mb-0">
-              © {new Date().getFullYear()} Al-Abraar. All rights reserved.
+              © {new Date().getFullYear()} {t('brand_name')}. {t('footer_rights')}
             </div>
             <div className="flex items-center space-x-6 text-sm">
-              <Link to="/terms" className="text-gray-400 hover:text-green-400 transition-colors">Terms of Service</Link>
-              <Link to="/privacy" className="text-gray-400 hover:text-green-400 transition-colors">Privacy Policy</Link>
-              <Link to="/cookies" className="text-gray-400 hover:text-green-400 transition-colors">Cookie Policy</Link>
+              <Link to="/terms" className="text-gray-400 hover:text-green-400 transition-colors">{t('terms_of_service')}</Link>
+              <Link to="/privacy" className="text-gray-400 hover:text-green-400 transition-colors">{t('privacy_policy')}</Link>
+              <Link to="/cookies" className="text-gray-400 hover:text-green-400 transition-colors">{t('cookie_policy')}</Link>
             </div>
           </div>
         </div>
