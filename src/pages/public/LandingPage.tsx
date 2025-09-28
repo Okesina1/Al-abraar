@@ -675,18 +675,18 @@ export const LandingPage: React.FC = () => {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-300 text-sm font-medium mb-8">
             <Zap className="h-4 w-4" />
-            <span>Join 10,000+ students already learning</span>
+            <span>{t('cta_badge_text')}</span>
           </div>
 
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-            Ready to Begin Your
+            {t('cta_heading_prefix')}
             <span className="block bg-gradient-to-r from-green-400 to-amber-400 bg-clip-text text-transparent">
-              Islamic Learning Journey?
+              {t('cta_heading_suffix')}
             </span>
           </h2>
 
           <p className="text-xl text-gray-300 max-w-4xl mx-auto mb-12 leading-relaxed">
-            Start today with a free consultation and discover how our personalized approach can transform your understanding of Islamic knowledge.
+            {t('cta_paragraph_v2')}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -695,7 +695,7 @@ export const LandingPage: React.FC = () => {
               className="group relative inline-flex items-center justify-center px-10 py-5 text-xl font-bold text-gray-900 bg-gradient-to-r from-green-400 to-amber-400 rounded-2xl shadow-2xl hover:shadow-green-500/25 transition-all duration-300 transform hover:scale-105 overflow-hidden"
             >
               <span className="relative z-10 flex items-center gap-3">
-                Get Started Free
+                {t('cta_get_started_free')}
                 <ArrowRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -706,7 +706,7 @@ export const LandingPage: React.FC = () => {
               className="inline-flex items-center justify-center px-10 py-5 text-xl font-semibold text-white bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:scale-105"
             >
               <MessageCircle className="h-6 w-6 mr-3" />
-              Book a Consultation
+              {t('cta_book_consultation')}
             </Link>
           </div>
 
@@ -714,19 +714,19 @@ export const LandingPage: React.FC = () => {
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-60">
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-1">4.9★</div>
-              <div className="text-sm text-gray-400">Average Rating</div>
+              <div className="text-sm text-gray-400">{t('avg_rating')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-1">50K+</div>
-              <div className="text-sm text-gray-400">Lessons Completed</div>
+              <div className="text-sm text-gray-400">{t('lessons_completed')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-1">98%</div>
-              <div className="text-sm text-gray-400">Success Rate</div>
+              <div className="text-sm text-gray-400">{t('success_rate')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-white mb-1">24/7</div>
-              <div className="text-sm text-gray-400">Support Available</div>
+              <div className="text-sm text-gray-400">{t('support_available')}</div>
             </div>
           </div>
         </div>
