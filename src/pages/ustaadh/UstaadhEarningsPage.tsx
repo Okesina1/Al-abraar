@@ -2,12 +2,15 @@ import React from 'react';
 import { EarningsTracker } from '../../components/ustaadh/EarningsTracker';
 import { useBooking } from '../../contexts/BookingContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePayroll } from '../../contexts/PayrollContext';
 
 export const UstaadhEarningsPage: React.FC = () => {
   const { user } = useAuth();
   const { getBookingsByUser } = useBooking();
+  const { getCompensationPlanForUstaadh } = usePayroll();
 
   const bookings = user ? getBookingsByUser(user.id, 'ustaadh') : [];
+  const compensationPlan = user ? getCompensationPlanForUstaadh(user.id) : null;
 
   return (
     <div className="space-y-6">
@@ -15,7 +18,7 @@ export const UstaadhEarningsPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">Earnings & Analytics</h1>
       </div>
 
-      <EarningsTracker bookings={bookings} />
+      <EarningsTracker bookings={bookings} compensationPlan={compensationPlan} />
     </div>
   );
 };
