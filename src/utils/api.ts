@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL: string = (import.meta as any)?.env?.VITE_API_BASE_URL || '/api';
 
 class ApiClient {
   private getAuthHeaders() {
@@ -94,6 +94,14 @@ export const API_ENDPOINTS = {
   CREATE_PAYMENT_INTENT: '/payments/create-intent',
   PAYMENT_WEBHOOK: '/payments/webhook',
   REFUND_PAYMENT: '/payments/refund',
+
+  // Payroll
+  UPSERT_PAYROLL_PLAN: '/payroll/plan',
+  PAYROLL_PLAN_FOR: (ustaadhId: string) => `/payroll/plan/${ustaadhId}`,
+  MY_PAYROLL_PLAN: '/payroll/my-plan',
+  ADD_ADJUSTMENT: (ustaadhId: string) => `/payroll/plan/${ustaadhId}/adjustments`,
+  MARK_PAID: (ustaadhId: string) => `/payroll/plan/${ustaadhId}/pay`,
+  PAYROLL_OBLIGATIONS: (month?: string) => `/payroll/obligations${month ? `?month=${month}` : ''}`,
 
   // Messages
   MESSAGES: '/messages',

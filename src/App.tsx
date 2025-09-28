@@ -25,6 +25,7 @@ import { AdminBookingsPage } from './pages/admin/AdminBookingsPage';
 import { AdminPaymentsPage } from './pages/admin/AdminPaymentsPage';
 import { AdminApprovalsPage } from './pages/admin/AdminApprovalsPage';
 import { AdminReportsPage } from './pages/admin/AdminReportsPage';
+import { AdminPayrollPage } from './pages/admin/AdminPayrollPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 
 // Ustaadh Pages
@@ -147,6 +148,11 @@ function AppRoutes() {
       <Route path="/admin/settings" element={
         <ProtectedRoute allowedRoles={['admin']}>
           <DashboardLayout><AdminSettingsPage /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/payroll" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><AdminPayrollPage /></DashboardLayout>
         </ProtectedRoute>
       } />
 

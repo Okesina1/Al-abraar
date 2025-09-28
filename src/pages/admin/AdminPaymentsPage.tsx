@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
-import { CreditCard, Search, Filter, Download, DollarSign, TrendingUp, Calendar, RefreshCw } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { CreditCard, Search, Filter, Download, DollarSign, TrendingUp, Calendar, RefreshCw, ClipboardList } from 'lucide-react';
+import { usePayroll } from '../../contexts/PayrollContext';
+
+const formatCurrency = (amount: number, currency = 'USD') => new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
 
 export const AdminPaymentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
 
-  // Mock payments data
+  const { plans } = usePayroll();
+
+  // Mock student payments data (bookings revenue)
   const payments = [
     {
       id: 'pay_1',
@@ -101,21 +106,49 @@ export const AdminPaymentsPage: React.FC = () => {
   };
 
   const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
-  const platformFees = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.platformFee, 0);
+  const platformShare = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.platformFee, 0);
   const pendingPayments = payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
   const failedPayments = payments.filter(p => p.status === 'failed').length;
 
+  const currentMonthKey = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }, []);
+
+  const payrollSummary = useMemo(() => {
+    const getAdj = (r: any) => (r.adjustments ?? []).reduce((s: number, a: any) => (a.type === 'deduction' ? s - a.amount : s + a.amount), 0);
+    const getNet = (r: any) => r.amount + getAdj(r);
+
+    let scheduled = 0;
+    let paid = 0;
+
+    plans.forEach((plan) => {
+      const record = plan.salaryHistory.find((r) => r.month === currentMonthKey) || {
+        amount: plan.monthlySalary,
+        adjustments: [],
+        status: 'scheduled',
+      };
+      if (record.status === 'paid') paid += getNet(record); else scheduled += getNet(record);
+    });
+
+    const ytd = plans.reduce((sum, plan) => sum + plan.salaryHistory
+      .filter((r) => r.status === 'paid' && r.month.startsWith(`${new Date().getFullYear()}-`))
+      .reduce((s, r) => s + getNet(r), 0), 0);
+
+    return { scheduled, paid, ytd, currency: plans[0]?.currency || 'USD' };
+  }, [plans, currentMonthKey]);
+
   const stats = [
-    { title: 'Total Revenue', value: `$${totalRevenue.toLocaleString()}`, color: 'bg-green-500', icon: DollarSign },
-    { title: 'Platform Fees', value: `$${platformFees.toLocaleString()}`, color: 'bg-blue-500', icon: TrendingUp },
-    { title: 'Pending', value: `$${pendingPayments.toLocaleString()}`, color: 'bg-yellow-500', icon: Calendar },
-    { title: 'Failed', value: failedPayments.toString(), color: 'bg-red-500', icon: RefreshCw }
+    { title: 'Total Revenue (bookings)', value: formatCurrency(totalRevenue), color: 'bg-green-500', icon: DollarSign },
+    { title: 'Platform Share', value: formatCurrency(platformShare), color: 'bg-blue-500', icon: TrendingUp },
+    { title: 'Pending Student Payments', value: formatCurrency(pendingPayments), color: 'bg-yellow-500', icon: Calendar },
+    { title: 'Failed Student Payments', value: failedPayments.toString(), color: 'bg-red-500', icon: RefreshCw }
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
-        <h1 className="text-2xl font-bold text-gray-900">Payments Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Payments & Payroll</h1>
         <div className="flex space-x-3">
           <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
             <Download className="h-4 w-4" />
@@ -227,7 +260,7 @@ export const AdminPaymentsPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{payment.ustaadhName}</div>
-                    <div className="text-sm text-gray-500">Earning: ${payment.ustaadhEarning}</div>
+                    <div className="text-sm text-gray-500">Payroll-based salary model</div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">${payment.amount}</div>
@@ -235,7 +268,7 @@ export const AdminPaymentsPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-green-600">${payment.platformFee}</div>
-                    <div className="text-sm text-gray-500">30%</div>
+                    <div className="text-sm text-gray-500">Platform share</div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
@@ -262,21 +295,37 @@ export const AdminPaymentsPage: React.FC = () => {
       {/* Revenue Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Revenue Breakdown</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Revenue Breakdown (bookings)</h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
               <span className="font-medium text-gray-800">Total Revenue</span>
-              <span className="font-semibold text-green-600">${totalRevenue.toLocaleString()}</span>
+              <span className="font-semibold text-green-600">{formatCurrency(totalRevenue)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-              <span className="font-medium text-gray-800">Platform Fees (30%)</span>
-              <span className="font-semibold text-blue-600">${platformFees.toLocaleString()}</span>
+              <span className="font-medium text-gray-800">Platform Share</span>
+              <span className="font-semibold text-blue-600">{formatCurrency(platformShare)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-              <span className="font-medium text-gray-800">Ustaadh Earnings (70%)</span>
-              <span className="font-semibold text-purple-600">
-                ${(totalRevenue - platformFees).toLocaleString()}
-              </span>
+              <span className="font-medium text-gray-800">Planned Salaries (YTD)</span>
+              <span className="font-semibold text-purple-600">{formatCurrency(payrollSummary.ytd, payrollSummary.currency)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Payroll Summary</h3>
+          <div className="space-y-3 text-sm text-gray-700">
+            <div className="flex justify-between items-center">
+              <span>Current month scheduled</span>
+              <span className="font-semibold text-gray-900">{formatCurrency(payrollSummary.scheduled, payrollSummary.currency)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Current month paid</span>
+              <span className="font-semibold text-gray-900">{formatCurrency(payrollSummary.paid, payrollSummary.currency)}</span>
+            </div>
+            <div className="flex items-center space-x-2 pt-2 text-xs text-gray-500">
+              <ClipboardList className="h-4 w-4" />
+              <span>Admin controls salary payouts monthly. Student payments do not auto-disburse to ustaadhs.</span>
             </div>
           </div>
         </div>

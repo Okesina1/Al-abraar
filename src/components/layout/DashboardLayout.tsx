@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useI18n } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { NotificationCenter, type Notification } from '../notifications/NotificationCenter';
-import { 
-  BookOpen, 
-  LogOut, 
-  Bell, 
-  User, 
-  Settings, 
-  Menu, 
+import {
+  BookOpen,
+  LogOut,
+  Bell,
+  User,
+  Settings,
+  Menu,
   X,
   Home,
   Users,
@@ -19,7 +19,8 @@ import {
   Search,
   TrendingUp,
   CheckCircle,
-  DollarSign
+  DollarSign,
+  ClipboardList
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -100,6 +101,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           { name: 'Users', href: '/admin/users', icon: Users },
           { name: 'Bookings', href: '/admin/bookings', icon: Calendar },
           { name: 'Payments', href: '/admin/payments', icon: DollarSign },
+          { name: 'Payroll', href: '/admin/payroll', icon: ClipboardList },
           { name: 'Reports', href: '/admin/reports', icon: TrendingUp },
           { name: 'Settings', href: '/admin/settings', icon: Settings },
           ...baseItems,
