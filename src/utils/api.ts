@@ -95,6 +95,14 @@ export const API_ENDPOINTS = {
   PAYMENT_WEBHOOK: '/payments/webhook',
   REFUND_PAYMENT: '/payments/refund',
 
+  // Payroll
+  UPSERT_PAYROLL_PLAN: '/payroll/plan',
+  PAYROLL_PLAN_FOR: (ustaadhId: string) => `/payroll/plan/${ustaadhId}`,
+  MY_PAYROLL_PLAN: '/payroll/my-plan',
+  ADD_ADJUSTMENT: (ustaadhId: string) => `/payroll/plan/${ustaadhId}/adjustments`,
+  MARK_PAID: (ustaadhId: string) => `/payroll/plan/${ustaadhId}/pay`,
+  PAYROLL_OBLIGATIONS: (month?: string) => `/payroll/obligations${month ? `?month=${month}` : ''}`,
+
   // Messages
   MESSAGES: '/messages',
   CONVERSATIONS: '/messages/conversations',
