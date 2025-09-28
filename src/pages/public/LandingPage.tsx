@@ -410,10 +410,10 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Your Learning Journey in <span className="text-green-600">3 Simple Steps</span>
+              {t('how_heading_v2')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From browsing teachers to mastering Islamic knowledge - we've made it beautifully simple
+              {t('how_subheading_v2')}
             </p>
           </div>
 
@@ -432,9 +432,9 @@ export const LandingPage: React.FC = () => {
                     <span className="text-sm font-bold text-green-600">1</span>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Discover Your Teacher</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('how_step1_title')}</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Browse our curated selection of verified Islamic scholars. Filter by expertise, language, location, and teaching style to find your perfect match.
+                  {t('how_step1_description')}
                 </p>
               </div>
 
@@ -448,9 +448,9 @@ export const LandingPage: React.FC = () => {
                     <span className="text-sm font-bold text-blue-600">2</span>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Book Your Schedule</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('how_step2_title')}</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Choose your preferred times and frequency. Our intelligent system prevents conflicts and sends automatic reminders for all your sessions.
+                  {t('how_step2_description')}
                 </p>
               </div>
 
@@ -464,9 +464,9 @@ export const LandingPage: React.FC = () => {
                     <span className="text-sm font-bold text-amber-600">3</span>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Learn & Excel</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('how_step3_title')}</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Engage in personalized one-on-one sessions with clear goals, interactive materials, and continuous progress tracking.
+                  {t('how_step3_description')}
                 </p>
               </div>
             </div>
@@ -479,10 +479,10 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Meet Our <span className="text-green-600">Expert Teachers</span>
+              {t('teachers_heading')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Learn from the best Islamic scholars and educators from around the world
+              {t('teachers_subheading')}
             </p>
 
             {/* Search Bar */}
@@ -493,7 +493,7 @@ export const LandingPage: React.FC = () => {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search by name, specialty, or country..."
+                  placeholder={t('search_placeholder')}
                   className="w-full pl-12 pr-6 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 bg-white/80 backdrop-blur-sm"
                 />
               </div>
@@ -517,7 +517,7 @@ export const LandingPage: React.FC = () => {
               to="/student/browse" 
               className="inline-flex items-center px-8 py-4 bg-white text-green-700 rounded-2xl shadow-lg hover:shadow-xl border-2 border-green-200 hover:border-green-300 font-semibold transition-all duration-300 transform hover:scale-105"
             >
-              <span>Browse All Teachers</span>
+              <span>{t('browse_all_ustaadhs')}</span>
               <ArrowRight className="h-5 w-5 ml-2" />
             </Link>
           </div>
