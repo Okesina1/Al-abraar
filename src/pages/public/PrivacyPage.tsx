@@ -33,7 +33,8 @@ export const PrivacyPage: React.FC = () => {
           </p>
           <figure className="space-y-2">
             <blockquote className="text-gray-700 italic">
-              “O you who have believed, avoid much suspicion... and do not spy or backbite one another.”
+              “O you who have believed, avoid much suspicion. Indeed, some suspicion is sin. And do not spy or backbite
+              one another.”
             </blockquote>
             <figcaption className="text-sm text-gray-600">Qur'an 49:12</figcaption>
           </figure>
