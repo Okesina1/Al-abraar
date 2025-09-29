@@ -16,8 +16,14 @@ import { AvailabilityModule } from './availability/availability.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { SettingsModule } from './settings/settings.module';
 import { HealthModule } from './health/health.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { EmailService } from './common/services/email.service';
+import { SmsService } from './common/services/sms.service';
+import { CacheService } from './common/services/cache.service';
+import { AuditService } from './common/services/audit.service';
+import { SchedulerService } from './common/services/scheduler.service';
 
 @Module({
   imports: [
@@ -25,6 +31,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     AuthModule,
     UsersModule,
@@ -43,6 +50,11 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
   controllers: [AppController],
   providers: [
     AppService,
+    EmailService,
+    SmsService,
+    CacheService,
+    AuditService,
+    SchedulerService,
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,

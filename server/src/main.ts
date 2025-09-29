@@ -4,6 +4,8 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { CustomValidationPipe } from './common/pipes/validation.pipe';
+import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
+import { SecurityMiddleware } from './common/middleware/security.middleware';
 import * as cors from 'cors';
 
 async function bootstrap() {
@@ -38,6 +40,10 @@ async function bootstrap() {
     },
   }));
   
+  // Global middleware
+  app.use(new RequestLoggerMiddleware().use);
+  app.use(new SecurityMiddleware().use);
+  
   // Global prefix
   app.setGlobalPrefix('api');
   
@@ -46,6 +52,7 @@ async function bootstrap() {
   console.log(`🚀 Al-Abraar API running on http://localhost:${port}`);
   console.log(`🔍 Health Check: http://localhost:${port}/api/health`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();

@@ -6,6 +6,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
+import { Audit } from '../common/decorators/audit.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +24,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @Audit({ action: 'approve', resource: 'ustaadh' })
   @Patch('approve-ustaadh/:id')
   async approveUstaadh(@Param('id') ustaadhId: string) {
     return this.authService.approveUstaadh(ustaadhId);
@@ -30,6 +32,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
+  @Audit({ action: 'reject', resource: 'ustaadh' })
   @Patch('reject-ustaadh/:id')
   async rejectUstaadh(@Param('id') ustaadhId: string) {
     return this.authService.rejectUstaadh(ustaadhId);

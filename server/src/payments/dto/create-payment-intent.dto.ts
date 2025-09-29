@@ -11,4 +11,8 @@ export class CreatePaymentIntentDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  @IsOptional()
+  @IsString()
+  paymentMethod?: 'stripe' | 'paypal' | 'paystack' | 'flutterwave';
 }

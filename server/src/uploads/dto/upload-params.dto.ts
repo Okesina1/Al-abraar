@@ -13,7 +13,8 @@ export class UploadParamsDto {
   @IsOptional()
   @IsString()
   tags?: string; // Comma-separated tags
-}
+
   @IsOptional()
   @IsString()
   publicId?: string; // Custom public ID for the uploaded file
+}

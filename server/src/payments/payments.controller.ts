@@ -34,4 +34,20 @@ export class PaymentsController {
       refundPaymentDto.amount
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('paypal/create-order')
+  async createPayPalOrder(@Body() createPaymentIntentDto: CreatePaymentIntentDto) {
+    return this.paymentsService.createPayPalOrder(
+      createPaymentIntentDto.bookingId,
+      createPaymentIntentDto.amount,
+      createPaymentIntentDto.currency
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('paypal/capture/:orderId')
+  async capturePayPalOrder(@Param('orderId') orderId: string) {
+    return this.paymentsService.capturePayPalOrder(orderId);
+  }
 }

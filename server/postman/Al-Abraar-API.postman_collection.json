@@ -1,0 +1,1146 @@
+{
+  "info": {
+    "name": "Al-Abraar Online Modrasah API",
+    "description": "Comprehensive API documentation for Al-Abraar Online Modrasah platform",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3001/api",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"John Doe\",\n  \"role\": \"student\",\n  \"phoneNumber\": \"+1234567890\",\n  \"country\": \"USA\",\n  \"city\": \"New York\",\n  \"age\": 25\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new student account. Students are auto-approved."
+          }
+        },
+        {
+          "name": "Register Ustaadh",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ustaadh@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"Ahmed Al-Hafiz\",\n  \"role\": \"ustaadh\",\n  \"phoneNumber\": \"+966123456789\",\n  \"country\": \"Saudi Arabia\",\n  \"city\": \"Riyadh\",\n  \"age\": 35,\n  \"bio\": \"Certified Quran teacher with 15 years experience\",\n  \"experience\": \"15 years\",\n  \"specialties\": [\"Quran\", \"Tajweed\", \"Arabic\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new Ustaadh account. Requires admin approval."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.access_token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@al-abraar.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with email and password. Returns JWT token."
+          }
+        },
+        {
+          "name": "Approve Ustaadh (Admin Only)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/approve-ustaadh/:ustaadhId",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "approve-ustaadh", ":ustaadhId"],
+              "variable": [
+                {
+                  "key": "ustaadhId",
+                  "value": "64f1234567890abcdef12345"
+                }
+              ]
+            },
+            "description": "Approve a pending Ustaadh application. Admin only."
+          }
+        },
+        {
+          "name": "Reject Ustaadh (Admin Only)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/reject-ustaadh/:ustaadhId",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "reject-ustaadh", ":ustaadhId"],
+              "variable": [
+                {
+                  "key": "ustaadhId",
+                  "value": "64f1234567890abcdef12345"
+                }
+              ]
+            },
+            "description": "Reject a pending Ustaadh application. Admin only."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get paginated list of all users. Admin only."
+          }
+        },
+        {
+          "name": "Get Approved Ustaadhs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/ustaadhss?country=Saudi Arabia&specialties=Quran,Tajweed&search=Ahmed&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["users", "ustaadhss"],
+              "query": [
+                {
+                  "key": "country",
+                  "value": "Saudi Arabia",
+                  "description": "Filter by country"
+                },
+                {
+                  "key": "specialties",
+                  "value": "Quran,Tajweed",
+                  "description": "Filter by specialties (comma-separated)"
+                },
+                {
+                  "key": "search",
+                  "value": "Ahmed",
+                  "description": "Search by name or bio"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get approved Ustaadhs with optional filters."
+          }
+        },
+        {
+          "name": "Get Pending Ustaadhs (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/pending-ustaadhss",
+              "host": ["{{base_url}}"],
+              "path": ["users", "pending-ustaadhss"]
+            },
+            "description": "Get list of pending Ustaadh approvals. Admin only."
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["users", "profile"]
+            },
+            "description": "Get current user's profile information."
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Name\",\n  \"phoneNumber\": \"+1234567890\",\n  \"bio\": \"Updated bio\",\n  \"specialties\": [\"Quran\", \"Tajweed\", \"Arabic\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["users", "profile"]
+            },
+            "description": "Update current user's profile information."
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["users", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "64f1234567890abcdef12345"
+                }
+              ]
+            },
+            "description": "Get user information by ID."
+          }
+        },
+        {
+          "name": "Get User Stats (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/stats",
+              "host": ["{{base_url}}"],
+              "path": ["users", "stats"]
+            },
+            "description": "Get user statistics. Admin only."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"64f1234567890abcdef12345\",\n  \"ustaadhId\": \"64f1234567890abcdef12346\",\n  \"packageType\": \"complete\",\n  \"hoursPerDay\": 1.5,\n  \"daysPerWeek\": 3,\n  \"subscriptionMonths\": 1,\n  \"totalAmount\": 126,\n  \"startDate\": \"2024-02-01\",\n  \"endDate\": \"2024-03-01\",\n  \"schedule\": [\n    {\n      \"dayOfWeek\": 1,\n      \"startTime\": \"14:00\",\n      \"endTime\": \"15:30\",\n      \"date\": \"2024-02-05\"\n    },\n    {\n      \"dayOfWeek\": 3,\n      \"startTime\": \"16:00\",\n      \"endTime\": \"17:30\",\n      \"date\": \"2024-02-07\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            },
+            "description": "Create a new booking with schedule."
+          }
+        },
+        {
+          "name": "Get My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/my-bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "my-bookings"]
+            },
+            "description": "Get current user's bookings (student or ustaadh)."
+          }
+        },
+        {
+          "name": "Get Upcoming Lessons",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/upcoming-lessons",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "upcoming-lessons"]
+            },
+            "description": "Get upcoming lessons for current user."
+          }
+        },
+        {
+          "name": "Get All Bookings (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/bookings/all?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", "all"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get all bookings with pagination. Admin only."
+          }
+        },
+        {
+          "name": "Update Booking Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings/:bookingId/status",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", ":bookingId", "status"],
+              "variable": [
+                {
+                  "key": "bookingId",
+                  "value": "64f1234567890abcdef12347"
+                }
+              ]
+            },
+            "description": "Update booking status. Admin or Ustaadh only."
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Schedule conflict\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings/:bookingId/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", ":bookingId", "cancel"],
+              "variable": [
+                {
+                  "key": "bookingId",
+                  "value": "64f1234567890abcdef12347"
+                }
+              ]
+            },
+            "description": "Cancel a booking with reason."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Stripe Payment Intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"64f1234567890abcdef12347\",\n  \"amount\": 126,\n  \"currency\": \"usd\",\n  \"paymentMethod\": \"stripe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/create-intent",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "create-intent"]
+            },
+            "description": "Create Stripe payment intent for booking."
+          }
+        },
+        {
+          "name": "Create PayPal Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"64f1234567890abcdef12347\",\n  \"amount\": 126,\n  \"currency\": \"USD\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/paypal/create-order",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "paypal", "create-order"]
+            },
+            "description": "Create PayPal order for booking."
+          }
+        },
+        {
+          "name": "Capture PayPal Order",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payments/paypal/capture/:orderId",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "paypal", "capture", ":orderId"],
+              "variable": [
+                {
+                  "key": "orderId",
+                  "value": "paypal_order_id"
+                }
+              ]
+            },
+            "description": "Capture PayPal order after approval."
+          }
+        },
+        {
+          "name": "Refund Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentIntentId\": \"pi_1234567890\",\n  \"amount\": 63,\n  \"reason\": \"Customer request\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/refund",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "refund"]
+            },
+            "description": "Process payment refund."
+          }
+        },
+        {
+          "name": "Stripe Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "stripe-signature",
+                "value": "webhook_signature"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "webhook_payload"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "webhook"]
+            },
+            "description": "Stripe webhook endpoint for payment events."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Availability",
+      "item": [
+        {
+          "name": "Set Ustaadh Availability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"dayOfWeek\": 1,\n    \"startTime\": \"09:00\",\n    \"endTime\": \"17:00\",\n    \"isAvailable\": true\n  },\n  {\n    \"dayOfWeek\": 2,\n    \"startTime\": \"10:00\",\n    \"endTime\": \"18:00\",\n    \"isAvailable\": true\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/availability",
+              "host": ["{{base_url}}"],
+              "path": ["availability"]
+            },
+            "description": "Set availability schedule for Ustaadh. Ustaadh only."
+          }
+        },
+        {
+          "name": "Get Ustaadh Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/availability/ustaadh/:ustaadhId",
+              "host": ["{{base_url}}"],
+              "path": ["availability", "ustaadh", ":ustaadhId"],
+              "variable": [
+                {
+                  "key": "ustaadhId",
+                  "value": "64f1234567890abcdef12346"
+                }
+              ]
+            },
+            "description": "Get availability schedule for specific Ustaadh."
+          }
+        },
+        {
+          "name": "Get My Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/availability/my-availability",
+              "host": ["{{base_url}}"],
+              "path": ["availability", "my-availability"]
+            },
+            "description": "Get current Ustaadh's availability. Ustaadh only."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receiverId\": \"64f1234567890abcdef12346\",\n  \"content\": \"Assalamu Alaikum! Looking forward to our lesson.\",\n  \"bookingId\": \"64f1234567890abcdef12347\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["messages"]
+            },
+            "description": "Send a message to another user."
+          }
+        },
+        {
+          "name": "Get Conversations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/messages/conversations",
+              "host": ["{{base_url}}"],
+              "path": ["messages", "conversations"]
+            },
+            "description": "Get list of user's conversations."
+          }
+        },
+        {
+          "name": "Get Conversation with User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/messages/conversation/:partnerId",
+              "host": ["{{base_url}}"],
+              "path": ["messages", "conversation", ":partnerId"],
+              "variable": [
+                {
+                  "key": "partnerId",
+                  "value": "64f1234567890abcdef12346"
+                }
+              ]
+            },
+            "description": "Get conversation messages with specific user."
+          }
+        },
+        {
+          "name": "Mark Message as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/messages/:messageId/read",
+              "host": ["{{base_url}}"],
+              "path": ["messages", ":messageId", "read"],
+              "variable": [
+                {
+                  "key": "messageId",
+                  "value": "64f1234567890abcdef12348"
+                }
+              ]
+            },
+            "description": "Mark a message as read."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ustaadhId\": \"64f1234567890abcdef12346\",\n  \"rating\": 5,\n  \"comment\": \"Excellent teacher! Very patient and knowledgeable.\",\n  \"bookingId\": \"64f1234567890abcdef12347\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["reviews"]
+            },
+            "description": "Create a review for Ustaadh. Students only."
+          }
+        },
+        {
+          "name": "Get Ustaadh Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reviews/ustaadh/:ustaadhId",
+              "host": ["{{base_url}}"],
+              "path": ["reviews", "ustaadh", ":ustaadhId"],
+              "variable": [
+                {
+                  "key": "ustaadhId",
+                  "value": "64f1234567890abcdef12346"
+                }
+              ]
+            },
+            "description": "Get all reviews for specific Ustaadh."
+          }
+        },
+        {
+          "name": "Get Review Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reviews/ustaadh/:ustaadhId/stats",
+              "host": ["{{base_url}}"],
+              "path": ["reviews", "ustaadh", ":ustaadhId", "stats"],
+              "variable": [
+                {
+                  "key": "ustaadhId",
+                  "value": "64f1234567890abcdef12346"
+                }
+              ]
+            },
+            "description": "Get review statistics for Ustaadh."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payroll",
+      "item": [
+        {
+          "name": "Create/Update Compensation Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ustaadhId\": \"64f1234567890abcdef12346\",\n  \"monthlySalary\": 1000,\n  \"currency\": \"USD\",\n  \"paymentDayOfMonth\": 5,\n  \"effectiveFrom\": \"2024-01-01\",\n  \"nextReviewDate\": \"2024-07-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payroll/plan",
+              "host": ["{{base_url}}"],
+              "path": ["payroll", "plan"]
+            },
+            "description": "Create or update compensation plan. Admin only."
+          }
+        },
+        {
+          "name": "Add Salary Adjustment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"month\": \"2024-01\",\n  \"type\": \"bonus\",\n  \"label\": \"Performance bonus\",\n  \"amount\": 100,\n  \"note\": \"Excellent student feedback\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payroll/plan/:ustaadhId/adjustments",
+              "host": ["{{base_url}}"],
+              "path": ["payroll", "plan", ":ustaadhId", "adjustments"],
+              "variable": [
+                {
+                  "key": "ustaadhId",
+                  "value": "64f1234567890abcdef12346"
+                }
+              ]
+            },
+            "description": "Add salary adjustment (bonus/deduction). Admin only."
+          }
+        },
+        {
+          "name": "Mark Salary as Paid",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"month\": \"2024-01\",\n  \"paidOn\": \"2024-01-05T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payroll/plan/:ustaadhId/pay",
+              "host": ["{{base_url}}"],
+              "path": ["payroll", "plan", ":ustaadhId", "pay"],
+              "variable": [
+                {
+                  "key": "ustaadhId",
+                  "value": "64f1234567890abcdef12346"
+                }
+              ]
+            },
+            "description": "Mark salary as paid for specific month. Admin only."
+          }
+        },
+        {
+          "name": "Get Compensation Plan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payroll/plan/:ustaadhId",
+              "host": ["{{base_url}}"],
+              "path": ["payroll", "plan", ":ustaadhId"],
+              "variable": [
+                {
+                  "key": "ustaadhId",
+                  "value": "64f1234567890abcdef12346"
+                }
+              ]
+            },
+            "description": "Get compensation plan for Ustaadh."
+          }
+        },
+        {
+          "name": "Get My Compensation Plan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payroll/my-plan",
+              "host": ["{{base_url}}"],
+              "path": ["payroll", "my-plan"]
+            },
+            "description": "Get current Ustaadh's compensation plan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications?limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["notifications"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Get user's notifications."
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications/unread-count",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "unread-count"]
+            },
+            "description": "Get count of unread notifications."
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications/:notificationId/read",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", ":notificationId", "read"],
+              "variable": [
+                {
+                  "key": "notificationId",
+                  "value": "64f1234567890abcdef12349"
+                }
+              ]
+            },
+            "description": "Mark specific notification as read."
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications/mark-all-read",
+              "host": ["{{base_url}}"],
+              "path": ["notifications", "mark-all-read"]
+            },
+            "description": "Mark all notifications as read."
+          }
+        }
+      ]
+    },
+    {
+      "name": "File Uploads",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "folder",
+                  "value": "cvs",
+                  "type": "text"
+                },
+                {
+                  "key": "resourceType",
+                  "value": "auto",
+                  "type": "text"
+                },
+                {
+                  "key": "tags",
+                  "value": "cv,ustaadh",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/uploads",
+              "host": ["{{base_url}}"],
+              "path": ["uploads"]
+            },
+            "description": "Upload file to Cloudinary. Supports images and documents."
+          }
+        },
+        {
+          "name": "Delete File",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/uploads/:publicId",
+              "host": ["{{base_url}}"],
+              "path": ["uploads", ":publicId"],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "cvs/sample_cv"
+                }
+              ]
+            },
+            "description": "Delete file from Cloudinary by public ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "dashboard"]
+            },
+            "description": "Get dashboard statistics. Admin only."
+          }
+        },
+        {
+          "name": "Get Revenue Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/revenue?period=6m",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "revenue"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "6m",
+                  "description": "6m or 12m"
+                }
+              ]
+            },
+            "description": "Get revenue analytics. Admin only."
+          }
+        },
+        {
+          "name": "Get Top Ustaadhs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/top-ustaadhs?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "top-ustaadhs"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get top performing Ustaadhs. Admin only."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Get Public Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/settings",
+              "host": ["{{base_url}}"],
+              "path": ["settings"]
+            },
+            "description": "Get public platform settings."
+          }
+        },
+        {
+          "name": "Get All Settings (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/settings/admin",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "admin"]
+            },
+            "description": "Get all platform settings. Admin only."
+          }
+        },
+        {
+          "name": "Update Pricing",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"basic\": 5,\n  \"complete\": 7\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/settings/pricing",
+              "host": ["{{base_url}}"],
+              "path": ["settings", "pricing"]
+            },
+            "description": "Update platform pricing. Admin only."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health & System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Basic health check endpoint."
+          }
+        },
+        {
+          "name": "Detailed Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/detailed",
+              "host": ["{{base_url}}"],
+              "path": ["health", "detailed"]
+            },
+            "description": "Detailed health check with system information."
+          }
+        },
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/info",
+              "host": ["{{base_url}}"],
+              "path": ["info"]
+            },
+            "description": "Get API information and version."
+          }
+        }
+      ]
+    }
+  ]
+}
