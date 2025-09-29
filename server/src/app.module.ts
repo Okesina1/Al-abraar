@@ -17,6 +17,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { SettingsModule } from './settings/settings.module';
 import { HealthModule } from './health/health.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { MongooseModule } from '@nestjs/mongoose';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { EmailService } from './common/services/email.service';
@@ -24,6 +25,7 @@ import { SmsService } from './common/services/sms.service';
 import { CacheService } from './common/services/cache.service';
 import { AuditService } from './common/services/audit.service';
 import { SchedulerService } from './common/services/scheduler.service';
+import { Booking, BookingSchema } from './bookings/schemas/booking.schema';
 
 @Module({
   imports: [
@@ -33,6 +35,7 @@ import { SchedulerService } from './common/services/scheduler.service';
     }),
     ScheduleModule.forRoot(),
     DatabaseModule,
+    MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }]),
     AuthModule,
     UsersModule,
     BookingsModule,
