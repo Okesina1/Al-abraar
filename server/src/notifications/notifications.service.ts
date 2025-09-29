@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import { Notification, NotificationType } from './schemas/notification.schema';
 import { EmailUtils } from '../common/utils/email.utils';
@@ -14,7 +14,7 @@ export class NotificationsService {
     @InjectModel(Notification.name) private notificationModel: Model<Notification>,
     private configService: ConfigService,
   ) {
-    this.transporter = nodemailer.createTransporter({
+    this.transporter = nodemailer.createTransport({
       host: this.configService.get<string>('SMTP_HOST'),
       port: this.configService.get<number>('SMTP_PORT'),
       secure: false,
@@ -33,7 +33,7 @@ export class NotificationsService {
     actionUrl?: string
   ): Promise<Notification> {
     const notification = new this.notificationModel({
-      userId,
+      userId: new Types.ObjectId(userId),
       title,
       message,
       type,
@@ -189,6 +189,7 @@ export class NotificationsService {
   }>): Promise<Notification[]> {
     const notificationDocs = notifications.map(notif => ({
       ...notif,
+      userId: new Types.ObjectId(notif.userId),
       type: notif.type || NotificationType.INFO,
     }));
 

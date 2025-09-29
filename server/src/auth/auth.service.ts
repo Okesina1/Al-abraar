@@ -5,6 +5,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { PasswordUtils } from '../common/utils/password.utils';
+import { NotificationType } from '../notifications/schemas/notification.schema';
+import { UserRole } from '../users/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +32,7 @@ export class AuthService {
     }
 
     // Check if Ustaadh is approved
-    if (user.role === 'ustaadh' && !user.isApproved) {
+    if (user.role === UserRole.USTAADH && !user.isApproved) {
       throw new UnauthorizedException('Your account is pending approval');
     }
 
@@ -80,7 +82,7 @@ export class AuthService {
     const userData = {
       ...registerDto,
       password: hashedPassword,
-      isApproved: registerDto.role === 'student', // Students are auto-approved
+      isApproved: registerDto.role === UserRole.STUDENT, // Students are auto-approved
     };
 
     const user = await this.usersService.create(userData);
@@ -92,14 +94,14 @@ export class AuthService {
       // Ustaadhs need approval
       // Send notification to admins about new Ustaadh application
       const admins = await this.usersService.findAll();
-      const adminUsers = admins.filter(u => u.role === 'admin');
+      const adminUsers = admins.users.filter(u => u.role === UserRole.ADMIN);
       
       for (const admin of adminUsers) {
         await this.notificationsService.createNotification(
           admin._id.toString(),
           'New Ustaadh Application',
           `${user.fullName} has submitted an application for review.`,
-          'info'
+          NotificationType.INFO
         );
       }
 

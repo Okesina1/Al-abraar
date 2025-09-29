@@ -44,7 +44,7 @@ export class SchedulerService {
               date: slot.date,
               startTime: slot.startTime,
               endTime: slot.endTime,
-              ustaadhName: booking.ustaadhId.fullName,
+              ustaadhName: (booking.ustaadhId as any).fullName,
               meetingLink: slot.meetingLink,
             };
 
@@ -56,19 +56,19 @@ export class SchedulerService {
 
             // Send email reminder
             await this.emailService.sendLessonReminder(
-              booking.studentId.email,
+              (booking.studentId as any).email,
               lessonDetails
             );
 
             // Send SMS reminder (if phone number available)
-            if (booking.studentId.phoneNumber) {
+            if ((booking.studentId as any).phoneNumber) {
               await this.smsService.sendLessonReminder(
-                booking.studentId.phoneNumber,
+                (booking.studentId as any).phoneNumber,
                 lessonDetails
               );
             }
 
-            this.logger.log(`Sent reminder for lesson ${slot._id}`);
+            this.logger.log(`Sent reminder for lesson ${(slot as any)._id}`);
           }
         }
       }

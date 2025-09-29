@@ -53,11 +53,11 @@ export class MessagingService {
       if (!conversations.has(partnerId)) {
         conversations.set(partnerId, {
           partnerId,
-          partnerName: message.senderId._id.toString() === userId 
-            ? message.receiverId.fullName 
-            : message.senderId.fullName,
+          partnerName: message.senderId._id.toString() === userId
+            ? (message.receiverId as any).fullName
+            : (message.senderId as any).fullName,
           lastMessage: message.content,
-          lastMessageTime: message.createdAt,
+          lastMessageTime: (message as any).createdAt,
           unreadCount: 0,
         });
       }

@@ -5,6 +5,7 @@ import { Booking, BookingStatus, PaymentStatus } from './schemas/booking.schema'
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationType } from '../notifications/schemas/notification.schema';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { DateUtils } from '../common/utils/date.utils';
 import { BookingUtils } from '../common/utils/booking.utils';
@@ -57,7 +58,7 @@ export class BookingsService {
       createBookingDto.ustaadhId,
       'New Booking Request',
       'You have received a new booking request. Please review and confirm.',
-      'info'
+      NotificationType.INFO
     );
     
     return savedBooking;
@@ -279,10 +280,10 @@ export class BookingsService {
       for (const slot of booking.schedule) {
         if (new Date(slot.date) >= new Date() && slot.status === 'scheduled') {
           lessons.push({
-            id: slot._id,
+            id: (slot as any)._id,
             bookingId: booking._id,
-            studentName: booking.studentId.fullName,
-            ustaadhName: booking.ustaadhId.fullName,
+            studentName: (booking.studentId as any).fullName,
+            ustaadhName: (booking.ustaadhId as any).fullName,
             packageType: booking.packageType,
             date: slot.date,
             startTime: slot.startTime,

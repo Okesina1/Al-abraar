@@ -17,7 +17,7 @@ export class UploadsController {
       storage: memoryStorage(),
       limits: { fileSize: APP_CONSTANTS.UPLOAD.MAX_FILE_SIZE },
       fileFilter: (req, file, cb) => {
-        const allowedTypes = [
+        const allowedTypes: string[] = [
           ...APP_CONSTANTS.UPLOAD.ALLOWED_IMAGE_TYPES,
           ...APP_CONSTANTS.UPLOAD.ALLOWED_DOCUMENT_TYPES,
         ];
