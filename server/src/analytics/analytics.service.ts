@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Booking, PaymentStatus } from '../bookings/schemas/booking.schema';
 import { User, UserRole } from '../users/schemas/user.schema';
 import { Review } from '../reviews/schemas/review.schema';
+import { DateUtils } from '../common/utils/date.utils';
 
 @Injectable()
 export class AnalyticsService {
@@ -94,9 +95,10 @@ export class AnalyticsService {
       });
 
       monthlyData.push({
-        month: monthStart.toLocaleDateString('en-US', { month: 'short' }),
+        month: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         revenue: revenue[0]?.total || 0,
-        bookings: bookingCount
+        bookings: bookingCount,
+        date: DateUtils.formatDate(monthStart)
       });
     }
 

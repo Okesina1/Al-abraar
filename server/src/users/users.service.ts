@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserRole, UserStatus } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +22,17 @@ export class UsersService {
     return this.userModel.findById(id).select('-password').exec();
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().select('-password').exec();
+  async findAll(pagination?: PaginationDto): Promise<{ users: User[]; total: number; page: number; limit: number }> {
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 20;
+    const skip = pagination?.skip || 0;
+
+    const [users, total] = await Promise.all([
+      this.userModel.find().select('-password').skip(skip).limit(limit).exec(),
+      this.userModel.countDocuments(),
+    ]);
+
+    return { users, total, page, limit };
   }
 
   async findUstaadhsByStatus(isApproved: boolean): Promise<User[]> {
@@ -32,10 +42,10 @@ export class UsersService {
       .exec();
   }
 
-  async findApprovedUstaadhsWithFilters(filters: any): Promise<User[]> {
+  async findApprovedUstaadhsWithFilters(filters: any, pagination?: PaginationDto): Promise<{ ustaadhs: User[]; total: number; page: number; limit: number }> {
     const query: any = { 
       role: UserRole.USTAADH, 
-      isApproved: true 
+      isApproved: true,
       status: UserStatus.ACTIVE
     };
 
@@ -46,6 +56,39 @@ export class UsersService {
     if (filters.specialties) {
       query.specialties = { $in: filters.specialties };
     }
+
+    if (filters.search) {
+      query.$or = [
+        { fullName: { $regex: filters.search, $options: 'i' } },
+        { bio: { $regex: filters.search, $options: 'i' } },
+        { specialties: { $in: [new RegExp(filters.search, 'i')] } },
+      ];
+    }
+
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 20;
+    const skip = pagination?.skip || 0;
+
+    const [ustaadhs, total] = await Promise.all([
+      this.userModel
+        .find(query)
+        .select('-password')
+        .sort({ rating: -1, reviewCount: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.userModel.countDocuments(query),
+    ]);
+
+    return { ustaadhs, total, page, limit };
+  }
+
+  async findApprovedUstaadhsSimple(): Promise<User[]> {
+    const query: any = { 
+      role: UserRole.USTAADH, 
+      isApproved: true,
+      status: UserStatus.ACTIVE
+    };
 
     return this.userModel
       .find(query)

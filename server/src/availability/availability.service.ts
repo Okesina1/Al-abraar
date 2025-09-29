@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Availability } from './schemas/availability.schema';
+import { DateUtils } from '../common/utils/date.utils';
 
 @Injectable()
 export class AvailabilityService {
@@ -30,6 +31,10 @@ export class AvailabilityService {
     startTime: string, 
     endTime: string
   ): Promise<boolean> {
+    // Validate time formats
+    if (!DateUtils.isValidTimeFormat(startTime) || !DateUtils.isValidTimeFormat(endTime)) {
+      return false;
+    }
     const availability = await this.availabilityModel.findOne({
       ustaadhId,
       dayOfWeek,
@@ -38,6 +43,16 @@ export class AvailabilityService {
       endTime: { $gte: endTime }
     });
 
-    return !!availability;
+      return false;
+    }
+    if (!availability) {
+      return false;
+    // Check if requested time is within available hours using time comparison
+    const availableStart = DateUtils.timeToMinutes(availability.startTime);
+    const availableEnd = DateUtils.timeToMinutes(availability.endTime);
+    const requestedStart = DateUtils.timeToMinutes(startTime);
+    const requestedEnd = DateUtils.timeToMinutes(endTime);
+    }
+    return requestedStart >= availableStart && requestedEnd <= availableEnd;
   }
 }

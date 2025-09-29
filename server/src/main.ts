@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { CustomValidationPipe } from './common/pipes/validation.pipe';
 import * as cors from 'cors';
 
 async function bootstrap() {
@@ -10,17 +11,24 @@ async function bootstrap() {
   
   // Enable CORS
   app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean),
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   }));
   
   // Global exception filter
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new AllExceptionsFilter());
   
   // Global logging interceptor
   app.useGlobalInterceptors(new LoggingInterceptor());
   
   // Global validation pipe
+  app.useGlobalPipes(new CustomValidationPipe());
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
@@ -36,8 +44,8 @@ async function bootstrap() {
   const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`🚀 Al-Abraar API running on http://localhost:${port}`);
-  console.log(`📚 API Documentation: http://localhost:${port}/api`);
   console.log(`🔍 Health Check: http://localhost:${port}/api/health`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
 }
 
 bootstrap();

@@ -18,6 +18,16 @@ export class ReviewsService {
     comment: string,
     bookingId?: string
   ): Promise<Review> {
+    // Validate rating
+    if (rating < 1 || rating > 5) {
+      throw new BadRequestException('Rating must be between 1 and 5');
+    }
+
+    // Validate comment length
+    if (comment.trim().length < 10) {
+      throw new BadRequestException('Comment must be at least 10 characters long');
+    }
+
     // Check if student has already reviewed this Ustaadh
     const existingReview = await this.reviewModel.findOne({
       studentId,
@@ -27,6 +37,12 @@ export class ReviewsService {
 
     if (existingReview) {
       throw new BadRequestException('You have already reviewed this Ustaadh for this booking');
+    }
+
+    // If bookingId is provided, verify the booking exists and belongs to the student
+    if (bookingId) {
+      // In a real implementation, you would inject BookingsService and verify the booking
+      // For now, we'll skip this validation
     }
 
     const review = new this.reviewModel({

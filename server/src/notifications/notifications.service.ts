@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { Notification, NotificationType } from './schemas/notification.schema';
 import * as nodemailer from 'nodemailer';
+import { EmailUtils } from '../common/utils/email.utils';
 
 @Injectable()
 export class NotificationsService {
@@ -75,9 +76,13 @@ export class NotificationsService {
 
   async sendEmail(to: string, subject: string, html: string): Promise<void> {
     try {
+      if (!EmailUtils.isValidEmail(to)) {
+        console.error('Invalid email address:', to);
+        return;
+      }
       await this.transporter.sendMail({
         from: this.configService.get<string>('SMTP_USER'),
-        to,
+        to: EmailUtils.normalizeEmail(to),
         subject,
         html,
       });
@@ -94,16 +99,23 @@ export class NotificationsService {
       'Congratulations! Your Ustaadh application has been approved. You can now start accepting bookings.',
       NotificationType.SUCCESS
     );
-
-    await this.sendEmail(
-      ustaadhEmail,
-      'Al-Abraar - Account Approved',
-      `
-        <h2>Congratulations ${ustaadhName}!</h2>
-        <p>Your Ustaadh application has been approved. You can now start accepting bookings on Al-Abraar.</p>
-        <p>Login to your dashboard to set your availability and start teaching.</p>
-        <a href="${this.configService.get<string>('FRONTEND_URL')}/login">Login to Dashboard</a>
-      `
+        EmailUtils.generateEmailTemplate(
+          'Application Update',
+          `
+            <p>Dear ${user.fullName},</p>
+            <p>Thank you for your interest in joining Al-Abraar as an Ustaadh. After careful review, we are unable to approve your application at this time.</p>
+            <p>You are welcome to reapply in the future with updated credentials.</p>
+            <p>Best regards,<br>Al-Abraar Team</p>
+          `
+        )
+          <p>Assalamu Alaikum ${ustaadhName},</p>
+          <p>Congratulations! Your Ustaadh application has been approved. You can now start accepting bookings on Al-Abraar.</p>
+          <p>Login to your dashboard to set your availability and start teaching.</p>
+          <p>May Allah bless your teaching journey.</p>
+        `,
+        `${this.configService.get<string>('FRONTEND_URL')}/login`,
+        'Login to Dashboard'
+      )
     );
   }
 

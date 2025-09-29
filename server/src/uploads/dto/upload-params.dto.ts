@@ -1,4 +1,5 @@
 import { IsIn, IsOptional, IsString } from 'class-validator';
+import { APP_CONSTANTS } from '../../common/constants/app.constants';
 
 export class UploadParamsDto {
   @IsOptional()
@@ -13,3 +14,6 @@ export class UploadParamsDto {
   @IsString()
   tags?: string; // Comma-separated tags
 }
+  @IsOptional()
+  @IsString()
+  publicId?: string; // Custom public ID for the uploaded file

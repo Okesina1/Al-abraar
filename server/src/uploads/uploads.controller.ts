@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Param, Post, UploadedFile, UseGuards, UseInte
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { APP_CONSTANTS } from '../common/constants/app.constants';
 import { UploadsService } from './uploads.service';
 import { UploadParamsDto } from './dto/upload-params.dto';
 
@@ -14,7 +15,19 @@ export class UploadsController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
-      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB default
+      limits: { fileSize: APP_CONSTANTS.UPLOAD.MAX_FILE_SIZE },
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = [
+          ...APP_CONSTANTS.UPLOAD.ALLOWED_IMAGE_TYPES,
+          ...APP_CONSTANTS.UPLOAD.ALLOWED_DOCUMENT_TYPES,
+        ];
+        
+        if (allowedTypes.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new Error('File type not allowed'), false);
+        }
+      },
     }),
   )
   async upload(@UploadedFile() file: Express.Multer.File, @Body() body: UploadParamsDto) {

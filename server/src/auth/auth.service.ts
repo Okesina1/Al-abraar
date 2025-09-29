@@ -4,7 +4,7 @@ import { UsersService } from '../users/users.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import * as bcrypt from 'bcryptjs';
+import { PasswordUtils } from '../common/utils/password.utils';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +16,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    if (user && await bcrypt.compare(password, user.password)) {
+    if (user && await PasswordUtils.compare(password, user.password)) {
       const { password, ...result } = user.toObject();
       return result;
     }
@@ -70,8 +70,12 @@ export class AuthService {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(registerDto.password, 12);
+    const passwordValidation = PasswordUtils.validatePasswordStrength(registerDto.password);
+    if (!passwordValidation.isValid) {
+      throw new ConflictException(passwordValidation.errors.join(', '));
+    }
 
+    const hashedPassword = await PasswordUtils.hash(registerDto.password);
     // Create user
     const userData = {
       ...registerDto,

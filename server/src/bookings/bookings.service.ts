@@ -5,6 +5,9 @@ import { Booking, BookingStatus, PaymentStatus } from './schemas/booking.schema'
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { NotificationsService } from '../notifications/notifications.service';
+import { PaginationDto } from '../common/dto/pagination.dto';
+import { DateUtils } from '../common/utils/date.utils';
+import { BookingUtils } from '../common/utils/booking.utils';
 
 @Injectable()
 export class BookingsService {
@@ -14,6 +17,28 @@ export class BookingsService {
   ) {}
 
   async create(createBookingDto: CreateBookingDto): Promise<Booking> {
+    // Validate booking dates
+    const dateValidation = BookingUtils.validateBookingDates(
+      createBookingDto.startDate,
+      createBookingDto.endDate
+    );
+    
+    if (!dateValidation.isValid) {
+      throw new BadRequestException(dateValidation.errors.join(', '));
+    }
+
+    // Validate total amount
+    const expectedAmount = BookingUtils.calculateTotalAmount(
+      createBookingDto.packageType,
+      createBookingDto.hoursPerDay,
+      createBookingDto.daysPerWeek,
+      createBookingDto.subscriptionMonths
+    );
+    
+    if (Math.abs(createBookingDto.totalAmount - expectedAmount) > 0.01) {
+      throw new BadRequestException('Invalid total amount calculation');
+    }
+
     // Check for time conflicts
     const conflicts = await this.checkTimeConflicts(
       createBookingDto.ustaadhId,
@@ -38,7 +63,27 @@ export class BookingsService {
     return savedBooking;
   }
 
-  async findAll(): Promise<Booking[]> {
+  async findAll(pagination?: PaginationDto): Promise<{ bookings: Booking[]; total: number; page: number; limit: number }> {
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 20;
+    const skip = pagination?.skip || 0;
+
+    const [bookings, total] = await Promise.all([
+      this.bookingModel
+        .find()
+        .populate('studentId', 'fullName email')
+        .populate('ustaadhId', 'fullName email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.bookingModel.countDocuments(),
+    ]);
+
+    return { bookings, total, page, limit };
+  }
+
+  async findAllSimple(): Promise<Booking[]> {
     return this.bookingModel
       .find()
       .populate('studentId', 'fullName email')
@@ -174,25 +219,43 @@ export class BookingsService {
       thisMonthRevenue: thisMonthRevenue[0]?.total || 0
     };
   }
+
   private async checkTimeConflicts(ustaadhId: string, schedule: any[]): Promise<any[]> {
     const conflicts = [];
     
     for (const slot of schedule) {
+      // Validate time format
+      if (!DateUtils.isValidTimeFormat(slot.startTime) || !DateUtils.isValidTimeFormat(slot.endTime)) {
+        conflicts.push({ ...slot, error: 'Invalid time format' });
+        continue;
+      }
+
+      // Check if end time is after start time
+      if (DateUtils.timeToMinutes(slot.endTime) <= DateUtils.timeToMinutes(slot.startTime)) {
+        conflicts.push({ ...slot, error: 'End time must be after start time' });
+        continue;
+      }
+
       const existingBookings = await this.bookingModel.find({
         ustaadhId,
         status: { $in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
         'schedule.date': slot.date,
-        'schedule.dayOfWeek': slot.dayOfWeek,
-        $or: [
-          {
-            'schedule.startTime': { $lt: slot.endTime },
-            'schedule.endTime': { $gt: slot.startTime }
-          }
-        ]
+        'schedule.dayOfWeek': slot.dayOfWeek
       });
 
-      if (existingBookings.length > 0) {
-        conflicts.push(slot);
+      // Check for time overlaps
+      for (const booking of existingBookings) {
+        for (const existingSlot of booking.schedule) {
+          if (DateUtils.isTimeSlotOverlapping(
+            slot.startTime,
+            slot.endTime,
+            existingSlot.startTime,
+            existingSlot.endTime
+          )) {
+            conflicts.push({ ...slot, error: 'Time slot conflicts with existing booking' });
+            break;
+          }
+        }
       }
     }
 
@@ -232,5 +295,19 @@ export class BookingsService {
     }
 
     return lessons.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+
+  async getBookingsByDateRange(startDate: string, endDate: string): Promise<Booking[]> {
+    return this.bookingModel
+      .find({
+        createdAt: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        },
+      })
+      .populate('studentId', 'fullName email')
+      .populate('ustaadhId', 'fullName email')
+      .sort({ createdAt: -1 })
+      .exec();
   }
 }

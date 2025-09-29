@@ -9,10 +9,12 @@ export class UploadsService {
   async uploadFile(
     file: Express.Multer.File,
     params: { folder?: string; resourceType?: 'image' | 'video' | 'auto'; tags?: string },
+    params: { folder?: string; resourceType?: 'image' | 'video' | 'auto'; tags?: string; publicId?: string },
   ): Promise<UploadApiResponse> {
     const options: UploadApiOptions = {
       folder: params.folder,
       resource_type: (params.resourceType as any) || 'auto',
+      public_id: params.publicId,
     };
     if (params.tags) {
       options.tags = params.tags.split(',').map((t) => t.trim()).filter(Boolean);

@@ -1,4 +1,5 @@
 import { IsEmail, IsString, IsNumber, IsEnum, IsOptional, MinLength, Min, Max } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { UserRole } from '../../users/schemas/user.schema';
 
 export class RegisterDto {
@@ -10,6 +11,7 @@ export class RegisterDto {
   password: string;
 
   @IsString()
+  @Transform(({ value }) => value?.trim())
   fullName: string;
 
   @IsEnum(UserRole)
@@ -19,9 +21,11 @@ export class RegisterDto {
   phoneNumber: string;
 
   @IsString()
+  @Transform(({ value }) => value?.trim())
   country: string;
 
   @IsString()
+  @Transform(({ value }) => value?.trim())
   city: string;
 
   @IsNumber()
@@ -31,10 +35,12 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => value?.trim())
   bio?: string;
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => value?.trim())
   experience?: string;
 
   @IsOptional()

@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Query, UseGuards, Patch, Body, Request, Post } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, Patch, Body, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -13,8 +14,17 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @Get()
-  async findAll() {
-    return this.usersService.findAll();
+  async findAll(@Query() pagination: PaginationDto) {
+    const result = await this.usersService.findAll(pagination);
+    return {
+      users: result.users,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: Math.ceil(result.total / result.limit),
+      },
+    };
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,7 +36,10 @@ export class UsersController {
 
   @Get('ustaadhss')
   async getApprovedUstaadhss(@Query() filters: any) {
-    return this.usersService.findApprovedUstaadhsWithFilters(filters);
+    const pagination = new PaginationDto();
+    pagination.page = filters.page || 1;
+    pagination.limit = filters.limit || 20;
+    return this.usersService.findApprovedUstaadhsWithFilters(filters, pagination);
   }
 
   @UseGuards(JwtAuthGuard)
