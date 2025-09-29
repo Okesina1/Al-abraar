@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Availability } from './schemas/availability.schema';
 import { DateUtils } from '../common/utils/date.utils';
 
@@ -31,7 +31,7 @@ export class AvailabilityService {
 
     // Create new availability slots
     const availabilitySlots = availabilityData.map(slot => ({
-      ustaadhId,
+      ustaadhId: new Types.ObjectId(ustaadhId),
       dayOfWeek: slot.dayOfWeek,
       startTime: slot.startTime,
       endTime: slot.endTime,
