@@ -33,7 +33,7 @@ export class NotificationsService {
     actionUrl?: string
   ): Promise<Notification> {
     const notification = new this.notificationModel({
-      userId,
+      userId: new Types.ObjectId(userId),
       title,
       message,
       type,
