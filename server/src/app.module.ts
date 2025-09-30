@@ -50,6 +50,7 @@ import { TestimonialsModule } from './testimonials/testimonials.module';
     AnalyticsModule,
     SettingsModule,
     HealthModule,
+    TestimonialsModule,
   ],
   controllers: [AppController],
   providers: [
