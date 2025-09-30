@@ -34,6 +34,7 @@ export const LandingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [pricing, setPricing] = useState<{ basic: number; complete: number } | null>(null);
   const [teachersCount, setTeachersCount] = useState<number | null>(null);
+  const [publicStats, setPublicStats] = useState<{ activeStudents?: number; countries?: number; avgRating?: number } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -71,6 +72,15 @@ export const LandingPage: React.FC = () => {
         const pricingFromSettings = (settingsRes as any)?.pricing;
         if (pricingFromSettings && typeof pricingFromSettings.basic === 'number' && typeof pricingFromSettings.complete === 'number') {
           setPricing(pricingFromSettings);
+        }
+
+        const statsFromSettings = (settingsRes as any)?.publicStats || (settingsRes as any)?.marketingStats || (settingsRes as any)?.platformStats;
+        if (statsFromSettings && typeof statsFromSettings === 'object') {
+          setPublicStats({
+            activeStudents: typeof statsFromSettings.activeStudents === 'number' ? statsFromSettings.activeStudents : undefined,
+            countries: typeof statsFromSettings.countries === 'number' ? statsFromSettings.countries : undefined,
+            avgRating: typeof statsFromSettings.avgRating === 'number' ? statsFromSettings.avgRating : undefined,
+          });
         }
       } catch (e: any) {
         if (isMounted) setError(e.message || 'Failed to load data');
@@ -139,18 +149,22 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">10K+</div>
-                  <div className="text-xs sm:text-sm text-gray-600">{t('stats_active_students')}</div>
-                </div>
+                {publicStats?.activeStudents !== undefined && (
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{publicStats.activeStudents.toLocaleString()}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">{t('stats_active_students')}</div>
+                  </div>
+                )}
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{teachersCount !== null ? teachersCount.toLocaleString() : '—'}</div>
                   <div className="text-xs sm:text-sm text-gray-600">{t('stats_expert_teachers')}</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">40+</div>
-                  <div className="text-xs sm:text-sm text-gray-600">{t('stats_countries')}</div>
-                </div>
+                {publicStats?.countries !== undefined && (
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{publicStats.countries.toLocaleString()}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">{t('stats_countries')}</div>
+                  </div>
+                )}
               </div>
             </div>
 
