@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Users, Search, Filter, Eye, Shield, Ban, Mail, Phone, MapPin } from 'lucide-react';
 import { UserManagement } from '../../components/admin/UserManagement';
 import { usersApi } from '../../utils/api';
