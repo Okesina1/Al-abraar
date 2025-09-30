@@ -40,6 +40,7 @@ export class SettingsService {
       { key: 'pricing', value: { basic: 5, complete: 7 }, isPublic: true },
       { key: 'refundPolicy', value: { enabled: true, windowDays: 7 }, isPublic: true },
       { key: 'courseAvailability', value: { quran: true, tajweed: true, hadeeth: true, arabic: true }, isPublic: true },
+      { key: 'publicStats', value: { activeStudents: 10000, countries: 40, avgRating: 4.9 }, isPublic: true },
       { key: 'platformFeePercentage', value: 30, isPublic: false },
       { key: 'maxBookingAdvanceDays', value: 90, isPublic: true },
       { key: 'minCancellationHours', value: 24, isPublic: true }
