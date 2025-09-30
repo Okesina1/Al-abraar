@@ -168,7 +168,7 @@ export const bookingsApi = {
 
 export const availabilityApi = {
   getAvailability: (ustaadhId: string) =>
-    apiClient.get(`/availability/${ustaadhId}`),
+    apiClient.get(`/availability/ustaadh/${ustaadhId}`),
 
   setAvailability: (data: any[]) =>
     apiClient.post('/availability', data),
@@ -293,7 +293,7 @@ export const analyticsApi = {
 
   getUserGrowth: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
-    return apiClient.get(`/analytics/user-growth${query}`);
+    return apiClient.get(`/analytics/growth${query}`);
   },
 
   getBookingTrends: (params?: Record<string, any>) => {
@@ -335,7 +335,7 @@ export const healthApi = {
     apiClient.get('/health'),
 
   getDatabaseHealth: () =>
-    apiClient.get('/health/database'),
+    apiClient.get('/health/detailed'),
 };
 
 export const API_ENDPOINTS = {
