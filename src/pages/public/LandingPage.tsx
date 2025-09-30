@@ -32,35 +32,53 @@ export const LandingPage: React.FC = () => {
   const [ustaadhs, setUstaadhs] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pricing, setPricing] = useState<{ basic: number; complete: number } | null>(null);
+  const [teachersCount, setTeachersCount] = useState<number | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    const fetchUstaadhs = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await usersApi.getApprovedUstaadhss({ limit: '12' });
-        const list = Array.isArray(res?.ustaadhs)
-          ? res.ustaadhs
-          : Array.isArray(res)
-          ? res
-          : Array.isArray(res?.data)
-          ? res.data
+        const [ustaadhsRes, settingsRes] = await Promise.all([
+          usersApi.getApprovedUstaadhss({ limit: '12' }),
+          settingsApi.getSettings(),
+        ]);
+
+        const list = Array.isArray(ustaadhsRes?.ustaadhs)
+          ? ustaadhsRes.ustaadhs
+          : Array.isArray(ustaadhsRes)
+          ? ustaadhsRes
+          : Array.isArray(ustaadhsRes?.data)
+          ? ustaadhsRes.data
           : [];
+
         if (!isMounted) return;
+
         setUstaadhs(
           list.map((u: any) => ({
             ...u,
             id: u.id || u._id || u.userId,
           }))
         );
+        if (typeof ustaadhsRes?.total === 'number') {
+          setTeachersCount(ustaadhsRes.total);
+        } else if (Array.isArray(list)) {
+          setTeachersCount(list.length);
+        }
+
+        const pricingFromSettings = (settingsRes as any)?.pricing;
+        if (pricingFromSettings && typeof pricingFromSettings.basic === 'number' && typeof pricingFromSettings.complete === 'number') {
+          setPricing(pricingFromSettings);
+        }
       } catch (e: any) {
-        if (isMounted) setError(e.message || 'Failed to load teachers');
+        if (isMounted) setError(e.message || 'Failed to load data');
       } finally {
         if (isMounted) setLoading(false);
       }
     };
-    fetchUstaadhs();
+    fetchData();
     return () => {
       isMounted = false;
     };
