@@ -1,62 +1,208 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Users, DollarSign, Star, Clock, BookOpen, MessageCircle, TrendingUp } from 'lucide-react';
-import { useBooking } from '../../contexts/BookingContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { bookingsApi, payrollApi, reviewsApi } from '../../utils/api';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+
+interface DashboardStats {
+  activeStudents: number;
+  weekLessons: number;
+  monthlyEarnings: number;
+  averageRating: number;
+}
 
 export const UstaadhDashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const { getBookingsByUser } = useBooking();
+  const [stats, setStats] = useState<DashboardStats>({
+    activeStudents: 0,
+    weekLessons: 0,
+    monthlyEarnings: 0,
+    averageRating: 0
+  });
+  const [upcomingLessons, setUpcomingLessons] = useState<any[]>([]);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [monthStats, setMonthStats] = useState({
+    completedLessons: 0,
+    newStudents: 0,
+    earnings: 0
+  });
+  const [loading, setLoading] = useState(true);
 
-  const bookings = user ? getBookingsByUser(user.id, 'ustaadh') : [];
+  useEffect(() => {
+    let isMounted = true;
 
-  // Mock data for dashboard
-  const stats = [
-    { title: 'Active Students', value: '8', icon: Users, color: 'bg-blue-500' },
-    { title: 'This Week\'s Lessons', value: '12', icon: Calendar, color: 'bg-green-500' },
-    { title: 'Monthly Earnings', value: '$1,680', icon: DollarSign, color: 'bg-yellow-500' },
-    { title: 'Average Rating', value: '4.9', icon: Star, color: 'bg-purple-500' }
-  ];
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const [bookingsResponse, payrollResponse, reviewsResponse] = await Promise.all([
+          bookingsApi.getMyBookings(),
+          payrollApi.getMyCompensationPlan().catch(() => null),
+          reviewsApi.getMyReviews().catch(() => ({ reviews: [], averageRating: 0 }))
+        ]);
 
-  const upcomingLessons = [
+        if (!isMounted) return;
+
+        const bookingsData = Array.isArray(bookingsResponse?.bookings)
+          ? bookingsResponse.bookings
+          : Array.isArray(bookingsResponse)
+          ? bookingsResponse
+          : [];
+
+        const confirmedBookings = bookingsData.filter((b: any) => b.status === 'confirmed');
+
+        const uniqueStudents = new Set(
+          confirmedBookings.map((b: any) =>
+            typeof b.studentId === 'object' ? b.studentId.id || b.studentId._id : b.studentId
+          )
+        );
+
+        const today = new Date();
+        const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const weekLessons = confirmedBookings.reduce((count: number, b: any) => {
+          const scheduleItems = b.schedule || [];
+          return (
+            count +
+            scheduleItems.filter((s: any) => {
+              const lessonDate = new Date(s.date);
+              return lessonDate >= oneWeekAgo && lessonDate <= today;
+            }).length
+          );
+        }, 0);
+
+        const upcoming = bookingsData
+          .filter((b: any) => b.status === 'confirmed')
+          .flatMap((b: any) => {
+            const scheduleItems = b.schedule || [];
+            return scheduleItems
+              .filter((s: any) => new Date(s.date) >= new Date())
+              .slice(0, 2)
+              .map((s: any) => {
+                const studentName =
+                  typeof b.studentId === 'object' && b.studentId !== null
+                    ? b.studentId.fullName
+                    : b.studentName || 'Student';
+                return {
+                  id: b.id || b._id,
+                  studentName,
+                  studentId: typeof b.studentId === 'object' ? b.studentId.id || b.studentId._id : b.studentId,
+                  course: b.packageType,
+                  date: s.date,
+                  time: s.startTime,
+                  duration: `${b.hoursPerDay || 1} hour${(b.hoursPerDay || 1) > 1 ? 's' : ''}`,
+                  link: b.meetingLink || '#'
+                };
+              });
+          })
+          .slice(0, 3);
+
+        const monthlyEarnings = payrollResponse?.monthlySalary || 0;
+
+        const avgRating = reviewsResponse?.averageRating || user?.rating || 0;
+
+        const oneMonthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const completedThisMonth = bookingsData
+          .filter((b: any) => b.status === 'completed')
+          .reduce((count: number, b: any) => {
+            const scheduleItems = b.schedule || [];
+            return (
+              count +
+              scheduleItems.filter((s: any) => {
+                const lessonDate = new Date(s.date);
+                return lessonDate >= oneMonthAgo && lessonDate <= today;
+              }).length
+            );
+          }, 0);
+
+        const newStudentsThisMonth = bookingsData.filter((b: any) => {
+          const createdDate = new Date(b.createdAt);
+          return createdDate >= oneMonthAgo && createdDate <= today;
+        }).length;
+
+        const activities: any[] = [];
+
+        bookingsData
+          .filter((b: any) => b.status === 'completed')
+          .slice(0, 2)
+          .forEach((b: any) => {
+            const studentName =
+              typeof b.studentId === 'object' && b.studentId !== null ? b.studentId.fullName : 'Student';
+            activities.push({
+              type: 'lesson',
+              message: `Completed lesson with ${studentName}`,
+              time: new Date(b.updatedAt || b.createdAt).toLocaleDateString()
+            });
+          });
+
+        const reviews = Array.isArray(reviewsResponse?.reviews) ? reviewsResponse.reviews : [];
+        reviews.slice(0, 1).forEach((r: any) => {
+          activities.push({
+            type: 'review',
+            message: `Received ${r.rating}-star review`,
+            time: new Date(r.createdAt).toLocaleDateString()
+          });
+        });
+
+        bookingsData.slice(0, 1).forEach((b: any) => {
+          const studentName =
+            typeof b.studentId === 'object' && b.studentId !== null ? b.studentId.fullName : 'Student';
+          activities.push({
+            type: 'booking',
+            message: `New booking from ${studentName}`,
+            time: new Date(b.createdAt).toLocaleDateString()
+          });
+        });
+
+        setStats({
+          activeStudents: uniqueStudents.size,
+          weekLessons,
+          monthlyEarnings,
+          averageRating: avgRating
+        });
+
+        setUpcomingLessons(upcoming);
+        setRecentActivities(activities.slice(0, 4));
+        setMonthStats({
+          completedLessons: completedThisMonth,
+          newStudents: newStudentsThisMonth,
+          earnings: monthlyEarnings
+        });
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDashboardData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
+  const statsCards = [
+    { title: 'Active Students', value: stats.activeStudents.toString(), icon: Users, color: 'bg-blue-500' },
+    { title: "This Week's Lessons", value: stats.weekLessons.toString(), icon: Calendar, color: 'bg-green-500' },
     {
-      id: '1',
-      studentName: 'Sarah Ahmed',
-      studentId: '3',
-      course: 'Complete Package',
-      date: '2024-01-16',
-      time: '14:00',
-      duration: '1.5 hours',
-      link: 'https://meet.google.com/abc-def-ghi'
+      title: 'Monthly Earnings',
+      value: `$${stats.monthlyEarnings.toFixed(2)}`,
+      icon: DollarSign,
+      color: 'bg-yellow-500'
     },
-    {
-      id: '2',
-      studentName: 'Ali Hassan',
-      studentId: '4',
-      course: 'Qur\'an & Tajweed',
-      date: '2024-01-16',
-      time: '16:00',
-      duration: '1 hour',
-      link: 'https://meet.google.com/def-ghi-jkl'
-    },
-    {
-      id: '3',
-      studentName: 'Fatima Rahman',
-      studentId: '5',
-      course: 'Complete Package',
-      date: '2024-01-17',
-      time: '10:00',
-      duration: '2 hours',
-      link: 'https://meet.google.com/ghi-jkl-mno'
-    }
+    { title: 'Average Rating', value: stats.averageRating.toFixed(1), icon: Star, color: 'bg-purple-500' }
   ];
 
-  const recentActivities = [
-    { type: 'lesson', message: 'Completed lesson with Sarah Ahmed', time: '2 hours ago' },
-    { type: 'review', message: 'Received 5-star review from Ali Hassan', time: '1 day ago' },
-    { type: 'booking', message: 'New booking from Fatima Rahman', time: '2 days ago' },
-    { type: 'payment', message: 'Payment received: $126', time: '3 days ago' }
-  ];
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-md p-12 flex flex-col items-center justify-center space-y-4">
+        <LoadingSpinner size="lg" />
+        <p className="text-sm text-gray-600">Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -68,7 +214,7 @@ export const UstaadhDashboardPage: React.FC = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {stats.map((stat, index) => (
+        {statsCards.map((stat, index) => (
           <div key={index} className="bg-white rounded-xl shadow-md p-4 lg:p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
               <div>
@@ -179,7 +325,7 @@ export const UstaadhDashboardPage: React.FC = () => {
                 </div>
                 <span className="font-medium text-gray-800">Lessons Completed</span>
               </div>
-              <span className="font-semibold text-green-600">32</span>
+              <span className="font-semibold text-green-600">{monthStats.completedLessons}</span>
             </div>
 
             <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
@@ -189,7 +335,7 @@ export const UstaadhDashboardPage: React.FC = () => {
                 </div>
                 <span className="font-medium text-gray-800">New Students</span>
               </div>
-              <span className="font-semibold text-blue-600">3</span>
+              <span className="font-semibold text-blue-600">{monthStats.newStudents}</span>
             </div>
 
             <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
@@ -199,7 +345,7 @@ export const UstaadhDashboardPage: React.FC = () => {
                 </div>
                 <span className="font-medium text-gray-800">Average Rating</span>
               </div>
-              <span className="font-semibold text-yellow-600">4.9/5</span>
+              <span className="font-semibold text-yellow-600">{stats.averageRating.toFixed(1)}/5</span>
             </div>
 
             <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
@@ -209,7 +355,7 @@ export const UstaadhDashboardPage: React.FC = () => {
                 </div>
                 <span className="font-medium text-gray-800">Earnings</span>
               </div>
-              <span className="font-semibold text-purple-600">$1,680</span>
+              <span className="font-semibold text-purple-600">${monthStats.earnings.toFixed(2)}</span>
             </div>
           </div>
         </div>

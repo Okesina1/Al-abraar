@@ -1,77 +1,195 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, BookOpen, CreditCard, Star, Clock, Users, MessageCircle, TrendingUp } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { bookingsApi, paymentsApi } from '../../utils/api';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+
+interface DashboardStats {
+  activeSubscriptions: number;
+  lessonsThisWeek: number;
+  totalSpent: number;
+  completedLessons: number;
+}
 
 export const StudentDashboardPage: React.FC = () => {
   const toast = useToast();
-  // Mock data
-  const stats = [
-    { title: 'Active Subscriptions', value: '2', icon: BookOpen, color: 'bg-green-500' },
-    { title: 'Lessons This Week', value: '4', icon: Calendar, color: 'bg-blue-500' },
-    { title: 'Total Spent', value: '$336', icon: CreditCard, color: 'bg-yellow-500' },
-    { title: 'Completed Lessons', value: '24', icon: Star, color: 'bg-purple-500' }
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats>({
+    activeSubscriptions: 0,
+    lessonsThisWeek: 0,
+    totalSpent: 0,
+    completedLessons: 0
+  });
+  const [upcomingLessons, setUpcomingLessons] = useState<any[]>([]);
+  const [activeSubscriptions, setActiveSubscriptions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const [bookingsResponse, paymentHistoryResponse] = await Promise.all([
+          bookingsApi.getMyBookings(),
+          paymentsApi.getPaymentHistory().catch(() => ({ payments: [], total: 0 }))
+        ]);
+
+        if (!isMounted) return;
+
+        const bookingsData = Array.isArray(bookingsResponse?.bookings)
+          ? bookingsResponse.bookings
+          : Array.isArray(bookingsResponse)
+          ? bookingsResponse
+          : [];
+
+        const activeBookings = bookingsData.filter(
+          (b: any) => b.status === 'confirmed' || b.status === 'pending'
+        );
+
+        const upcoming = bookingsData
+          .filter((b: any) => {
+            if (b.status !== 'confirmed') return false;
+            const scheduleItems = b.schedule || [];
+            return scheduleItems.some((s: any) => {
+              const lessonDate = new Date(s.date);
+              return lessonDate >= new Date();
+            });
+          })
+          .flatMap((b: any) => {
+            const scheduleItems = b.schedule || [];
+            return scheduleItems
+              .filter((s: any) => new Date(s.date) >= new Date())
+              .slice(0, 2)
+              .map((s: any) => {
+                const ustaadhName =
+                  typeof b.ustaadhId === 'object' && b.ustaadhId !== null
+                    ? b.ustaadhId.fullName
+                    : b.ustaadhName || 'Ustaadh';
+                return {
+                  id: b.id || b._id,
+                  ustaadh: ustaadhName,
+                  ustaadhId: typeof b.ustaadhId === 'object' ? b.ustaadhId.id || b.ustaadhId._id : b.ustaadhId,
+                  course: b.packageType,
+                  date: s.date,
+                  time: s.startTime,
+                  duration: `${b.hoursPerDay || 1} hour${(b.hoursPerDay || 1) > 1 ? 's' : ''}`,
+                  link: b.meetingLink || '#'
+                };
+              });
+          })
+          .slice(0, 3);
+
+        const completedLessonsCount = bookingsData
+          .filter((b: any) => b.status === 'completed')
+          .reduce((count: number, b: any) => {
+            return count + (b.schedule ? b.schedule.length : 0);
+          }, 0);
+
+        const today = new Date();
+        const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const lessonsThisWeek = bookingsData
+          .filter((b: any) => b.status === 'confirmed' || b.status === 'completed')
+          .reduce((count: number, b: any) => {
+            const scheduleItems = b.schedule || [];
+            return (
+              count +
+              scheduleItems.filter((s: any) => {
+                const lessonDate = new Date(s.date);
+                return lessonDate >= oneWeekAgo && lessonDate <= today;
+              }).length
+            );
+          }, 0);
+
+        const payments = Array.isArray(paymentHistoryResponse?.payments)
+          ? paymentHistoryResponse.payments
+          : Array.isArray(paymentHistoryResponse)
+          ? paymentHistoryResponse
+          : [];
+
+        const totalSpent = payments
+          .filter((p: any) => p.status === 'succeeded' || p.status === 'completed')
+          .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+        const activeWithProgress = activeBookings.map((b: any) => {
+          const ustaadhName =
+            typeof b.ustaadhId === 'object' && b.ustaadhId !== null
+              ? b.ustaadhId.fullName
+              : b.ustaadhName || 'Ustaadh';
+
+          const totalScheduled = b.schedule ? b.schedule.length : 0;
+          const completed = b.schedule
+            ? b.schedule.filter((s: any) => new Date(s.date) < new Date()).length
+            : 0;
+          const progress = totalScheduled > 0 ? Math.round((completed / totalScheduled) * 100) : 0;
+
+          return {
+            id: b.id || b._id,
+            packageType: b.packageType,
+            ustaadh: ustaadhName,
+            hoursPerDay: b.hoursPerDay,
+            daysPerWeek: b.daysPerWeek,
+            totalAmount: b.totalAmount,
+            subscriptionMonths: b.subscriptionMonths,
+            endDate: b.endDate,
+            progress
+          };
+        });
+
+        setStats({
+          activeSubscriptions: activeBookings.length,
+          lessonsThisWeek,
+          totalSpent,
+          completedLessons: completedLessonsCount
+        });
+
+        setUpcomingLessons(upcoming);
+        setActiveSubscriptions(activeWithProgress);
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchDashboardData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const statsCards = [
+    { title: 'Active Subscriptions', value: stats.activeSubscriptions.toString(), icon: BookOpen, color: 'bg-green-500' },
+    { title: 'Lessons This Week', value: stats.lessonsThisWeek.toString(), icon: Calendar, color: 'bg-blue-500' },
+    { title: 'Total Spent', value: `$${stats.totalSpent.toFixed(2)}`, icon: CreditCard, color: 'bg-yellow-500' },
+    { title: 'Completed Lessons', value: stats.completedLessons.toString(), icon: Star, color: 'bg-purple-500' }
   ];
 
-  const upcomingLessons = [
-    {
-      id: '1',
-      ustaadh: 'Ahmed Al-Hafiz',
-      ustaadhId: '2',
-      course: 'Complete Package',
-      date: '2024-01-16',
-      time: '14:00',
-      duration: '1.5 hours',
-      link: 'https://meet.google.com/abc-def-ghi'
-    },
-    {
-      id: '2',
-      ustaadh: 'Dr. Fatima Al-Zahra',
-      ustaadhId: '6',
-      course: 'Qur\'an & Tajweed',
-      date: '2024-01-17',
-      time: '16:00',
-      duration: '1 hour',
-      link: 'https://meet.google.com/def-ghi-jkl'
-    }
-  ];
-
-  const activeSubscriptions = [
-    {
-      id: '1',
-      packageType: 'Complete Package',
-      ustaadh: 'Ahmed Al-Hafiz',
-      hoursPerDay: 1.5,
-      daysPerWeek: 3,
-      totalAmount: 126,
-      subscriptionMonths: 1,
-      endDate: '2024-02-15',
-      progress: 65
-    },
-    {
-      id: '2',
-      packageType: 'Qur\'an & Tajweed',
-      ustaadh: 'Dr. Fatima Al-Zahra',
-      hoursPerDay: 1,
-      daysPerWeek: 2,
-      totalAmount: 40,
-      subscriptionMonths: 1,
-      endDate: '2024-02-20',
-      progress: 45
-    }
-  ];
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-md p-12 flex flex-col items-center justify-center space-y-4">
+        <LoadingSpinner size="lg" />
+        <p className="text-sm text-gray-600">Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Welcome Message */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl shadow-md p-6 text-white">
-        <h1 className="text-2xl lg:text-3xl font-bold mb-2">Welcome back, Sarah!</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold mb-2">Welcome back, {user?.fullName?.split(' ')[0]}!</h1>
         <p className="text-green-100">Continue your Islamic learning journey with Al-Abraar</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {stats.map((stat, index) => (
+        {statsCards.map((stat, index) => (
           <div key={index} className="bg-white rounded-xl shadow-md p-4 lg:p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
               <div>

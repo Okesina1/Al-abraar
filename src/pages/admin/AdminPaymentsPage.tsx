@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CreditCard, Search, Filter, Download, DollarSign, TrendingUp, Calendar, RefreshCw, ClipboardList } from 'lucide-react';
 import { usePayroll } from '../../contexts/PayrollContext';
+import { paymentsApi } from '../../utils/api';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 
 const formatCurrency = (amount: number, currency = 'USD') => new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
 
@@ -8,82 +10,80 @@ export const AdminPaymentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [payments, setPayments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const { plans } = usePayroll();
 
-  // Mock student payments data (bookings revenue)
-  const payments = [
-    {
-      id: 'pay_1',
-      bookingId: '1',
-      studentName: 'Sarah Ahmed',
-      ustaadhName: 'Ahmed Al-Hafiz',
-      amount: 126,
-      currency: 'USD',
-      status: 'completed',
-      paymentMethod: 'Credit Card',
-      transactionId: 'txn_abc123',
-      createdAt: '2024-01-15T10:30:00Z',
-      platformFee: 37.8,
-      ustaadhEarning: 88.2
-    },
-    {
-      id: 'pay_2',
-      bookingId: '2',
-      studentName: 'Ali Hassan',
-      ustaadhName: 'Dr. Fatima Al-Zahra',
-      amount: 120,
-      currency: 'USD',
-      status: 'pending',
-      paymentMethod: 'Credit Card',
-      transactionId: 'txn_def456',
-      createdAt: '2024-01-14T14:20:00Z',
-      platformFee: 36,
-      ustaadhEarning: 84
-    },
-    {
-      id: 'pay_3',
-      bookingId: '3',
-      studentName: 'Fatima Rahman',
-      ustaadhName: 'Ustadh Omar Hassan',
-      amount: 224,
-      currency: 'USD',
-      status: 'completed',
-      paymentMethod: 'Credit Card',
-      transactionId: 'txn_ghi789',
-      createdAt: '2024-01-12T09:15:00Z',
-      platformFee: 67.2,
-      ustaadhEarning: 156.8
-    },
-    {
-      id: 'pay_4',
-      bookingId: '4',
-      studentName: 'Omar Abdullah',
-      ustaadhName: 'Ustadha Aisha Rahman',
-      amount: 80,
-      currency: 'USD',
-      status: 'failed',
-      paymentMethod: 'Credit Card',
-      transactionId: 'txn_jkl012',
-      createdAt: '2024-01-10T16:45:00Z',
-      platformFee: 0,
-      ustaadhEarning: 0
-    },
-    {
-      id: 'pay_5',
-      bookingId: '5',
-      studentName: 'Yusuf Ibrahim',
-      ustaadhName: 'Ahmed Al-Hafiz',
-      amount: 210,
-      currency: 'USD',
-      status: 'refunded',
-      paymentMethod: 'Credit Card',
-      transactionId: 'txn_mno345',
-      createdAt: '2024-01-08T11:30:00Z',
-      platformFee: -63,
-      ustaadhEarning: -147
-    }
-  ];
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchPayments = async () => {
+      setLoading(true);
+      try {
+        const response = await paymentsApi.getPaymentHistory({ limit: '100' });
+
+        if (!isMounted) return;
+
+        const paymentsData = Array.isArray(response?.payments)
+          ? response.payments
+          : Array.isArray(response)
+          ? response
+          : [];
+
+        const normalizedPayments = paymentsData.map((p: any) => {
+          const studentName =
+            typeof p.studentId === 'object' && p.studentId !== null
+              ? p.studentId.fullName
+              : p.studentName || 'Student';
+
+          const ustaadhName =
+            typeof p.ustaadhId === 'object' && p.ustaadhId !== null
+              ? p.ustaadhId.fullName
+              : p.ustaadhName || 'Ustaadh';
+
+          const bookingId =
+            typeof p.bookingId === 'object' && p.bookingId !== null
+              ? p.bookingId.id || p.bookingId._id
+              : p.bookingId || '';
+
+          const platformFeeRate = 0.3;
+          const platformFee = p.status === 'succeeded' || p.status === 'completed'
+            ? p.amount * platformFeeRate
+            : 0;
+
+          return {
+            id: p.id || p._id || p.paymentIntentId,
+            bookingId,
+            studentName,
+            ustaadhName,
+            amount: p.amount,
+            currency: p.currency || 'USD',
+            status: p.status === 'succeeded' ? 'completed' : p.status,
+            paymentMethod: p.paymentMethod || 'Credit Card',
+            transactionId: p.paymentIntentId || p.transactionId || p.id,
+            createdAt: p.createdAt,
+            platformFee,
+            ustaadhEarning: p.amount - platformFee
+          };
+        });
+
+        setPayments(normalizedPayments);
+      } catch (error) {
+        console.error('Failed to fetch payments:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchPayments();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filteredPayments = payments.filter(payment => {
     const matchesSearch = payment.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -144,6 +144,15 @@ export const AdminPaymentsPage: React.FC = () => {
     { title: 'Pending Student Payments', value: formatCurrency(pendingPayments), color: 'bg-yellow-500', icon: Calendar },
     { title: 'Failed Student Payments', value: failedPayments.toString(), color: 'bg-red-500', icon: RefreshCw }
   ];
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-md p-12 flex flex-col items-center justify-center space-y-4">
+        <LoadingSpinner size="lg" />
+        <p className="text-sm text-gray-600">Loading payments...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
