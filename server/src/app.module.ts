@@ -26,6 +26,7 @@ import { CacheService } from './common/services/cache.service';
 import { AuditService } from './common/services/audit.service';
 import { SchedulerService } from './common/services/scheduler.service';
 import { Booking, BookingSchema } from './bookings/schemas/booking.schema';
+import { TestimonialsModule } from './testimonials/testimonials.module';
 
 @Module({
   imports: [
