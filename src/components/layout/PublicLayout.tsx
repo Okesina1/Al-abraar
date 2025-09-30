@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BookOpen, LogIn, UserPlus } from 'lucide-react';
 import { useI18n, type Lang } from '../../contexts/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface PublicLayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface PublicLayoutProps {
 export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { t, lang, setLang } = useI18n();
+  const { user, logout } = useAuth();
 
   const changeLanguage = (nextLang: Lang) => {
     if (nextLang !== lang) {
