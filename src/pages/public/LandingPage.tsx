@@ -365,7 +365,7 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-4xl font-bold text-amber-600">$7</div>
+                    <div className="text-4xl font-bold text-amber-600">${pricing ? pricing.complete : 7}</div>
                     <div className="text-gray-500 text-sm">{t('per_hour')}</div>
                   </div>
                 </div>
