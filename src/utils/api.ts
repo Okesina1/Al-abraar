@@ -1,4 +1,10 @@
-const API_BASE_URL: string = (import.meta as any)?.env?.VITE_API_BASE_URL || '/api';
+const API_BASE_URL: string = (import.meta as any)?.env?.VITE_API_BASE_URL || 'http://localhost:3001/api';
+
+interface ApiResponse<T = any> {
+  data?: T;
+  message?: string;
+  statusCode?: number;
+}
 
 class ApiClient {
   private getAuthHeaders() {
@@ -9,80 +15,341 @@ class ApiClient {
     };
   }
 
-  async get(endpoint: string) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: this.getAuthHeaders(),
-    });
-
+  private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
+      const error = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(error.message || `API Error: ${response.statusText}`);
     }
-
     return response.json();
   }
 
-  async post(endpoint: string, data: any) {
+  async get<T = any>(endpoint: string): Promise<T> {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse<T>(response);
+  }
+
+  async post<T = any>(endpoint: string, data?: any): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
+      body: data ? JSON.stringify(data) : undefined,
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'API Error');
-    }
-
-    return response.json();
+    return this.handleResponse<T>(response);
   }
 
-  async patch(endpoint: string, data: any) {
+  async patch<T = any>(endpoint: string, data: any): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'API Error');
-    }
-
-    return response.json();
+    return this.handleResponse<T>(response);
   }
 
-  async delete(endpoint: string) {
+  async put<T = any>(endpoint: string, data: any): Promise<T> {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse<T>(response);
+  }
+
+  async delete<T = any>(endpoint: string): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
+    return this.handleResponse<T>(response);
+  }
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
+  async uploadFile(endpoint: string, file: File, additionalData?: Record<string, string>): Promise<any> {
+    const token = localStorage.getItem('al-abraar-token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    if (additionalData) {
+      Object.entries(additionalData).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
     }
 
-    return response.json();
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+
+    return this.handleResponse(response);
   }
 }
 
 export const apiClient = new ApiClient();
 
-// API endpoints
+export const authApi = {
+  login: (email: string, password: string) =>
+    apiClient.post('/auth/login', { email, password }),
+
+  register: (userData: any) =>
+    apiClient.post('/auth/register', userData),
+
+  approveUstaadh: (id: string) =>
+    apiClient.post(`/auth/approve-ustaadh/${id}`),
+
+  rejectUstaadh: (id: string, reason?: string) =>
+    apiClient.post(`/auth/reject-ustaadh/${id}`, { reason }),
+};
+
+export const usersApi = {
+  getProfile: () =>
+    apiClient.get('/users/profile'),
+
+  updateProfile: (data: any) =>
+    apiClient.patch('/users/profile', data),
+
+  getUsers: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/users${query}`);
+  },
+
+  getUserById: (id: string) =>
+    apiClient.get(`/users/${id}`),
+
+  updateUser: (id: string, data: any) =>
+    apiClient.patch(`/users/${id}`, data),
+
+  deleteUser: (id: string) =>
+    apiClient.delete(`/users/${id}`),
+
+  getPendingUstaadhss: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/users/pending-ustaadhss${query}`);
+  },
+
+  getApprovedUstaadhss: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/users/ustaadhss${query}`);
+  },
+};
+
+export const bookingsApi = {
+  createBooking: (data: any) =>
+    apiClient.post('/bookings', data),
+
+  getMyBookings: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/bookings/my-bookings${query}`);
+  },
+
+  getBookingById: (id: string) =>
+    apiClient.get(`/bookings/${id}`),
+
+  updateBooking: (id: string, data: any) =>
+    apiClient.patch(`/bookings/${id}`, data),
+
+  updateBookingStatus: (id: string, status: string) =>
+    apiClient.patch(`/bookings/${id}/status`, { status }),
+
+  cancelBooking: (id: string, reason: string) =>
+    apiClient.patch(`/bookings/${id}/cancel`, { reason }),
+
+  getUpcomingLessons: () =>
+    apiClient.get('/bookings/upcoming-lessons'),
+
+  getAllBookings: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/bookings${query}`);
+  },
+};
+
+export const availabilityApi = {
+  getAvailability: (ustaadhId: string) =>
+    apiClient.get(`/availability/${ustaadhId}`),
+
+  setAvailability: (data: any[]) =>
+    apiClient.post('/availability', data),
+
+  checkSlotAvailability: (ustaadhId: string, date: string, startTime: string, endTime: string) =>
+    apiClient.get(`/availability/check?ustaadhId=${ustaadhId}&date=${date}&startTime=${startTime}&endTime=${endTime}`),
+};
+
+export const paymentsApi = {
+  createPaymentIntent: (data: { bookingId: string; amount: number; currency: string }) =>
+    apiClient.post('/payments/create-intent', data),
+
+  confirmPayment: (paymentIntentId: string) =>
+    apiClient.post('/payments/confirm', { paymentIntentId }),
+
+  refundPayment: (data: { paymentIntentId: string; amount?: number; reason: string }) =>
+    apiClient.post('/payments/refund', data),
+
+  getPaymentHistory: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/payments/history${query}`);
+  },
+};
+
+export const payrollApi = {
+  upsertCompensationPlan: (data: any) =>
+    apiClient.post('/payroll/plan', data),
+
+  getCompensationPlan: (ustaadhId: string) =>
+    apiClient.get(`/payroll/plan/${ustaadhId}`),
+
+  getMyCompensationPlan: () =>
+    apiClient.get('/payroll/my-plan'),
+
+  addAdjustment: (ustaadhId: string, data: any) =>
+    apiClient.patch(`/payroll/plan/${ustaadhId}/adjustments`, data),
+
+  markPaid: (ustaadhId: string, data: { month: string; amount: number }) =>
+    apiClient.patch(`/payroll/plan/${ustaadhId}/pay`, data),
+
+  getPayrollObligations: (month?: string) => {
+    const query = month ? `?month=${month}` : '';
+    return apiClient.get(`/payroll/obligations${query}`);
+  },
+};
+
+export const messagesApi = {
+  sendMessage: (data: { receiverId: string; content: string; bookingId?: string }) =>
+    apiClient.post('/messages', data),
+
+  getMessages: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/messages${query}`);
+  },
+
+  getConversations: () =>
+    apiClient.get('/messages/conversations'),
+
+  getConversation: (partnerId: string, params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/messages/conversation/${partnerId}${query}`);
+  },
+
+  markAsRead: (messageId: string) =>
+    apiClient.patch(`/messages/${messageId}/read`, {}),
+
+  getUnreadCount: () =>
+    apiClient.get('/messages/unread-count'),
+};
+
+export const reviewsApi = {
+  createReview: (data: { ustaadhId: string; rating: number; comment: string; bookingId?: string }) =>
+    apiClient.post('/reviews', data),
+
+  getUstaadhReviews: (ustaadhId: string, params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/reviews/ustaadh/${ustaadhId}${query}`);
+  },
+
+  getReviewStats: (ustaadhId: string) =>
+    apiClient.get(`/reviews/ustaadh/${ustaadhId}/stats`),
+
+  getMyReviews: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/reviews/my-reviews${query}`);
+  },
+
+  updateReview: (id: string, data: any) =>
+    apiClient.patch(`/reviews/${id}`, data),
+
+  deleteReview: (id: string) =>
+    apiClient.delete(`/reviews/${id}`),
+};
+
+export const notificationsApi = {
+  getNotifications: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/notifications${query}`);
+  },
+
+  markAsRead: (id: string) =>
+    apiClient.patch(`/notifications/${id}/read`, {}),
+
+  markAllAsRead: () =>
+    apiClient.patch('/notifications/mark-all-read', {}),
+
+  getUnreadCount: () =>
+    apiClient.get('/notifications/unread-count'),
+
+  deleteNotification: (id: string) =>
+    apiClient.delete(`/notifications/${id}`),
+};
+
+export const analyticsApi = {
+  getDashboardStats: () =>
+    apiClient.get('/analytics/dashboard'),
+
+  getRevenueReport: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/analytics/revenue${query}`);
+  },
+
+  getUserGrowth: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/analytics/user-growth${query}`);
+  },
+
+  getBookingTrends: (params?: Record<string, any>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiClient.get(`/analytics/booking-trends${query}`);
+  },
+};
+
+export const uploadsApi = {
+  uploadFile: (file: File, folder?: string, resourceType?: string, tags?: string) => {
+    const additionalData: Record<string, string> = {};
+    if (folder) additionalData.folder = folder;
+    if (resourceType) additionalData.resourceType = resourceType;
+    if (tags) additionalData.tags = tags;
+
+    return apiClient.uploadFile('/uploads', file, additionalData);
+  },
+
+  deleteFile: (publicId: string) =>
+    apiClient.delete(`/uploads/${publicId}`),
+};
+
+export const settingsApi = {
+  getSettings: () =>
+    apiClient.get('/settings'),
+
+  updateSettings: (data: any) =>
+    apiClient.patch('/settings', data),
+
+  getSetting: (key: string) =>
+    apiClient.get(`/settings/${key}`),
+
+  updateSetting: (key: string, value: any) =>
+    apiClient.patch(`/settings/${key}`, { value }),
+};
+
+export const healthApi = {
+  getHealth: () =>
+    apiClient.get('/health'),
+
+  getDatabaseHealth: () =>
+    apiClient.get('/health/database'),
+};
+
 export const API_ENDPOINTS = {
-  // Auth
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
   APPROVE_USTAADH: (id: string) => `/auth/approve-ustaadh/${id}`,
   REJECT_USTAADH: (id: string) => `/auth/reject-ustaadh/${id}`,
 
-  // Users
   USERS: '/users',
   PENDING_USTAADHSS: '/users/pending-ustaadhss',
   APPROVED_USTAADHSS: '/users/ustaadhss',
   USER_PROFILE: '/users/profile',
   USER_BY_ID: (id: string) => `/users/${id}`,
 
-  // Bookings
   BOOKINGS: '/bookings',
   MY_BOOKINGS: '/bookings/my-bookings',
   UPCOMING_LESSONS: '/bookings/upcoming-lessons',
@@ -90,12 +357,12 @@ export const API_ENDPOINTS = {
   UPDATE_BOOKING_STATUS: (id: string) => `/bookings/${id}/status`,
   CANCEL_BOOKING: (id: string) => `/bookings/${id}/cancel`,
 
-  // Payments
+  PAYMENTS: '/payments',
   CREATE_PAYMENT_INTENT: '/payments/create-intent',
   PAYMENT_WEBHOOK: '/payments/webhook',
   REFUND_PAYMENT: '/payments/refund',
 
-  // Payroll
+  PAYROLL: '/payroll',
   UPSERT_PAYROLL_PLAN: '/payroll/plan',
   PAYROLL_PLAN_FOR: (ustaadhId: string) => `/payroll/plan/${ustaadhId}`,
   MY_PAYROLL_PLAN: '/payroll/my-plan',
@@ -103,20 +370,17 @@ export const API_ENDPOINTS = {
   MARK_PAID: (ustaadhId: string) => `/payroll/plan/${ustaadhId}/pay`,
   PAYROLL_OBLIGATIONS: (month?: string) => `/payroll/obligations${month ? `?month=${month}` : ''}`,
 
-  // Messages
   MESSAGES: '/messages',
   CONVERSATIONS: '/messages/conversations',
   CONVERSATION: (partnerId: string) => `/messages/conversation/${partnerId}`,
   UNREAD_COUNT: '/messages/unread-count',
   MARK_READ: (id: string) => `/messages/${id}/read`,
 
-  // Reviews
   REVIEWS: '/reviews',
   USTAADH_REVIEWS: (ustaadhId: string) => `/reviews/ustaadh/${ustaadhId}`,
   REVIEW_STATS: (ustaadhId: string) => `/reviews/ustaadh/${ustaadhId}/stats`,
   MY_REVIEWS: '/reviews/my-reviews',
 
-  // Notifications
   NOTIFICATIONS: '/notifications',
   NOTIFICATIONS_UNREAD_COUNT: '/notifications/unread-count',
   MARK_NOTIFICATION_READ: (id: string) => `/notifications/${id}/read`,

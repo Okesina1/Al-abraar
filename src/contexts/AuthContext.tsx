@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-const API_BASE_URL = 'http://localhost:3001/api';
+import { authApi, usersApi, uploadsApi } from '../utils/api';
 
 interface User {
   id: string;
@@ -19,7 +18,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
+  register: (userData: RegisterData) => Promise<any>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
 }
@@ -34,6 +33,9 @@ interface RegisterData {
   city: string;
   age: number;
   cv?: File;
+  bio?: string;
+  experience?: string;
+  specialties?: string[];
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -51,67 +53,39 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate checking for existing session
-    const storedUser = localStorage.getItem('al-abraar-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const initAuth = async () => {
+      const storedUser = localStorage.getItem('al-abraar-user');
+      const token = localStorage.getItem('al-abraar-token');
+
+      if (storedUser && token) {
+        try {
+          const profile = await usersApi.getProfile();
+          setUser(profile);
+          localStorage.setItem('al-abraar-user', JSON.stringify(profile));
+        } catch (error) {
+          localStorage.removeItem('al-abraar-user');
+          localStorage.removeItem('al-abraar-token');
+        }
+      }
+      setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      // Mock authentication for demo
-      const mockUsers = {
-        'admin@al-abraar.com': {
-          id: '1',
-          email: 'admin@al-abraar.com',
-          fullName: 'System Administrator',
-          role: 'admin' as const,
-          phoneNumber: '+1234567890',
-          country: 'USA',
-          city: 'New York',
-          age: 35,
-          isApproved: true,
-          createdAt: '2023-01-01T00:00:00Z'
-        },
-        'ahmed.alhafiz@email.com': {
-          id: '2',
-          email: 'ahmed.alhafiz@email.com',
-          fullName: 'Ahmed Al-Hafiz',
-          role: 'ustaadh' as const,
-          phoneNumber: '+966123456789',
-          country: 'Saudi Arabia',
-          city: 'Riyadh',
-          age: 35,
-          isApproved: true,
-          createdAt: '2023-01-15T10:00:00Z'
-        },
-        'student@al-abraar.com': {
-          id: '3',
-          email: 'student@al-abraar.com',
-          fullName: 'Sarah Ahmed',
-          role: 'student' as const,
-          phoneNumber: '+1987654321',
-          country: 'Canada',
-          city: 'Toronto',
-          age: 28,
-          isApproved: true,
-          createdAt: '2023-02-01T14:30:00Z'
-        }
-      };
+      const response = await authApi.login(email, password);
 
-      const user = mockUsers[email as keyof typeof mockUsers];
-      if (!user || password !== 'password') {
-        throw new Error('Invalid credentials');
-      }
+      const userData = response.user;
+      const token = response.access_token;
 
-      setUser(user);
-      localStorage.setItem('al-abraar-user', JSON.stringify(user));
-      localStorage.setItem('al-abraar-token', 'mock-token');
-    } catch (error) {
-      throw error;
+      setUser(userData);
+      localStorage.setItem('al-abraar-user', JSON.stringify(userData));
+      localStorage.setItem('al-abraar-token', token);
+    } catch (error: any) {
+      throw new Error(error.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
@@ -120,32 +94,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (userData: RegisterData) => {
     setLoading(true);
     try {
-      // Mock registration for demo
-      const newUser = {
-        id: Date.now().toString(),
+      let cvUrl;
+      if (userData.cv) {
+        const uploadResult = await uploadsApi.uploadFile(userData.cv, 'cvs', 'auto');
+        cvUrl = uploadResult.url;
+      }
+
+      const registrationData = {
         email: userData.email,
+        password: userData.password,
         fullName: userData.fullName,
         role: userData.role,
         phoneNumber: userData.phoneNumber,
         country: userData.country,
         city: userData.city,
         age: userData.age,
-        isApproved: userData.role === 'student',
-        createdAt: new Date().toISOString()
+        ...(userData.role === 'ustaadh' && {
+          bio: userData.bio,
+          experience: userData.experience,
+          specialties: userData.specialties,
+          cv: cvUrl,
+        }),
       };
 
-      if (userData.role === 'student') {
-        // Auto-login students
-        setUser(newUser);
-        localStorage.setItem('al-abraar-user', JSON.stringify(newUser));
-        localStorage.setItem('al-abraar-token', 'mock-token');
-        return { user: newUser, access_token: 'mock-token' };
-      } else {
-        // Ustaadhs need approval
-        return { message: 'Registration submitted! Your application is under review.', requiresApproval: true };
+      const response = await authApi.register(registrationData);
+
+      if (response.requiresApproval) {
+        return {
+          message: response.message || 'Registration submitted! Your application is under review.',
+          requiresApproval: true
+        };
       }
-    } catch (error) {
-      throw error;
+
+      if (response.user && response.access_token) {
+        setUser(response.user);
+        localStorage.setItem('al-abraar-user', JSON.stringify(response.user));
+        localStorage.setItem('al-abraar-token', response.access_token);
+      }
+
+      return response;
+    } catch (error: any) {
+      throw new Error(error.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
