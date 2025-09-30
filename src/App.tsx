@@ -150,6 +150,11 @@ function AppRoutes() {
           <DashboardLayout><AdminSettingsPage /></DashboardLayout>
         </ProtectedRoute>
       } />
+      <Route path="/admin/testimonials" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><AdminTestimonialsPage /></DashboardLayout>
+        </ProtectedRoute>
+      } />
       <Route path="/admin/payroll" element={
         <ProtectedRoute allowedRoles={['admin']}>
           <DashboardLayout><AdminPayrollPage /></DashboardLayout>
