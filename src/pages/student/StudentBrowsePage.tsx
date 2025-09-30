@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, MapPin, Star, BookOpen, MessageCircle, Filter, Clock, Award, MessageSquare } from 'lucide-react';
+import { Search, MessageSquare } from 'lucide-react';
 import { BookingModal } from '../../components/booking/BookingModal';
 import { MessageCenter } from '../../components/messaging/MessageCenter';
 import { UstaadhCard } from '../../components/student/UstaadhCard';
