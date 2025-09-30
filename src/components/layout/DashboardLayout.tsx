@@ -20,7 +20,8 @@ import {
   TrendingUp,
   CheckCircle,
   DollarSign,
-  ClipboardList
+  ClipboardList,
+  Star
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
