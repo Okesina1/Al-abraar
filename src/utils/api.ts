@@ -162,7 +162,7 @@ export const bookingsApi = {
 
   getAllBookings: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
-    return apiClient.get(`/bookings${query}`);
+    return apiClient.get(`/bookings/all${query}`);
   },
 };
 
