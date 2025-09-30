@@ -144,7 +144,7 @@ export const LandingPage: React.FC = () => {
                   <div className="text-xs sm:text-sm text-gray-600">{t('stats_active_students')}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">300+</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{teachersCount !== null ? teachersCount.toLocaleString() : '—'}</div>
                   <div className="text-xs sm:text-sm text-gray-600">{t('stats_expert_teachers')}</div>
                 </div>
                 <div className="text-center">
