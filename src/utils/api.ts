@@ -283,23 +283,27 @@ export const notificationsApi = {
 };
 
 export const analyticsApi = {
-  getDashboardStats: () =>
-    apiClient.get('/analytics/dashboard'),
-
+  getDashboardStats: () => apiClient.get('/analytics/dashboard'),
   getRevenueReport: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
     return apiClient.get(`/analytics/revenue${query}`);
   },
-
   getUserGrowth: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
     return apiClient.get(`/analytics/growth${query}`);
   },
-
   getBookingTrends: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
     return apiClient.get(`/analytics/booking-trends${query}`);
   },
+};
+
+export const testimonialsApi = {
+  listPublished: () => apiClient.get('/testimonials'),
+  listAll: () => apiClient.get('/testimonials/admin'),
+  create: (data: any) => apiClient.post('/testimonials', data),
+  update: (id: string, data: any) => apiClient.patch(`/testimonials/${id}`, data),
+  remove: (id: string) => apiClient.delete(`/testimonials/${id}`),
 };
 
 export const uploadsApi = {
@@ -317,17 +321,12 @@ export const uploadsApi = {
 };
 
 export const settingsApi = {
-  getSettings: () =>
-    apiClient.get('/settings'),
-
-  updateSettings: (data: any) =>
-    apiClient.patch('/settings', data),
-
-  getSetting: (key: string) =>
-    apiClient.get(`/settings/${key}`),
-
-  updateSetting: (key: string, value: any) =>
-    apiClient.patch(`/settings/${key}`, { value }),
+  getSettings: () => apiClient.get('/settings'),
+  getAllSettings: () => apiClient.get('/settings/admin'),
+  updatePricing: (data: { basic: number; complete: number }) => apiClient.patch('/settings/pricing', data),
+  updateRefundPolicy: (data: { enabled: boolean; windowDays: number }) => apiClient.patch('/settings/refund-policy', data),
+  updateCourseAvailability: (data: Record<string, boolean>) => apiClient.patch('/settings/course-availability', data),
+  updatePublicStats: (data: { activeStudents?: number; countries?: number; avgRating?: number }) => apiClient.patch('/settings/public-stats', data),
 };
 
 export const healthApi = {

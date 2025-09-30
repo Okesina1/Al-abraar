@@ -20,7 +20,8 @@ import {
   TrendingUp,
   CheckCircle,
   DollarSign,
-  ClipboardList
+  ClipboardList,
+  Star
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -103,6 +104,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           { name: 'Payments', href: '/admin/payments', icon: DollarSign },
           { name: 'Payroll', href: '/admin/payroll', icon: ClipboardList },
           { name: 'Reports', href: '/admin/reports', icon: TrendingUp },
+          { name: 'Testimonials', href: '/admin/testimonials', icon: Star },
           { name: 'Settings', href: '/admin/settings', icon: Settings },
           ...baseItems,
         ];

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BookOpen, LogIn, UserPlus } from 'lucide-react';
 import { useI18n, type Lang } from '../../contexts/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface PublicLayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface PublicLayoutProps {
 export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { t, lang, setLang } = useI18n();
+  const { user, logout } = useAuth();
 
   const changeLanguage = (nextLang: Lang) => {
     if (nextLang !== lang) {
@@ -52,7 +54,7 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
                   AR
                 </button>
               </div>
-              {location.pathname !== '/login' && (
+              {!user && location.pathname !== '/login' && (
                 <Link
                   to="/login"
                   className="flex items-center gap-2 text-gray-700 hover:text-green-600 transition-colors duration-200"
@@ -61,7 +63,7 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
                   <span className="hidden sm:inline">{t('nav_sign_in')}</span>
                 </Link>
               )}
-              {location.pathname !== '/register' && (
+              {!user && location.pathname !== '/register' && (
                 <Link
                   to="/register"
                   className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
@@ -69,6 +71,22 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
                   <UserPlus className="h-5 w-5" />
                   <span className="hidden sm:inline">{t('nav_register')}</span>
                 </Link>
+              )}
+              {user && (
+                <div className="flex items-center gap-3">
+                  <Link
+                    to={user.role === 'admin' ? '/admin' : user.role === 'ustaadh' ? '/ustaadh' : '/student'}
+                    className="text-gray-700 hover:text-green-600 font-medium"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    Logout
+                  </button>
+                </div>
               )}
             </div>
           </div>

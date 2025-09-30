@@ -23,7 +23,7 @@ import {
 import { useI18n } from '../../contexts/LanguageContext';
 import { UstaadhCard } from '../../components/student/UstaadhCard';
 import { User } from '../../types';
-import { usersApi } from '../../utils/api';
+import { usersApi, settingsApi, testimonialsApi } from '../../utils/api';
 
 export const LandingPage: React.FC = () => {
   const { t } = useI18n();
@@ -32,35 +32,63 @@ export const LandingPage: React.FC = () => {
   const [ustaadhs, setUstaadhs] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pricing, setPricing] = useState<{ basic: number; complete: number } | null>(null);
+  const [teachersCount, setTeachersCount] = useState<number | null>(null);
+  const [publicStats, setPublicStats] = useState<{ activeStudents?: number; countries?: number; avgRating?: number } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    const fetchUstaadhs = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await usersApi.getApprovedUstaadhss({ limit: '12' });
-        const list = Array.isArray(res?.ustaadhs)
-          ? res.ustaadhs
-          : Array.isArray(res)
-          ? res
-          : Array.isArray(res?.data)
-          ? res.data
+        const [ustaadhsRes, settingsRes] = await Promise.all([
+          usersApi.getApprovedUstaadhss({ limit: '12' }),
+          settingsApi.getSettings(),
+        ]);
+
+        const list = Array.isArray(ustaadhsRes?.ustaadhs)
+          ? ustaadhsRes.ustaadhs
+          : Array.isArray(ustaadhsRes)
+          ? ustaadhsRes
+          : Array.isArray(ustaadhsRes?.data)
+          ? ustaadhsRes.data
           : [];
+
         if (!isMounted) return;
+
         setUstaadhs(
           list.map((u: any) => ({
             ...u,
             id: u.id || u._id || u.userId,
           }))
         );
+        if (typeof ustaadhsRes?.total === 'number') {
+          setTeachersCount(ustaadhsRes.total);
+        } else if (Array.isArray(list)) {
+          setTeachersCount(list.length);
+        }
+
+        const pricingFromSettings = (settingsRes as any)?.pricing;
+        if (pricingFromSettings && typeof pricingFromSettings.basic === 'number' && typeof pricingFromSettings.complete === 'number') {
+          setPricing(pricingFromSettings);
+        }
+
+        const statsFromSettings = (settingsRes as any)?.publicStats || (settingsRes as any)?.marketingStats || (settingsRes as any)?.platformStats;
+        if (statsFromSettings && typeof statsFromSettings === 'object') {
+          setPublicStats({
+            activeStudents: typeof statsFromSettings.activeStudents === 'number' ? statsFromSettings.activeStudents : undefined,
+            countries: typeof statsFromSettings.countries === 'number' ? statsFromSettings.countries : undefined,
+            avgRating: typeof statsFromSettings.avgRating === 'number' ? statsFromSettings.avgRating : undefined,
+          });
+        }
       } catch (e: any) {
-        if (isMounted) setError(e.message || 'Failed to load teachers');
+        if (isMounted) setError(e.message || 'Failed to load data');
       } finally {
         if (isMounted) setLoading(false);
       }
     };
-    fetchUstaadhs();
+    fetchData();
     return () => {
       isMounted = false;
     };
@@ -121,18 +149,22 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
+                {publicStats?.activeStudents !== undefined && (
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{publicStats.activeStudents.toLocaleString()}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">{t('stats_active_students')}</div>
+                  </div>
+                )}
                 <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">10K+</div>
-                  <div className="text-xs sm:text-sm text-gray-600">{t('stats_active_students')}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">300+</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{teachersCount !== null ? teachersCount.toLocaleString() : '—'}</div>
                   <div className="text-xs sm:text-sm text-gray-600">{t('stats_expert_teachers')}</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">40+</div>
-                  <div className="text-xs sm:text-sm text-gray-600">{t('stats_countries')}</div>
-                </div>
+                {publicStats?.countries !== undefined && (
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{publicStats.countries.toLocaleString()}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">{t('stats_countries')}</div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -296,7 +328,7 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-4xl font-bold text-green-600">$5</div>
+                    <div className="text-4xl font-bold text-green-600">${pricing ? pricing.basic : 5}</div>
                     <div className="text-gray-500 text-sm">{t('per_hour')}</div>
                   </div>
                 </div>
@@ -347,7 +379,7 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-4xl font-bold text-amber-600">$7</div>
+                    <div className="text-4xl font-bold text-amber-600">${pricing ? pricing.complete : 7}</div>
                     <div className="text-gray-500 text-sm">{t('per_hour')}</div>
                   </div>
                 </div>
@@ -504,6 +536,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Testimonials - Redesigned */}
+      {testimonials.length > 0 && (
       <section className="py-20 lg:py-32 bg-gradient-to-r from-green-600 to-green-700 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -523,77 +556,31 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Testimonial 1 */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <div className="flex items-center gap-1 text-amber-400 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-current" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                "{t('testimonial_1_quote')}"
-              </p>
-              <div className="flex items-center space-x-3">
-                <img 
-                  src="https://images.pexels.com/photos/3763152/pexels-photo-3763152.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop" 
-                  alt="Sarah A." 
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div>
-                  <div className="font-semibold text-gray-900">{t('testimonial_1_name')}</div>
-                  <div className="text-sm text-gray-600">{t('student_from_canada')}</div>
+            {testimonials.slice(0, 3).map((tm) => (
+              <div key={tm.id} className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                <div className="flex items-center gap-1 text-amber-400 mb-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className={`h-5 w-5 ${i < Math.round(tm.rating) ? 'fill-current' : ''}`} />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-6 leading-relaxed">"{tm.quote}"</p>
+                <div className="flex items-center space-x-3">
+                  <img
+                    src={tm.avatarUrl || 'https://images.pexels.com/photos/3763152/pexels-photo-3763152.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop'}
+                    alt={tm.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <div className="font-semibold text-gray-900">{tm.name}</div>
+                    {tm.subtitle && <div className="text-sm text-gray-600">{tm.subtitle}</div>}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Testimonial 2 */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <div className="flex items-center gap-1 text-amber-400 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-current" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                "{t('testimonial_2_quote')}"
-              </p>
-              <div className="flex items-center space-x-3">
-                <img 
-                  src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop" 
-                  alt="Omar R." 
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div>
-                  <div className="font-semibold text-gray-900">{t('testimonial_2_name')}</div>
-                  <div className="text-sm text-gray-600">{t('student_from_uae')}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 md:col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-1 text-amber-400 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-current" />
-                ))}
-              </div>
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                "{t('testimonial_3_quote')}"
-              </p>
-              <div className="flex items-center space-x-3">
-                <img 
-                  src="https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop" 
-                  alt="Aisha M." 
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div>
-                  <div className="font-semibold text-gray-900">{t('testimonial_3_name', 'Aisha M.')}</div>
-                  <div className="text-sm text-gray-600">{t('student_from_malaysia')}</div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
+      )}
 
       {/* Trust & Security */}
       <section className="py-20 lg:py-32 bg-gray-50 relative">

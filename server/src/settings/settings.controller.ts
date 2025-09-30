@@ -41,4 +41,11 @@ export class SettingsController {
   async updateCourseAvailability(@Body() courseData: any) {
     return this.settingsService.updateSetting('courseAvailability', courseData);
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Patch('public-stats')
+  async updatePublicStats(@Body() stats: { activeStudents?: number; countries?: number; avgRating?: number }) {
+    return this.settingsService.updateSetting('publicStats', stats);
+  }
 }
