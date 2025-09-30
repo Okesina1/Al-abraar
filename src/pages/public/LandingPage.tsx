@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
@@ -23,76 +23,55 @@ import {
 import { useI18n } from '../../contexts/LanguageContext';
 import { UstaadhCard } from '../../components/student/UstaadhCard';
 import { User } from '../../types';
+import { usersApi } from '../../utils/api';
 
 export const LandingPage: React.FC = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [ustaadhs, setUstaadhs] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const ustaadhs: User[] = [
-    {
-      id: '2',
-      email: 'ahmed.alhafiz@email.com',
-      fullName: 'Ahmed Al-Hafiz',
-      role: 'ustaadh',
-      phoneNumber: '+966123456789',
-      country: 'Saudi Arabia',
-      city: 'Riyadh',
-      age: 35,
-      isApproved: true,
-      createdAt: '2023-01-15T10:00:00Z',
-      bio: "Certified Qur'an teacher with 15 years of experience. Specializing in Tajweed and Arabic language instruction.",
-      experience: '15 years',
-      specialties: ["Qur'an", 'Tajweed', 'Arabic', 'Islamic Studies'],
-      rating: 4.9,
-      reviewCount: 127,
-      isVerified: true,
-      avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
-    },
-    {
-      id: '6',
-      email: 'fatima.alzahra@email.com',
-      fullName: 'Dr. Fatima Al-Zahra',
-      role: 'ustaadh',
-      phoneNumber: '+20123456789',
-      country: 'Egypt',
-      city: 'Cairo',
-      age: 42,
-      isApproved: true,
-      createdAt: '2023-02-20T14:30:00Z',
-      bio: 'PhD in Islamic Studies with expertise in Hadeeth and Fiqh. Passionate about teaching Islamic principles to students worldwide.',
-      experience: '18 years',
-      specialties: ['Hadeeth', 'Fiqh', 'Arabic', 'Islamic History'],
-      rating: 4.8,
-      reviewCount: 89,
-      isVerified: true,
-      avatar: 'https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
-    },
-    {
-      id: '7',
-      email: 'omar.hassan@email.com',
-      fullName: 'Ustadh Omar Hassan',
-      role: 'ustaadh',
-      phoneNumber: '+60123456789',
-      country: 'Malaysia',
-      city: 'Kuala Lumpur',
-      age: 38,
-      isApproved: true,
-      createdAt: '2023-03-10T09:15:00Z',
-      bio: "International Qur'an competition judge and certified Tajweed instructor. Fluent in English, Arabic, and Malay.",
-      experience: '12 years',
-      specialties: ["Qur'an", 'Tajweed', 'Memorization'],
-      rating: 4.7,
-      reviewCount: 156,
-      isVerified: true,
-      avatar: 'https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
-    }
-  ];
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUstaadhs = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await usersApi.getApprovedUstaadhss({ limit: '12' });
+        const list = Array.isArray(res?.ustaadhs)
+          ? res.ustaadhs
+          : Array.isArray(res)
+          ? res
+          : Array.isArray(res?.data)
+          ? res.data
+          : [];
+        if (!isMounted) return;
+        setUstaadhs(
+          list.map((u: any) => ({
+            ...u,
+            id: u.id || u._id || u.userId,
+          }))
+        );
+      } catch (e: any) {
+        if (isMounted) setError(e.message || 'Failed to load teachers');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchUstaadhs();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-  const filtered = ustaadhs.filter(u =>
-    u.fullName.toLowerCase().includes(query.toLowerCase()) ||
-    (u.specialties || []).some(s => s.toLowerCase().includes(query.toLowerCase()))
-  ).slice(0, 3);
+  const filtered = ustaadhs
+    .filter((u) =>
+      u.fullName.toLowerCase().includes(query.toLowerCase()) ||
+      (u.specialties || []).some((s) => s.toLowerCase().includes(query.toLowerCase()))
+    )
+    .slice(0, 3);
 
   const handleBook = () => navigate('/login');
   const handleMessage = () => navigate('/login');

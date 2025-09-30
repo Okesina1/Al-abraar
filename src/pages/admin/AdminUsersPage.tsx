@@ -1,110 +1,50 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Users, Search, Filter, Eye, Shield, Ban, Mail, Phone, MapPin } from 'lucide-react';
 import { UserManagement } from '../../components/admin/UserManagement';
+import { usersApi } from '../../utils/api';
 
 export const AdminUsersPage: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Mock users data
-  const users = [
-    {
-      id: '1',
-      fullName: 'System Administrator',
-      email: 'admin@al-abraar.com',
-      role: 'admin',
-      phoneNumber: '+1234567890',
-      country: 'USA',
-      city: 'New York',
-      age: 35,
-      isApproved: true,
-      createdAt: '2023-01-01T00:00:00Z',
-      lastLogin: '2024-01-15T10:30:00Z',
-      status: 'active'
-    },
-    {
-      id: '2',
-      fullName: 'Ahmed Al-Hafiz',
-      email: 'ahmed.alhafiz@email.com',
-      role: 'ustaadh',
-      phoneNumber: '+966123456789',
-      country: 'Saudi Arabia',
-      city: 'Riyadh',
-      age: 35,
-      isApproved: true,
-      createdAt: '2023-01-15T10:00:00Z',
-      lastLogin: '2024-01-15T08:45:00Z',
-      status: 'active',
-      rating: 4.9,
-      reviewCount: 127,
-      totalEarnings: 2450
-    },
-    {
-      id: '3',
-      fullName: 'Sarah Ahmed',
-      email: 'student@al-abraar.com',
-      role: 'student',
-      phoneNumber: '+1987654321',
-      country: 'Canada',
-      city: 'Toronto',
-      age: 28,
-      isApproved: true,
-      createdAt: '2023-02-01T14:30:00Z',
-      lastLogin: '2024-01-14T16:20:00Z',
-      status: 'active',
-      totalSpent: 336,
-      completedLessons: 24
-    },
-    {
-      id: '6',
-      fullName: 'Dr. Fatima Al-Zahra',
-      email: 'fatima.alzahra@email.com',
-      role: 'ustaadh',
-      phoneNumber: '+20123456789',
-      country: 'Egypt',
-      city: 'Cairo',
-      age: 42,
-      isApproved: true,
-      createdAt: '2023-02-20T14:30:00Z',
-      lastLogin: '2024-01-13T12:15:00Z',
-      status: 'active',
-      rating: 4.8,
-      reviewCount: 89,
-      totalEarnings: 1890
-    },
-    {
-      id: '4',
-      fullName: 'Ali Hassan',
-      email: 'ali.hassan@email.com',
-      role: 'student',
-      phoneNumber: '+44123456789',
-      country: 'United Kingdom',
-      city: 'London',
-      age: 32,
-      isApproved: true,
-      createdAt: '2023-03-10T09:15:00Z',
-      lastLogin: '2024-01-12T14:30:00Z',
-      status: 'active',
-      totalSpent: 180,
-      completedLessons: 12
-    },
-    {
-      id: '5',
-      fullName: 'Inactive User',
-      email: 'inactive@email.com',
-      role: 'student',
-      phoneNumber: '+1555123456',
-      country: 'USA',
-      city: 'Chicago',
-      age: 25,
-      isApproved: true,
-      createdAt: '2023-04-05T16:45:00Z',
-      lastLogin: '2023-12-01T10:00:00Z',
-      status: 'inactive',
-      totalSpent: 0,
-      completedLessons: 0
-    }
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUsers = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await usersApi.getUsers({ limit: '100' });
+        const list = Array.isArray(res?.users)
+          ? res.users
+          : Array.isArray(res)
+          ? res
+          : Array.isArray(res?.data)
+          ? res.data
+          : [];
+        if (!isMounted) return;
+        setUsers(
+          list.map((u: any) => ({
+            ...u,
+            id: u.id || u._id,
+            status: u.status || 'active',
+            lastLogin: u.lastLogin || u.updatedAt || u.createdAt,
+          }))
+        );
+      } catch (e: any) {
+        if (isMounted) setError(e.message || 'Failed to load users');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchUsers();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleViewUser = (user: any) => {
     setSelectedUser(user);
@@ -257,7 +197,7 @@ export const AdminUsersPage: React.FC = () => {
     { title: 'Total Users', value: users.length.toString(), color: 'bg-blue-500' },
     { title: 'Students', value: users.filter(u => u.role === 'student').length.toString(), color: 'bg-green-500' },
     { title: 'Ustaadhs', value: users.filter(u => u.role === 'ustaadh').length.toString(), color: 'bg-purple-500' },
-    { title: 'Active Today', value: users.filter(u => new Date(u.lastLogin).toDateString() === new Date().toDateString()).length.toString(), color: 'bg-yellow-500' }
+    { title: 'Active Today', value: users.filter(u => u.lastLogin && new Date(u.lastLogin).toDateString() === new Date().toDateString()).length.toString(), color: 'bg-yellow-500' }
   ];
 
   return (

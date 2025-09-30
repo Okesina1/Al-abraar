@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, Search, Filter, Eye, CheckCircle, XCircle, Clock, User, DollarSign } from 'lucide-react';
 import { useBooking } from '../../contexts/BookingContext';
+import { bookingsApi } from '../../utils/api';
 
 export const AdminBookingsPage: React.FC = () => {
   const { bookings } = useBooking();
@@ -10,42 +11,29 @@ export const AdminBookingsPage: React.FC = () => {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Mock additional bookings for admin view
-  const allBookings = [
-    ...bookings,
-    {
-      id: '2',
-      studentId: '4',
-      ustaadhId: '6',
-      packageType: 'basic',
-      hoursPerDay: 1,
-      daysPerWeek: 2,
-      subscriptionMonths: 3,
-      totalAmount: 120,
-      status: 'pending',
-      startDate: '2024-01-20',
-      endDate: '2024-04-20',
-      schedule: [],
-      paymentStatus: 'pending',
-      createdAt: '2024-01-15T09:30:00Z'
-    },
-    {
-      id: '3',
-      studentId: '5',
-      ustaadhId: '7',
-      packageType: 'complete',
-      hoursPerDay: 2,
-      daysPerWeek: 4,
-      subscriptionMonths: 1,
-      totalAmount: 224,
-      status: 'confirmed',
-      startDate: '2024-01-18',
-      endDate: '2024-02-18',
-      schedule: [],
-      paymentStatus: 'paid',
-      createdAt: '2024-01-12T16:20:00Z'
-    }
-  ];
+  const [allBookings, setAllBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await bookingsApi.getAllBookings({ limit: '200' });
+        const list = Array.isArray(res?.bookings) ? res.bookings : Array.isArray(res) ? res : [];
+        if (!isMounted) return;
+        setAllBookings(list.map((b: any) => ({ ...b, id: b.id || b._id })));
+      } catch (e: any) {
+        if (isMounted) setError(e.message || 'Failed to load bookings');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { isMounted = false; };
+  }, []);
 
   const filteredBookings = allBookings.filter(booking => {
     const matchesSearch = booking.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -179,9 +167,13 @@ export const AdminBookingsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
         <h1 className="text-2xl font-bold text-gray-900">Bookings Management</h1>
         <div className="text-sm text-gray-600">
-          {filteredBookings.length} booking{filteredBookings.length !== 1 ? 's' : ''}
+          {loading ? 'Loading…' : `${filteredBookings.length} booking${filteredBookings.length !== 1 ? 's' : ''}`}
         </div>
       </div>
+
+      {error && (
+        <div className="p-3 rounded bg-red-50 text-red-700 border border-red-200 text-sm">{error}</div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
