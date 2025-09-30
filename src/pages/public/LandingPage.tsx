@@ -23,6 +23,7 @@ import {
 import { useI18n } from '../../contexts/LanguageContext';
 import { UstaadhCard } from '../../components/student/UstaadhCard';
 import { User } from '../../types';
+import { usersApi } from '../../utils/api';
 
 export const LandingPage: React.FC = () => {
   const { t } = useI18n();
