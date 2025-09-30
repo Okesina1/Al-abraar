@@ -266,30 +266,33 @@ export const AdminDashboardPage: React.FC = () => {
             <p className="text-sm text-gray-500 text-center py-6">No pending ustaadh applications.</p>
           ) : (
             <div className="space-y-3">
-              {pendingApprovals.slice(0, 5).map((approval) => (
-                <div
-                  key={approval.id}
-                  className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium text-gray-800">{approval.fullName}</p>
-                    <p className="text-sm text-gray-600">{approval.country || 'Country not specified'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500">
-                      {approval.createdAt ? new Date(approval.createdAt).toLocaleDateString() : '—'}
-                    </p>
-                    <div className="flex space-x-1 mt-1">
-                      <button className="p-1 text-green-600 hover:bg-green-100 rounded" aria-label="Approve">
-                        <CheckCircle className="h-4 w-4" />
-                      </button>
-                      <button className="p-1 text-red-600 hover:bg-red-100 rounded" aria-label="Reject">
-                        <XCircle className="h-4 w-4" />
-                      </button>
+              {pendingApprovals.slice(0, 5).map((approval) => {
+                const approvalId = approval.id || (approval as any)._id || approval.email;
+                return (
+                  <div
+                    key={approvalId}
+                    className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-800">{approval.fullName}</p>
+                      <p className="text-sm text-gray-600">{approval.country || 'Country not specified'}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-500">
+                        {approval.createdAt ? new Date(approval.createdAt).toLocaleDateString() : '—'}
+                      </p>
+                      <div className="flex space-x-1 mt-1">
+                        <button className="p-1 text-green-600 hover:bg-green-100 rounded" aria-label="Approve">
+                          <CheckCircle className="h-4 w-4" />
+                        </button>
+                        <button className="p-1 text-red-600 hover:bg-red-100 rounded" aria-label="Reject">
+                          <XCircle className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
