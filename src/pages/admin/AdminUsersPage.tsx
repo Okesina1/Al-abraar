@@ -196,7 +196,7 @@ export const AdminUsersPage: React.FC = () => {
     { title: 'Total Users', value: users.length.toString(), color: 'bg-blue-500' },
     { title: 'Students', value: users.filter(u => u.role === 'student').length.toString(), color: 'bg-green-500' },
     { title: 'Ustaadhs', value: users.filter(u => u.role === 'ustaadh').length.toString(), color: 'bg-purple-500' },
-    { title: 'Active Today', value: users.filter(u => new Date(u.lastLogin).toDateString() === new Date().toDateString()).length.toString(), color: 'bg-yellow-500' }
+    { title: 'Active Today', value: users.filter(u => u.lastLogin && new Date(u.lastLogin).toDateString() === new Date().toDateString()).length.toString(), color: 'bg-yellow-500' }
   ];
 
   return (
