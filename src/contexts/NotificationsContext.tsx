@@ -56,9 +56,13 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({
     try {
       setLoading(true);
       const data = await notificationsApi.getNotifications();
-      setNotifications(data);
+      const notificationsList = Array.isArray(data) ? data : [];
+      setNotifications(notificationsList);
+      const unreadNotifs = notificationsList.filter((n: Notification) => !n.isRead);
+      setUnreadCount(unreadNotifs.length);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }

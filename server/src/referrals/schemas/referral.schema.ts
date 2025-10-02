@@ -12,7 +12,7 @@ export class Referral extends Document {
   @Prop({ type: Types.ObjectId, ref: "User", required: true })
   referrerId: Types.ObjectId;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   referralCode: string;
 
   @Prop()

@@ -20,16 +20,19 @@ export class ReferralsService {
     totalRewards: number;
     completedCount: number;
   }> {
-    let referral = await this.referralModel
-      .findOne({ referrerId: new Types.ObjectId(userId) })
+    let userReferralCode = await this.referralModel
+      .findOne({ referrerId: new Types.ObjectId(userId), referredUserId: { $exists: false } })
       .exec();
 
-    if (!referral) {
-      referral = await this.createReferralCode(userId);
+    if (!userReferralCode) {
+      userReferralCode = await this.createReferralCode(userId);
     }
 
     const allReferrals = await this.referralModel
-      .find({ referrerId: new Types.ObjectId(userId) })
+      .find({
+        referrerId: new Types.ObjectId(userId),
+        referredUserId: { $exists: true }
+      })
       .sort({ createdAt: -1 })
       .exec();
 
@@ -43,7 +46,7 @@ export class ReferralsService {
     );
 
     return {
-      referralCode: referral.referralCode,
+      referralCode: userReferralCode.referralCode,
       referrals: allReferrals,
       totalRewards,
       completedCount: completedReferrals.length,
@@ -67,32 +70,22 @@ export class ReferralsService {
     referredUserId: string,
     referredEmail: string,
   ): Promise<void> {
-    const existingReferral = await this.referralModel.findOne({
+    const referrerRecord = await this.referralModel.findOne({
       referralCode,
       referredUserId: { $exists: false },
     });
 
-    if (existingReferral) {
-      existingReferral.referredUserId = new Types.ObjectId(referredUserId);
-      existingReferral.referredEmail = referredEmail;
-      existingReferral.status = ReferralStatus.COMPLETED;
-      existingReferral.completedAt = new Date();
-      existingReferral.rewardAmount = 10;
-      await existingReferral.save();
-    } else {
-      const referrer = await this.referralModel.findOne({ referralCode });
-      if (referrer) {
-        const newReferral = new this.referralModel({
-          referrerId: referrer.referrerId,
-          referralCode,
-          referredUserId: new Types.ObjectId(referredUserId),
-          referredEmail,
-          status: ReferralStatus.COMPLETED,
-          completedAt: new Date(),
-          rewardAmount: 10,
-        });
-        await newReferral.save();
-      }
+    if (referrerRecord) {
+      const newReferral = new this.referralModel({
+        referrerId: referrerRecord.referrerId,
+        referralCode,
+        referredUserId: new Types.ObjectId(referredUserId),
+        referredEmail,
+        status: ReferralStatus.COMPLETED,
+        completedAt: new Date(),
+        rewardAmount: 10,
+      });
+      await newReferral.save();
     }
   }
 

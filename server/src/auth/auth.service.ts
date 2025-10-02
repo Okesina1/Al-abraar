@@ -7,6 +7,7 @@ import {
 import { JwtService } from "@nestjs/jwt";
 import { UsersService } from "../users/users.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { ReferralsService } from "../referrals/referrals.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { PasswordUtils } from "../common/utils/password.utils";
@@ -18,7 +19,8 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private notificationsService: NotificationsService
+    private notificationsService: NotificationsService,
+    private referralsService: ReferralsService
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -129,6 +131,19 @@ export class AuthService {
       user.fullName,
       verificationCode
     );
+
+    // Handle referral code if provided
+    if (registerDto.referralCode) {
+      try {
+        await this.referralsService.recordReferralSignup(
+          registerDto.referralCode,
+          user._id.toString(),
+          user.email
+        );
+      } catch (error) {
+        console.error('Failed to record referral:', error);
+      }
+    }
 
     // Create welcome notification for all users
     await this.notificationsService.createNotification(

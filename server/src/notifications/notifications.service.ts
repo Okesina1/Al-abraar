@@ -43,12 +43,22 @@ export class NotificationsService {
     return notification.save();
   }
 
-  async getUserNotifications(userId: string, limit = 50): Promise<Notification[]> {
-    return this.notificationModel
+  async getUserNotifications(userId: string, limit = 50): Promise<any[]> {
+    const notifications = await this.notificationModel
       .find({ userId })
       .sort({ createdAt: -1 })
       .limit(limit)
       .exec();
+
+    return notifications.map(notif => ({
+      id: notif._id.toString(),
+      title: notif.title,
+      message: notif.message,
+      type: notif.type,
+      isRead: notif.isRead,
+      createdAt: notif.createdAt,
+      actionUrl: notif.actionUrl,
+    }));
   }
 
   async getUnreadCount(userId: string): Promise<number> {
