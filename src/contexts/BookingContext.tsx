@@ -13,6 +13,7 @@ interface BookingContextType {
   setUstaadhAvailability: (ustaadhId: string, availability: UstaadhAvailability[]) => Promise<void>;
   refreshBookings: () => Promise<void>;
   checkTimeSlotAvailability: (ustaadhId: string, date: string, startTime: string, endTime: string) => Promise<boolean>;
+  getBookingsByUser: (userId: string, role: 'student' | 'ustaadh') => Booking[];
 }
 
 const BookingContext = createContext<BookingContextType | null>(null);
@@ -110,6 +111,21 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const getId = (ref: any): string | undefined => {
+    if (ref && typeof ref === 'object') {
+      return ref.id || ref._id || ref.userId;
+    }
+    return typeof ref === 'string' ? ref : undefined;
+  };
+
+  const getBookingsByUser = (userId: string, role: 'student' | 'ustaadh'): Booking[] => {
+    return bookings.filter((b) => {
+      const studentId = getId(b.studentId);
+      const ustaadhId = getId(b.ustaadhId);
+      return role === 'student' ? studentId === userId : ustaadhId === userId;
+    });
+  };
+
   return (
     <BookingContext.Provider value={{
       bookings,
@@ -121,7 +137,8 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
       getUstaadhAvailability,
       setUstaadhAvailability,
       refreshBookings,
-      checkTimeSlotAvailability
+      checkTimeSlotAvailability,
+      getBookingsByUser
     }}>
       {children}
     </BookingContext.Provider>
