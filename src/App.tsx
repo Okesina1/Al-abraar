@@ -11,6 +11,7 @@ import { ToastProvider } from './contexts/ToastContext';
 // Auth Pages
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
+import { VerifyEmailPage } from './pages/auth/VerifyEmailPage';
 
 // Public Pages
 import { LandingPage } from './pages/public/LandingPage';
@@ -108,6 +109,10 @@ function AppRoutes() {
       <Route path="/register" element={
         user ? <Navigate to={`/${user.role}`} replace /> :
         <PublicLayout><RegisterPage /></PublicLayout>
+      } />
+      <Route path="/verify-email" element={
+        user ? <Navigate to={`/${user.role}`} replace /> :
+        <PublicLayout><VerifyEmailPage /></PublicLayout>
       } />
 
       {/* Legal */}
