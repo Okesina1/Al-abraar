@@ -28,6 +28,22 @@ export const ProfilePage: React.FC = () => {
     profileVisibility: user?.profileVisibility ?? true,
   });
 
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || "",
+        phoneNumber: user.phoneNumber || "",
+        country: user.country || "",
+        city: user.city || "",
+        age: user.age || "",
+        bio: user.bio || "",
+        emailNotifications: user.emailNotifications ?? true,
+        smsNotifications: user.smsNotifications ?? false,
+        profileVisibility: user.profileVisibility ?? true,
+      });
+    }
+  }, [user]);
+
   // DOB state for editing
   const [dobDay, setDobDay] = useState("");
   const [dobMonth, setDobMonth] = useState("");
@@ -98,11 +114,25 @@ export const ProfilePage: React.FC = () => {
     });
   };
 
-  const handleToggleChange = (field: string) => {
+  const handleToggleChange = async (field: string) => {
+    const newValue = !formData[field as keyof typeof formData];
+
     setFormData({
       ...formData,
-      [field]: !formData[field as keyof typeof formData],
+      [field]: newValue,
     });
+
+    try {
+      await updateUser({
+        [field]: newValue,
+      });
+    } catch (err: unknown) {
+      setFormData({
+        ...formData,
+        [field]: !newValue,
+      });
+      setError((err as Error).message || "Failed to update setting");
+    }
   };
 
   const handleSave = async () => {
