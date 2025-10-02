@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Booking, ScheduleSlot, UstaadhAvailability } from '../types';
+import { Booking, UstaadhAvailability } from '../types';
 import { bookingsApi, availabilityApi } from '../utils/api';
 
 interface BookingContextType {
