@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Send, MessageCircle, X } from 'lucide-react';
 import { useMessaging } from '../../contexts/MessagingContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -17,15 +17,19 @@ export const MessageCenter: React.FC<MessageCenterProps> = ({
   recipientName 
 }) => {
   const { user } = useAuth();
-  const { messages, sendMessage, getConversation, markAsRead } = useMessaging();
+  const { messages, sendMessage, getConversation } = useMessaging();
   const [newMessage, setNewMessage] = useState('');
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(recipientId || null);
+  const [selectedConversation] = useState<string | null>(recipientId || null);
+
+  useEffect(() => {
+    if (selectedConversation) {
+      getConversation(selectedConversation);
+    }
+  }, [selectedConversation, getConversation]);
 
   if (!isOpen || !user) return null;
 
-  const conversation = selectedConversation 
-    ? getConversation(user.id, selectedConversation)
-    : [];
+  const conversation = messages;
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return;
