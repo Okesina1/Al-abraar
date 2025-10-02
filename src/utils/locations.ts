@@ -3,8 +3,9 @@ const statesCache = new Map<string, string[]>();
 
 async function loadCSCModule() {
   try {
-    // dynamic import so the project can still build if the package isn't installed yet
-    const mod = await import('country-state-city');
+    // dynamic import via variable to prevent Vite from resolving/bundling the package at build time
+    const pkgName = 'country-state-city';
+    const mod = await import(/* @vite-ignore */ (pkgName as any));
     return mod as any;
   } catch (err) {
     console.warn('country-state-city module not available:', err);
