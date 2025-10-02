@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Message } from '../types';
 import { messagesApi } from '../utils/api';
+import { useAuth } from './AuthContext';
 
 interface Conversation {
   partnerId: string;
@@ -37,13 +38,21 @@ export const MessagingProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
-    refreshConversations();
-    refreshUnreadCount();
-  }, []);
+    if (user) {
+      refreshConversations();
+      refreshUnreadCount();
+    } else {
+      setMessages([]);
+      setConversations([]);
+      setUnreadCount(0);
+    }
+  }, [user]);
 
   const refreshConversations = async () => {
+    if (!user) return;
     try {
       setLoading(true);
       const response = await messagesApi.getConversations();
@@ -56,6 +65,7 @@ export const MessagingProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const refreshUnreadCount = async () => {
+    if (!user) return;
     try {
       const response = await messagesApi.getUnreadCount();
       setUnreadCount(response.count || response.unreadCount || 0);
@@ -74,6 +84,7 @@ export const MessagingProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const getConversation = async (partnerId: string): Promise<Message[]> => {
+    if (!user) return [];
     try {
       const response = await messagesApi.getConversation(partnerId);
       const conversationMessages = response.messages || response;
@@ -86,6 +97,7 @@ export const MessagingProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const markAsRead = async (messageId: string) => {
+    if (!user) return;
     try {
       await messagesApi.markAsRead(messageId);
       setMessages(prev => prev.map(msg =>
