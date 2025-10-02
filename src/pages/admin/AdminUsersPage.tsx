@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useEffect, useState } from 'react';
 import { Users, Shield, Ban, Mail, Phone, MapPin } from 'lucide-react';
 import { UserManagement } from '../../components/admin/UserManagement';
 import { usersApi } from '../../utils/api';
