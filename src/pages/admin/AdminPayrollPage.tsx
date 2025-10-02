@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { apiClient, API_ENDPOINTS } from '../../utils/api';
-import { Check, ClipboardList, DollarSign, Edit3, Plus, Save, Search, Send, X } from 'lucide-react';
+import { Check, ClipboardList, Plus, Save, Search, Send } from 'lucide-react';
 
 interface UstaadhUser {
   _id?: string;
@@ -208,6 +209,11 @@ export const AdminPayrollPage: React.FC = () => {
           {selectedUstaadhId && (
             <div className="space-y-6">
               {error && <div className="p-3 text-sm rounded bg-red-50 text-red-700 border border-red-200">{error}</div>}
+              {loading && !error && (
+                <div className="p-3 text-sm rounded bg-blue-50 text-blue-700 border border-blue-200">
+                  Loading plan details...
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
