@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { DollarSign, TrendingUp, Calendar, Download, Clock, Users } from 'lucide-react';
+import { DollarSign, TrendingUp, Calendar, Download, Users } from 'lucide-react';
 import { Booking, CompensationPlan, SalaryRecord } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
 
