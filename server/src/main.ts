@@ -41,8 +41,10 @@ async function bootstrap() {
   }));
   
   // Global middleware
-  app.use(new RequestLoggerMiddleware().use);
-  app.use(new SecurityMiddleware().use);
+  const requestLogger = new RequestLoggerMiddleware();
+  const securityMiddleware = new SecurityMiddleware();
+  app.use(requestLogger.use.bind(requestLogger));
+  app.use(securityMiddleware.use.bind(securityMiddleware));
   
   // Global prefix
   app.setGlobalPrefix('api');
