@@ -7,7 +7,7 @@ import { Referral, ReferralStatus } from "./schemas/referral.schema";
 export class ReferralsService {
   constructor(
     @InjectModel(Referral.name)
-    private referralModel: Model<Referral>,
+    private referralModel: Model<Referral>
   ) {}
 
   async getReferralByCode(code: string): Promise<Referral | null> {
@@ -20,7 +20,7 @@ export class ReferralsService {
     totalRewards: number;
     completedCount: number;
   }> {
-    let referral = await this.referralModel
+    let referral: Referral | null = await this.referralModel
       .findOne({ referrerId: new Types.ObjectId(userId) })
       .exec();
 
@@ -34,12 +34,14 @@ export class ReferralsService {
       .exec();
 
     const completedReferrals = allReferrals.filter(
-      (r) => r.status === ReferralStatus.COMPLETED || r.status === ReferralStatus.REWARDED,
+      (r) =>
+        r.status === ReferralStatus.COMPLETED ||
+        r.status === ReferralStatus.REWARDED
     );
 
     const totalRewards = allReferrals.reduce(
       (sum, r) => sum + (r.rewardAmount || 0),
-      0,
+      0
     );
 
     return {
@@ -65,34 +67,23 @@ export class ReferralsService {
   async recordReferralSignup(
     referralCode: string,
     referredUserId: string,
-    referredEmail: string,
+    referredEmail: string
   ): Promise<void> {
-    const existingReferral = await this.referralModel.findOne({
-      referralCode,
-      referredUserId: { $exists: false },
-    });
+    // Find the referrer's referral document by code
+    const referrer = await this.referralModel.findOne({ referralCode });
 
-    if (existingReferral) {
-      existingReferral.referredUserId = new Types.ObjectId(referredUserId);
-      existingReferral.referredEmail = referredEmail;
-      existingReferral.status = ReferralStatus.COMPLETED;
-      existingReferral.completedAt = new Date();
-      existingReferral.rewardAmount = 10;
-      await existingReferral.save();
-    } else {
-      const referrer = await this.referralModel.findOne({ referralCode });
-      if (referrer) {
-        const newReferral = new this.referralModel({
-          referrerId: referrer.referrerId,
-          referralCode,
-          referredUserId: new Types.ObjectId(referredUserId),
-          referredEmail,
-          status: ReferralStatus.COMPLETED,
-          completedAt: new Date(),
-          rewardAmount: 10,
-        });
-        await newReferral.save();
-      }
+    if (referrer) {
+      // Create a new referral document for this referred user
+      const newReferral = new this.referralModel({
+        referrerId: referrer.referrerId,
+        referralCode,
+        referredUserId: new Types.ObjectId(referredUserId),
+        referredEmail,
+        status: ReferralStatus.COMPLETED,
+        completedAt: new Date(),
+        rewardAmount: 10,
+      });
+      await newReferral.save();
     }
   }
 
