@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useCallback, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 import { CompensationPlan } from '../types';
 import { payrollApi } from '../utils/api';
 
@@ -18,8 +19,11 @@ const PayrollContext = createContext<PayrollContextType | null>(null);
 export const PayrollProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [plans, setPlans] = useState<CompensationPlan[]>([]);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const refreshPlans = useCallback(async () => {
+    const token = localStorage.getItem('al-abraar-token');
+    if (!token) return;
     try {
       setLoading(true);
       const response = await payrollApi.getPayrollObligations();
@@ -32,8 +36,10 @@ export const PayrollProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   useEffect(() => {
-    refreshPlans();
-  }, [refreshPlans]);
+    if (user) {
+      refreshPlans();
+    }
+  }, [user, refreshPlans]);
 
   const getCompensationPlanForUstaadh = useCallback(
     async (ustaadhId: string): Promise<CompensationPlan | null> => {
