@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 import { Message } from '../types';
 import { messagesApi } from '../utils/api';
 
@@ -38,12 +39,18 @@ export const MessagingProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  const { user } = useAuth();
+
   useEffect(() => {
-    refreshConversations();
-    refreshUnreadCount();
-  }, []);
+    if (user) {
+      refreshConversations();
+      refreshUnreadCount();
+    }
+  }, [user]);
 
   const refreshConversations = async () => {
+    const token = localStorage.getItem('al-abraar-token');
+    if (!token) return;
     try {
       setLoading(true);
       const response = await messagesApi.getConversations();
@@ -56,6 +63,8 @@ export const MessagingProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const refreshUnreadCount = async () => {
+    const token = localStorage.getItem('al-abraar-token');
+    if (!token) return;
     try {
       const response = await messagesApi.getUnreadCount();
       setUnreadCount(response.count || response.unreadCount || 0);
