@@ -10,11 +10,13 @@ interface LessonHistoryProps {
   onRateLesson: (bookingId: string, rating: number, comment: string) => void;
 }
 
+type LessonItem = { booking: Booking; slot: ScheduleSlot; ustaadhName: string; packageName: string };
+
 export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLesson }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showRatingModal, setShowRatingModal] = useState(false);
-  const [selectedLesson, setSelectedLesson] = useState<{booking: Booking, slot: ScheduleSlot} | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<LessonItem | null>(null);
   const [rating, setRating] = useState(0);
   const toast = useToast();
   const { updateBooking, checkTimeSlotAvailability } = useBooking();
@@ -25,7 +27,7 @@ export const LessonHistory: React.FC<LessonHistoryProps> = ({ bookings, onRateLe
   const [newTime, setNewTime] = useState('');
 
   // Get all lesson slots from bookings
-  const allLessons = bookings.flatMap(booking => 
+  const allLessons: LessonItem[] = bookings.flatMap(booking => 
     booking.schedule.map(slot => ({
       booking,
       slot,
