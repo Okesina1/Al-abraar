@@ -1,16 +1,16 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 
 export enum UserRole {
-  ADMIN = 'admin',
-  USTAADH = 'ustaadh',
-  STUDENT = 'student',
+  ADMIN = "admin",
+  USTAADH = "ustaadh",
+  STUDENT = "student",
 }
 
 export enum UserStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  SUSPENDED = 'suspended',
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  SUSPENDED = "suspended",
 }
 @Schema({ timestamps: true })
 export class User extends Document {
@@ -58,6 +58,15 @@ export class User extends Document {
 
   @Prop({ default: false })
   isVerified: boolean;
+
+  @Prop({ default: true })
+  emailNotifications: boolean;
+
+  @Prop({ default: false })
+  smsNotifications: boolean;
+
+  @Prop({ default: true })
+  profileVisibility: boolean;
 
   @Prop()
   emailVerificationCode?: string;

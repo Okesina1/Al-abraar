@@ -1,5 +1,13 @@
-import { IsOptional, IsString, IsNumber, IsArray, Min, Max } from 'class-validator';
-import { Transform } from 'class-transformer';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsArray,
+  Min,
+  Max,
+  IsBoolean,
+} from "class-validator";
+import { Transform } from "class-transformer";
 
 export class UpdateUserDto {
   @IsOptional()
@@ -45,4 +53,19 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   avatar?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === "true" || value === true)
+  emailNotifications?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === "true" || value === true)
+  smsNotifications?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === "true" || value === true)
+  profileVisibility?: boolean;
 }

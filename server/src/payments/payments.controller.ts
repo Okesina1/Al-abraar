@@ -1,43 +1,58 @@
-import { Controller, Post, Body, Headers, RawBodyRequest, Req, UseGuards, Param } from '@nestjs/common';
-import { PaymentsService } from './payments.service';
-import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
-import { RefundPaymentDto } from './dto/refund-payment.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import {
+  Controller,
+  Post,
+  Body,
+  Headers,
+  RawBodyRequest,
+  Req,
+  UseGuards,
+  Param,
+  Get,
+  Request,
+} from "@nestjs/common";
+import { PaymentsService } from "./payments.service";
+import { CreatePaymentIntentDto } from "./dto/create-payment-intent.dto";
+import { RefundPaymentDto } from "./dto/refund-payment.dto";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
-@Controller('payments')
+@Controller("payments")
 export class PaymentsController {
   constructor(private paymentsService: PaymentsService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post('create-intent')
-  async createPaymentIntent(@Body() createPaymentIntentDto: CreatePaymentIntentDto) {
+  @Post("create-intent")
+  async createPaymentIntent(
+    @Body() createPaymentIntentDto: CreatePaymentIntentDto
+  ) {
     return this.paymentsService.createPaymentIntent(
-      createPaymentIntentDto.bookingId, 
+      createPaymentIntentDto.bookingId,
       createPaymentIntentDto.amount,
       createPaymentIntentDto.currency
     );
   }
 
-  @Post('webhook')
+  @Post("webhook")
   async handleWebhook(
-    @Headers('stripe-signature') signature: string,
-    @Req() req: RawBodyRequest<Request>,
+    @Headers("stripe-signature") signature: string,
+    @Req() req: RawBodyRequest<Request>
   ) {
     return this.paymentsService.handleWebhook(signature, req.rawBody);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('refund')
+  @Post("refund")
   async refundPayment(@Body() refundPaymentDto: RefundPaymentDto) {
     return this.paymentsService.refundPayment(
-      refundPaymentDto.paymentIntentId, 
+      refundPaymentDto.paymentIntentId,
       refundPaymentDto.amount
     );
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('paypal/create-order')
-  async createPayPalOrder(@Body() createPaymentIntentDto: CreatePaymentIntentDto) {
+  @Post("paypal/create-order")
+  async createPayPalOrder(
+    @Body() createPaymentIntentDto: CreatePaymentIntentDto
+  ) {
     return this.paymentsService.createPayPalOrder(
       createPaymentIntentDto.bookingId,
       createPaymentIntentDto.amount,
@@ -46,8 +61,15 @@ export class PaymentsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('paypal/capture/:orderId')
-  async capturePayPalOrder(@Param('orderId') orderId: string) {
+  @Post("paypal/capture/:orderId")
+  async capturePayPalOrder(@Param("orderId") orderId: string) {
     return this.paymentsService.capturePayPalOrder(orderId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get("history")
+  async getPaymentHistory(@Request() req) {
+    const { userId, role } = req.user;
+    return this.paymentsService.getPaymentHistory(userId, role);
   }
 }

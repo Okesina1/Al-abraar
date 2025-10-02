@@ -1,4 +1,5 @@
 import * as CSC from "country-state-city";
+import type { ICountry, IState } from "country-state-city";
 
 let countriesCache: { name: string; isoCode?: string }[] | null = null;
 const statesCache = new Map<string, string[]>();
@@ -20,8 +21,8 @@ export async function fetchCountries(): Promise<string[]> {
     return [];
   }
   try {
-    const raw: any[] = mod.Country.getAllCountries();
-    countriesCache = raw.map((c: any) => ({
+    const raw: ICountry[] = mod.Country.getAllCountries();
+    countriesCache = raw.map((c: ICountry) => ({
       name: c.name,
       isoCode: c.isoCode,
     }));
@@ -65,8 +66,8 @@ export async function fetchStates(country: string): Promise<string[]> {
       );
       if (found) {
         // use found iso
-        const raw = mod.State.getStatesOfCountry(found.isoCode);
-        const list = (raw || []).map((s: any) => s.name).filter(Boolean);
+        const raw: IState[] = mod.State.getStatesOfCountry(found.isoCode);
+        const list = (raw || []).map((s: IState) => s.name).filter(Boolean);
         statesCache.set(key, list);
         return list;
       }
@@ -74,7 +75,7 @@ export async function fetchStates(country: string): Promise<string[]> {
       return [];
     }
 
-    const rawStates: any[] = mod.State.getStatesOfCountry(iso);
+    const rawStates: IState[] = mod.State.getStatesOfCountry(iso);
     const list = (rawStates || []).map((s) => s.name).filter(Boolean);
     statesCache.set(key, list);
     return list;

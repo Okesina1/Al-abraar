@@ -1,25 +1,29 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
-import { NotificationsService } from '../notifications/notifications.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { PasswordUtils } from '../common/utils/password.utils';
-import { NotificationType } from '../notifications/schemas/notification.schema';
-import { UserRole } from '../users/schemas/user.schema';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { UsersService } from "../users/users.service";
+import { NotificationsService } from "../notifications/notifications.service";
+import { RegisterDto } from "./dto/register.dto";
+import { LoginDto } from "./dto/login.dto";
+import { PasswordUtils } from "../common/utils/password.utils";
+import { NotificationType } from "../notifications/schemas/notification.schema";
+import { UserRole } from "../users/schemas/user.schema";
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private notificationsService: NotificationsService,
+    private notificationsService: NotificationsService
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    if (user && await PasswordUtils.compare(password, user.password)) {
+    if (user && (await PasswordUtils.compare(password, user.password))) {
       const { password, ...result } = user.toObject();
       return result;
     }
@@ -30,7 +34,11 @@ export class AuthService {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  private async sendVerificationEmail(email: string, name: string, code: string): Promise<void> {
+  private async sendVerificationEmail(
+    email: string,
+    name: string,
+    code: string
+  ): Promise<void> {
     const html = `
       <h2>Verify your email</h2>
       <p>Dear ${name},</p>
@@ -40,7 +48,7 @@ export class AuthService {
     `;
     await this.notificationsService.sendEmail(
       email,
-      'Al-Abraar - Verify your email',
+      "Al-Abraar - Verify your email",
       html
     );
   }
@@ -48,15 +56,17 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     if (!user.isVerified) {
-      throw new UnauthorizedException('Please verify your email before signing in');
+      throw new UnauthorizedException(
+        "Please verify your email before signing in"
+      );
     }
 
     if (user.role === UserRole.USTAADH && !user.isApproved) {
-      throw new UnauthorizedException('Your account is pending approval');
+      throw new UnauthorizedException("Your account is pending approval");
     }
 
     await this.usersService.updateLastLogin(user._id);
@@ -89,12 +99,14 @@ export class AuthService {
   async register(registerDto: RegisterDto) {
     const existingUser = await this.usersService.findByEmail(registerDto.email);
     if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+      throw new ConflictException("User with this email already exists");
     }
 
-    const passwordValidation = PasswordUtils.validatePasswordStrength(registerDto.password);
+    const passwordValidation = PasswordUtils.validatePasswordStrength(
+      registerDto.password
+    );
     if (!passwordValidation.isValid) {
-      throw new ConflictException(passwordValidation.errors.join(', '));
+      throw new ConflictException(passwordValidation.errors.join(", "));
     }
 
     const hashedPassword = await PasswordUtils.hash(registerDto.password);
@@ -112,15 +124,27 @@ export class AuthService {
 
     const user = await this.usersService.create(userData);
 
-    await this.sendVerificationEmail(user.email, user.fullName, verificationCode);
+    await this.sendVerificationEmail(
+      user.email,
+      user.fullName,
+      verificationCode
+    );
 
-    if (registerDto.role !== 'student') {
+    // Create welcome notification for all users
+    await this.notificationsService.createNotification(
+      user._id.toString(),
+      "Welcome to Al-Abraar!",
+      "Thank you for joining our community. Please verify your email to start exploring our platform.",
+      NotificationType.SUCCESS
+    );
+
+    if (registerDto.role !== "student") {
       const admins = await this.usersService.findAll();
-      const adminUsers = admins.users.filter(u => u.role === UserRole.ADMIN);
+      const adminUsers = admins.users.filter((u) => u.role === UserRole.ADMIN);
       for (const admin of adminUsers) {
         await this.notificationsService.createNotification(
           admin._id.toString(),
-          'New Ustaadh Application',
+          "New Ustaadh Application",
           `${user.fullName} has submitted an application for review.`,
           NotificationType.INFO
         );
@@ -128,7 +152,7 @@ export class AuthService {
     }
 
     return {
-      message: 'Registration successful. Please verify your email to continue.',
+      message: "Registration successful. Please verify your email to continue.",
       requiresVerification: true,
       email: user.email,
     };
@@ -136,14 +160,14 @@ export class AuthService {
 
   async approveUstaadh(ustaadhId: string) {
     const user = await this.usersService.approveUstaadh(ustaadhId);
-    
+
     // Send approval notification
     await this.notificationsService.notifyUstaadhApproval(
       ustaadhId,
       user.email,
       user.fullName
     );
-    
+
     return user;
   }
 
@@ -152,7 +176,7 @@ export class AuthService {
     if (user) {
       await this.notificationsService.sendEmail(
         user.email,
-        'Al-Abraar - Application Update',
+        "Al-Abraar - Application Update",
         `
           <h2>Application Update</h2>
           <p>Dear ${user.fullName},</p>
@@ -168,19 +192,19 @@ export class AuthService {
   async verifyEmail(email: string, code: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('Invalid email');
+      throw new BadRequestException("Invalid email");
     }
     if (user.isVerified) {
-      return { message: 'Email already verified' };
+      return { message: "Email already verified" };
     }
     if (!user.emailVerificationCode || !user.emailVerificationExpires) {
-      throw new BadRequestException('No verification requested');
+      throw new BadRequestException("No verification requested");
     }
     if (new Date(user.emailVerificationExpires).getTime() < Date.now()) {
-      throw new BadRequestException('Verification code expired');
+      throw new BadRequestException("Verification code expired");
     }
     if (user.emailVerificationCode !== code) {
-      throw new BadRequestException('Invalid verification code');
+      throw new BadRequestException("Invalid verification code");
     }
 
     await this.usersService.updateProfile(user._id, {
@@ -188,16 +212,25 @@ export class AuthService {
       emailVerificationCode: undefined,
       emailVerificationExpires: undefined,
     } as any);
-    return { message: 'Email verified successfully' };
+
+    // Create email verification notification
+    await this.notificationsService.createNotification(
+      user._id.toString(),
+      "Email Verified!",
+      "Your email has been successfully verified. You can now access all features of our platform.",
+      NotificationType.SUCCESS
+    );
+
+    return { message: "Email verified successfully" };
   }
 
   async resendVerification(email: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('Invalid email');
+      throw new BadRequestException("Invalid email");
     }
     if (user.isVerified) {
-      return { message: 'Email already verified' };
+      return { message: "Email already verified" };
     }
     const code = this.generateVerificationCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -206,6 +239,6 @@ export class AuthService {
       emailVerificationExpires: expiresAt,
     } as any);
     await this.sendVerificationEmail(user.email, user.fullName, code);
-    return { message: 'Verification code resent' };
+    return { message: "Verification code resent" };
   }
 }

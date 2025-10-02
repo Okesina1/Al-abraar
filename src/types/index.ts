@@ -2,7 +2,7 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: 'admin' | 'ustaadh' | 'student';
+  role: "admin" | "ustaadh" | "student";
   phoneNumber?: string;
   country?: string;
   city?: string;
@@ -16,26 +16,29 @@ export interface User {
   rating?: number;
   reviewCount?: number;
   isVerified?: boolean;
+  emailNotifications?: boolean;
+  smsNotifications?: boolean;
+  profileVisibility?: boolean;
 }
 
 export interface Booking {
   id: string;
   studentId: string;
   ustaadhId: string;
-  packageType: 'basic' | 'complete';
+  packageType: "basic" | "complete";
   hoursPerDay: number;
   daysPerWeek: number;
   subscriptionMonths: number;
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status: "pending" | "confirmed" | "cancelled" | "completed";
   startDate: string;
   endDate: string;
   schedule: ScheduleSlot[];
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  paymentStatus: "pending" | "paid" | "failed" | "refunded";
   createdAt: string;
 }
 
-export type SalaryAdjustmentType = 'bonus' | 'deduction';
+export type SalaryAdjustmentType = "bonus" | "deduction";
 
 export interface SalaryAdjustment {
   id: string;
@@ -50,7 +53,7 @@ export interface SalaryRecord {
   id: string;
   month: string; // YYYY-MM
   amount: number;
-  status: 'paid' | 'scheduled' | 'processing';
+  status: "paid" | "scheduled" | "processing";
   scheduledPayoutDate: string;
   paidOn?: string;
   adjustments?: SalaryAdjustment[];
@@ -72,7 +75,7 @@ export interface ScheduleSlot {
   startTime: string; // HH:MM format
   endTime: string;
   meetingLink?: string;
-  status: 'scheduled' | 'completed' | 'cancelled' | 'missed';
+  status: "scheduled" | "completed" | "cancelled" | "missed";
   date: string;
 }
 
@@ -109,7 +112,7 @@ export interface Payment {
   bookingId: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  status: "pending" | "completed" | "failed" | "refunded";
   paymentMethod: string;
   transactionId?: string;
   createdAt: string;
@@ -130,7 +133,7 @@ export interface Notification {
   userId: string;
   title: string;
   message: string;
-  type: 'info' | 'warning' | 'success' | 'error';
+  type: "info" | "warning" | "success" | "error";
   isRead: boolean;
   createdAt: string;
   actionUrl?: string;

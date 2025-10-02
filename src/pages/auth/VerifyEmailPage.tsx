@@ -1,58 +1,65 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { authApi } from '../../utils/api';
-import { Mail, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { authApi } from "../../utils/api";
+import { ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
 
 export const VerifyEmailPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
-  const initialEmail = params.get('email') || '';
+  const initialEmail = params.get("email") || "";
 
-  const [email, setEmail] = useState(initialEmail);
-  const [code, setCode] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-
-  useEffect(() => {
-    setEmail(initialEmail);
-  }, [initialEmail]);
+  const [countdown, setCountdown] = useState(0);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-    if (!email || !code) {
-      setError('Enter your email and the 6-digit code');
+    setError("");
+    setSuccess("");
+    if (!initialEmail || !code) {
+      setError("Please enter the 6-digit verification code");
       return;
     }
     setLoading(true);
     try {
-      await authApi.verifyEmail(email, code);
-      setSuccess('Email verified! Redirecting to login...');
-      setTimeout(() => navigate('/login'), 1500);
+      await authApi.verifyEmail(initialEmail, code);
+      setSuccess("Email verified! Redirecting to login...");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err: any) {
-      setError(err.message || 'Verification failed');
+      setError(err.message || "Verification failed");
     } finally {
       setLoading(false);
     }
   };
 
   const handleResend = async () => {
-    setError('');
-    setSuccess('');
-    if (!email) {
-      setError('Enter your email to resend code');
+    setError("");
+    setSuccess("");
+    if (!initialEmail) {
+      setError("No email provided");
       return;
     }
+    if (countdown > 0) return; // Prevent spam during countdown
     setResending(true);
     try {
-      await authApi.resendVerification(email);
-      setSuccess('A new code has been sent to your email');
+      await authApi.resendVerification(initialEmail);
+      setSuccess("A new code has been sent to your email");
+      setCountdown(60);
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } catch (err: any) {
-      setError(err.message || 'Could not resend code');
+      setError(err.message || "Could not resend code");
     } finally {
       setResending(false);
     }
@@ -65,8 +72,12 @@ export const VerifyEmailPage: React.FC = () => {
           <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center mx-auto mb-3">
             <ShieldCheck className="h-8 w-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">Verify your email</h2>
-          <p className="text-gray-600 mt-1">Enter the 6-digit code sent to your email</p>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Verify your email
+          </h2>
+          <p className="text-gray-600 mt-1">
+            Enter the 6-digit code sent to {initialEmail}
+          </p>
         </div>
 
         {error && (
@@ -84,25 +95,15 @@ export const VerifyEmailPage: React.FC = () => {
 
         <form onSubmit={handleVerify} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <div className="relative">
-              <Mail className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="you@example.com"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Verification Code
+            </label>
             <input
               type="text"
               value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={(e) =>
+                setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent tracking-widest text-center text-lg"
               placeholder="------"
             />
@@ -113,15 +114,34 @@ export const VerifyEmailPage: React.FC = () => {
             disabled={loading}
             className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 disabled:opacity-50 flex items-center justify-center"
           >
-            {loading ? (<><Loader2 className="h-5 w-5 animate-spin mr-2" /> Verifying...</>) : 'Verify Email'}
+            {loading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin mr-2" /> Verifying...
+              </>
+            ) : (
+              "Verify Email"
+            )}
           </button>
         </form>
 
         <div className="mt-4 flex items-center justify-between">
-          <button onClick={handleResend} disabled={resending} className="text-green-600 hover:text-green-700 font-medium disabled:opacity-50">
-            {resending ? 'Resending...' : 'Resend code'}
+          <button
+            onClick={handleResend}
+            disabled={resending || countdown > 0}
+            className="text-green-600 hover:text-green-700 font-medium disabled:opacity-50"
+          >
+            {resending
+              ? "Resending..."
+              : countdown > 0
+                ? `Resend in ${countdown}s`
+                : "Resend code"}
           </button>
-          <button onClick={() => navigate('/login')} className="text-gray-600 hover:text-gray-800">Back to login</button>
+          <button
+            onClick={() => navigate("/login")}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            Back to login
+          </button>
         </div>
       </div>
     </div>
