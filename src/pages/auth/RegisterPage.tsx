@@ -289,7 +289,7 @@ export const RegisterPage: React.FC = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
                   <option value="">Year</option>
-                  {Array.from({ length: 85 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                  {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map(y => (
                     <option key={y} value={y}>{y}</option>
                   ))}
                 </select>
