@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Clock, DollarSign, CreditCard } from 'lucide-react';
+import { X, CreditCard } from 'lucide-react';
 import { User } from '../../types';
 import { useBooking } from '../../contexts/BookingContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,7 +13,7 @@ interface BookingModalProps {
 
 export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ustaadh }) => {
   const { user } = useAuth();
-  const { createBooking, checkTimeSlotAvailability } = useBooking();
+  const { createBooking } = useBooking();
   const [step, setStep] = useState(1);
   const [bookingData, setBookingData] = useState({
     packageType: 'basic' as 'basic' | 'complete',

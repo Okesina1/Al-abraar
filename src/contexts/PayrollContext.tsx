@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useCallback, useContext, useState, useEffect } from 'react';
-import { CompensationPlan, SalaryAdjustment, SalaryRecord } from '../types';
+import { CompensationPlan } from '../types';
 import { payrollApi } from '../utils/api';
 
 interface PayrollContextType {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, Clock, Plus, Trash2 } from 'lucide-react';
 import { UstaadhAvailability } from '../../types';
 import { useBooking } from '../../contexts/BookingContext';
@@ -7,9 +7,21 @@ import { useAuth } from '../../contexts/AuthContext';
 export const AvailabilityCalendar: React.FC = () => {
   const { user } = useAuth();
   const { getUstaadhAvailability, setUstaadhAvailability } = useBooking();
-  const [availability, setAvailability] = useState<UstaadhAvailability[]>(
-    user ? getUstaadhAvailability(user.id) : []
-  );
+  const [availability, setAvailability] = useState<UstaadhAvailability[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      if (!user) {
+        if (active) setAvailability([]);
+        return;
+      }
+      const data = await getUstaadhAvailability(user.id);
+      if (active) setAvailability(data);
+    };
+    load();
+    return () => { active = false; };
+  }, [user, getUstaadhAvailability]);
   const [isEditing, setIsEditing] = useState(false);
 
   const daysOfWeek = [
