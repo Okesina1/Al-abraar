@@ -21,6 +21,9 @@ export const RegisterPage: React.FC = () => {
   const [dobYear, setDobYear] = useState('');
   const [countries, setCountries] = useState<string[]>([]);
   const [states, setStates] = useState<string[]>([]);
+  const [countriesLoading, setCountriesLoading] = useState(false);
+  const [statesLoading, setStatesLoading] = useState(false);
+  const [statesError, setStatesError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [cvFile, setCvFile] = useState<File | null>(null);
@@ -30,17 +33,31 @@ export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchCountries().then(setCountries);
+    let mounted = true;
+    setCountriesLoading(true);
+    fetchCountries()
+      .then(list => { if (mounted) setCountries(list); })
+      .catch((e) => console.warn('Failed to load countries', e))
+      .finally(() => { if (mounted) setCountriesLoading(false); });
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
+    let mounted = true;
+    setStatesError('');
     if (formData.country) {
-      fetchStates(formData.country).then((list) => setStates(list));
+      setStatesLoading(true);
+      fetchStates(formData.country)
+        .then((list) => { if (mounted) setStates(list); })
+        .catch((e) => { if (mounted) { setStates([]); setStatesError('Failed to load states for selected country'); } })
+        .finally(() => { if (mounted) setStatesLoading(false); });
       // reset selected state when country changes
       setFormData(prev => ({ ...prev, city: '' }));
     } else {
       setStates([]);
     }
+
+    return () => { mounted = false; };
   }, [formData.country]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -306,7 +323,7 @@ export const RegisterPage: React.FC = () => {
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 >
-                  <option value="">Select a country</option>
+                  <option value="">{countriesLoading ? 'Loading countries...' : 'Select a country'}</option>
                   {countries.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
@@ -316,7 +333,11 @@ export const RegisterPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">State/Region *</label>
-              {states.length > 0 ? (
+              {statesLoading ? (
+                <select disabled className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
+                  <option>Loading states...</option>
+                </select>
+              ) : states.length > 0 ? (
                 <select
                   name="city"
                   value={formData.city}
@@ -329,14 +350,17 @@ export const RegisterPage: React.FC = () => {
                   ))}
                 </select>
               ) : (
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Enter your state/region"
-                />
+                <div>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Enter your state/region"
+                  />
+                  {statesError && <p className="text-sm text-gray-500 mt-1">{statesError}</p>}
+                </div>
               )}
             </div>
           </div>
