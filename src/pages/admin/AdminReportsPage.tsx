@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, DollarSign, TrendingUp, Star, Calendar, BookOpen } from 'lucide-react';
+import { Users, DollarSign, Star, Calendar, BookOpen } from 'lucide-react';
 
 export const AdminReportsPage: React.FC = () => {
   const kpis = [
