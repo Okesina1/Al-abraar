@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Search, Filter, Eye, Shield, Ban, Mail, Phone, MapPin, MoreVertical } from 'lucide-react';
+import { Users, Search, Filter, Eye, Shield, Ban, MoreVertical } from 'lucide-react';
 
 interface User {
   id: string;
