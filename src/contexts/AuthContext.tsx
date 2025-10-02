@@ -107,20 +107,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
 
       const response = await authApi.register(registrationData);
-
-      if (response.requiresApproval) {
-        return {
-          message: response.message || 'Registration submitted! Your application is under review.',
-          requiresApproval: true
-        };
-      }
-
-      if (response.user && response.access_token) {
-        setUser(response.user);
-        localStorage.setItem('al-abraar-user', JSON.stringify(response.user));
-        localStorage.setItem('al-abraar-token', response.access_token);
-      }
-
       return response;
     } catch (error: any) {
       throw new Error(error.message || 'Registration failed');

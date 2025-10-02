@@ -97,6 +97,12 @@ export const authApi = {
   register: (userData: any) =>
     apiClient.post('/auth/register', userData),
 
+  verifyEmail: (email: string, code: string) =>
+    apiClient.post('/auth/verify-email', { email, code }),
+
+  resendVerification: (email: string) =>
+    apiClient.post('/auth/resend-verification', { email }),
+
   approveUstaadh: (id: string) =>
     apiClient.post(`/auth/approve-ustaadh/${id}`),
 
@@ -340,6 +346,8 @@ export const healthApi = {
 export const API_ENDPOINTS = {
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
+  VERIFY_EMAIL: '/auth/verify-email',
+  RESEND_VERIFICATION: '/auth/resend-verification',
   APPROVE_USTAADH: (id: string) => `/auth/approve-ustaadh/${id}`,
   REJECT_USTAADH: (id: string) => `/auth/reject-ustaadh/${id}`,
 

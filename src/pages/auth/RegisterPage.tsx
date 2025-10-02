@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { BookOpen, User, Mail, Phone, MapPin, Calendar, Upload, AlertCircle, CheckCircle, Eye, EyeOff, Lock } from 'lucide-react';
+import { fetchCountries, fetchStates } from '../../utils/locations';
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,11 @@ export const RegisterPage: React.FC = () => {
     age: '',
     role: 'student' as 'student' | 'ustaadh'
   });
+  const [dobDay, setDobDay] = useState('');
+  const [dobMonth, setDobMonth] = useState('');
+  const [dobYear, setDobYear] = useState('');
+  const [countries, setCountries] = useState<string[]>([]);
+  const [states, setStates] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [cvFile, setCvFile] = useState<File | null>(null);
@@ -22,6 +28,20 @@ export const RegisterPage: React.FC = () => {
   const [success, setSuccess] = useState('');
   const { register, loading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchCountries().then(setCountries);
+  }, []);
+
+  useEffect(() => {
+    if (formData.country) {
+      fetchStates(formData.country).then((list) => setStates(list));
+      // reset selected state when country changes
+      setFormData(prev => ({ ...prev, city: '' }));
+    } else {
+      setStates([]);
+    }
+  }, [formData.country]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -41,8 +61,7 @@ export const RegisterPage: React.FC = () => {
     setError('');
     setSuccess('');
 
-    // Validation
-    if (!formData.fullName || !formData.email || !formData.password || !formData.phoneNumber || !formData.country || !formData.city || !formData.age) {
+    if (!formData.fullName || !formData.email || !formData.password || !formData.phoneNumber || !formData.country || !formData.city || !dobDay || !dobMonth || !dobYear) {
       setError('Please fill in all required fields');
       return;
     }
@@ -62,20 +81,26 @@ export const RegisterPage: React.FC = () => {
       return;
     }
 
+    const birthDate = new Date(parseInt(dobYear), parseInt(dobMonth) - 1, parseInt(dobDay));
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    if (age < 16 || age > 100) {
+      setError('You must be between 16 and 100 years old');
+      return;
+    }
+
     try {
-      await register({
+      const res = await register({
         ...formData,
-        age: parseInt(formData.age),
+        age,
         cv: cvFile || undefined
       });
-      
-      if (formData.role === 'ustaadh') {
-        setSuccess('Registration submitted! Your application is under review. You will receive an email once approved.');
-        setTimeout(() => navigate('/login'), 3000);
-      } else {
-        setSuccess('Registration successful! You can now start booking lessons.');
-        // Student will be auto-logged in and redirected
-      }
+      const email = res?.email || formData.email;
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     }
@@ -233,19 +258,41 @@ export const RegisterPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Age *</label>
-              <div className="relative">
-                <Calendar className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                <input
-                  type="number"
-                  name="age"
-                  value={formData.age}
-                  onChange={handleChange}
-                  min="16"
-                  max="100"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Enter your age"
-                />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <div className="relative">
+                  <Calendar className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <select
+                    value={dobDay}
+                    onChange={(e) => setDobDay(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="">Day</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                <select
+                  value={dobMonth}
+                  onChange={(e) => setDobMonth(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Month</option>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <select
+                  value={dobYear}
+                  onChange={(e) => setDobYear(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Year</option>
+                  {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -253,27 +300,44 @@ export const RegisterPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
               <div className="relative">
                 <MapPin className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                <input
-                  type="text"
+                <select
                   name="country"
                   value={formData.country}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Enter your country"
-                />
+                >
+                  <option value="">Select a country</option>
+                  {countries.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
-              <input
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Enter your city"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">State/Region *</label>
+              {states.length > 0 ? (
+                <select
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Select a state/region</option>
+                  {states.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter your state/region"
+                />
+              )}
             </div>
           </div>
 

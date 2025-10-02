@@ -60,6 +60,12 @@ export class User extends Document {
   isVerified: boolean;
 
   @Prop()
+  emailVerificationCode?: string;
+
+  @Prop()
+  emailVerificationExpires?: Date;
+
+  @Prop()
   avatar: string;
 
   @Prop()
