@@ -335,6 +335,16 @@ export const settingsApi = {
   updatePublicStats: (data: { activeStudents?: number; countries?: number; avgRating?: number }) => apiClient.patch('/settings/public-stats', data),
 };
 
+export const achievementsApi = {
+  getMyAchievements: () =>
+    apiClient.get('/achievements/my-achievements'),
+};
+
+export const referralsApi = {
+  getMyReferrals: () =>
+    apiClient.get('/referrals/my-referrals'),
+};
+
 export const healthApi = {
   getHealth: () =>
     apiClient.get('/health'),

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, BookOpen, CreditCard, Star, Clock, Users, MessageCircle, TrendingUp } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { bookingsApi, paymentsApi } from '../../utils/api';
+import { bookingsApi, paymentsApi, achievementsApi, referralsApi } from '../../utils/api';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 
 interface DashboardStats {
@@ -11,6 +11,22 @@ interface DashboardStats {
   lessonsThisWeek: number;
   totalSpent: number;
   completedLessons: number;
+}
+
+interface Achievement {
+  id: string;
+  type: string;
+  title: string;
+  description?: string;
+  earnedAt: string;
+  metadata?: any;
+}
+
+interface ReferralData {
+  referralCode: string;
+  referrals: any[];
+  totalRewards: number;
+  completedCount: number;
 }
 
 export const StudentDashboardPage: React.FC = () => {
@@ -24,6 +40,8 @@ export const StudentDashboardPage: React.FC = () => {
   });
   const [upcomingLessons, setUpcomingLessons] = useState<any[]>([]);
   const [activeSubscriptions, setActiveSubscriptions] = useState<any[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [referralData, setReferralData] = useState<ReferralData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,9 +50,11 @@ export const StudentDashboardPage: React.FC = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const [bookingsResponse, paymentHistoryResponse] = await Promise.all([
+        const [bookingsResponse, paymentHistoryResponse, achievementsResponse, referralsResponse] = await Promise.all([
           bookingsApi.getMyBookings(),
-          paymentsApi.getPaymentHistory().catch(() => ({ payments: [], total: 0 }))
+          paymentsApi.getPaymentHistory().catch(() => ({ payments: [], total: 0 })),
+          achievementsApi.getMyAchievements().catch(() => []),
+          referralsApi.getMyReferrals().catch(() => null)
         ]);
 
         if (!isMounted) return;
@@ -147,6 +167,8 @@ export const StudentDashboardPage: React.FC = () => {
 
         setUpcomingLessons(upcoming);
         setActiveSubscriptions(activeWithProgress);
+        setAchievements(Array.isArray(achievementsResponse) ? achievementsResponse : []);
+        setReferralData(referralsResponse);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
@@ -315,22 +337,64 @@ export const StudentDashboardPage: React.FC = () => {
       {/* Achievements */}
       <div className="bg-white rounded-xl shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Achievements</h3>
-        <div className="flex flex-wrap gap-3">
-          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">7-day Streak</span>
-          <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">3 Months Completed</span>
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Top Reviewer</span>
-        </div>
+        {achievements.length === 0 ? (
+          <p className="text-gray-500 text-sm">Complete lessons and activities to earn achievements!</p>
+        ) : (
+          <div className="flex flex-wrap gap-3">
+            {achievements.map((achievement) => {
+              const colorClasses = {
+                streak: 'bg-green-100 text-green-800',
+                milestone: 'bg-yellow-100 text-yellow-800',
+                reviewer: 'bg-blue-100 text-blue-800',
+                loyalty: 'bg-purple-100 text-purple-800',
+                progress: 'bg-pink-100 text-pink-800',
+              };
+              const colorClass = colorClasses[achievement.type as keyof typeof colorClasses] || 'bg-gray-100 text-gray-800';
+
+              return (
+                <span
+                  key={achievement.id}
+                  className={`px-3 py-1 rounded-full text-sm ${colorClass}`}
+                  title={achievement.description}
+                >
+                  {achievement.title}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Referral Program */}
       <div className="bg-white rounded-xl shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-2">Refer a Friend</h3>
         <p className="text-sm text-gray-600 mb-4">Invite friends and earn discounts on your next month.</p>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <input readOnly value={`https://al-abraar.com/referral/SARAH123`} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg" />
-          <button onClick={()=>{ navigator.clipboard.writeText('https://al-abraar.com/referral/SARAH123'); toast.success('Referral link copied!'); }} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Copy Link</button>
-        </div>
-        <p className="text-xs text-gray-500 mt-2">You have earned 2 rewards so far.</p>
+        {referralData ? (
+          <>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <input
+                readOnly
+                value={`${window.location.origin}/register?ref=${referralData.referralCode}`}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/register?ref=${referralData.referralCode}`);
+                  toast.success('Referral link copied!');
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Copy Link
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              You have earned {referralData.completedCount} reward{referralData.completedCount !== 1 ? 's' : ''} so far
+              {referralData.totalRewards > 0 && ` ($${referralData.totalRewards} total)`}.
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-gray-500">Loading referral information...</p>
+        )}
       </div>
 
       {/* Quick Actions */}
