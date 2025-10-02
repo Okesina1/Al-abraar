@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
-  Users,
   Star,
   Shield,
   Clock,
@@ -11,7 +10,6 @@ import {
   GraduationCap,
   MessageCircle,
   CalendarRange,
-  CreditCard,
   Search,
   Play,
   ArrowRight,
@@ -169,6 +167,12 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen overflow-hidden">
+      {error && (
+        <div className="mx-4 sm:mx-6 lg:mx-8 mt-4 p-3 rounded bg-red-50 text-red-700 border border-red-200 text-sm">{error}</div>
+      )}
+      {loading && (
+        <div className="mx-4 sm:mx-6 lg:mx-8 mt-4 p-3 rounded bg-blue-50 text-blue-700 border border-blue-200 text-sm">Loading…</div>
+      )}
       {/* Hero Section - Image Collage */}
       <section className="relative overflow-hidden bg-gradient-to-br from-green-50 via-white to-amber-50">
         <div className="absolute -top-24 -left-24 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-pulse"></div>
