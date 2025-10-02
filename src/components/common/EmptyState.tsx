@@ -1,8 +1,7 @@
 import React from 'react';
-import { Video as LucideIcon } from 'lucide-react';
 
 interface EmptyStateProps {
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
   action?: {
@@ -11,11 +10,11 @@ interface EmptyStateProps {
   };
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ 
-  icon: Icon, 
-  title, 
-  description, 
-  action 
+export const EmptyState: React.FC<EmptyStateProps> = ({
+  icon: Icon,
+  title,
+  description,
+  action
 }) => {
   return (
     <div className="text-center py-8 lg:py-12">
