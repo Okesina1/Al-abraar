@@ -1,56 +1,50 @@
-type Country = { name: string };
-export type State = { name: string };
+import { COUNTRIES } from './data/countries';
+import { STATES_MAP } from './data/states';
 
-const COUNTRIES_URL = 'https://countriesnow.space/api/v0.1/countries/positions';
-const STATES_URL = 'https://countriesnow.space/api/v0.1/countries/states';
+export type State = { name: string };
 
 let countriesCache: string[] | null = null;
 const statesCache = new Map<string, string[]>();
 
-// simple fetch with timeout
-async function fetchWithTimeout(input: RequestInfo, init: RequestInit = {}, timeout = 8000) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  try {
-    const res = await fetch(input, { ...init, signal: controller.signal });
-    clearTimeout(id);
-    return res;
-  } catch (err) {
-    clearTimeout(id);
-    throw err;
-  }
+function normalizeCountryKey(country: string) {
+  if (!country) return country;
+  return country.trim();
 }
 
 export async function fetchCountries(): Promise<string[]> {
   if (countriesCache) return countriesCache;
-  try {
-    const res = await fetchWithTimeout(COUNTRIES_URL);
-    const data = await res.json();
-    const list: string[] = (data?.data || []).map((c: any) => c.name).sort();
-    countriesCache = list;
-    return list;
-  } catch (e) {
-    console.warn('fetchCountries failed:', e);
-    return [];
-  }
+  // clone and sort to keep deterministic order
+  const list = [...COUNTRIES].sort((a, b) => a.localeCompare(b));
+  countriesCache = list;
+  return list;
 }
 
 export async function fetchStates(country: string): Promise<string[]> {
   if (!country) return [];
-  const cached = statesCache.get(country);
+  const key = normalizeCountryKey(country);
+  const cached = statesCache.get(key);
   if (cached) return cached;
-  try {
-    const res = await fetchWithTimeout(STATES_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ country }),
-    });
-    const data = await res.json();
-    const list: string[] = data?.data?.states?.map((s: any) => s.name) || [];
-    statesCache.set(country, list);
-    return list;
-  } catch (e) {
-    console.warn('fetchStates failed for', country, e);
-    return [];
+  // direct lookup
+  const direct = STATES_MAP[key];
+  if (direct) {
+    statesCache.set(key, direct);
+    return direct;
   }
+  // try some fuzzy matches
+  const lc = key.toLowerCase();
+  for (const mapKey of Object.keys(STATES_MAP)) {
+    if (mapKey.toLowerCase() === lc) {
+      statesCache.set(key, STATES_MAP[mapKey]);
+      return STATES_MAP[mapKey];
+    }
+  }
+  // special cases
+  if (lc === 'united states' || lc === 'united states of america' || lc === 'usa') {
+    const us = STATES_MAP['United States of America'];
+    statesCache.set(key, us);
+    return us;
+  }
+  // not available locally
+  statesCache.set(key, []);
+  return [];
 }
