@@ -25,6 +25,15 @@ import { UstaadhCard } from '../../components/student/UstaadhCard';
 import { User } from '../../types';
 import { usersApi, settingsApi, testimonialsApi } from '../../utils/api';
 
+interface LandingTestimonial {
+  id: string;
+  name: string;
+  quote: string;
+  rating: number;
+  avatarUrl?: string;
+  subtitle?: string;
+}
+
 export const LandingPage: React.FC = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -35,6 +44,7 @@ export const LandingPage: React.FC = () => {
   const [pricing, setPricing] = useState<{ basic: number; complete: number } | null>(null);
   const [teachersCount, setTeachersCount] = useState<number | null>(null);
   const [publicStats, setPublicStats] = useState<{ activeStudents?: number; countries?: number; avgRating?: number } | null>(null);
+  const [testimonials, setTestimonials] = useState<LandingTestimonial[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -89,6 +99,59 @@ export const LandingPage: React.FC = () => {
       }
     };
     fetchData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchTestimonials = async () => {
+      try {
+        const response = await testimonialsApi.listPublished();
+        if (!isMounted) return;
+
+        const rawList = Array.isArray(response) ? response : response?.data || [];
+        const normalized = rawList
+          .filter((item: any) => item && (item.isPublished !== false))
+          .sort((a: any, b: any) => {
+            const orderA = typeof a?.order === 'number' ? a.order : 0;
+            const orderB = typeof b?.order === 'number' ? b.order : 0;
+            return orderA - orderB;
+          })
+          .map((item: any): LandingTestimonial | null => {
+            const id = item?.id || item?._id;
+            const nameCandidate = typeof item?.name === 'string' ? item.name.trim() : typeof item?.fullName === 'string' ? item.fullName.trim() : '';
+            const quoteCandidate = typeof item?.quote === 'string' ? item.quote.trim() : typeof item?.testimonial === 'string' ? item.testimonial.trim() : '';
+
+            if (!id || !nameCandidate || !quoteCandidate) {
+              return null;
+            }
+
+            const ratingValue = typeof item?.rating === 'number' ? item.rating : 5;
+            const clampedRating = Math.max(0, Math.min(5, ratingValue));
+
+            return {
+              id,
+              name: nameCandidate,
+              quote: quoteCandidate,
+              rating: clampedRating,
+              avatarUrl: typeof item?.avatarUrl === 'string' ? item.avatarUrl : undefined,
+              subtitle: typeof item?.subtitle === 'string' && item.subtitle.trim() ? item.subtitle.trim() : undefined,
+            };
+          })
+          .filter((item: LandingTestimonial | null): item is LandingTestimonial => item !== null);
+
+        setTestimonials(normalized);
+      } catch {
+        if (!isMounted) return;
+        setTestimonials([]);
+      }
+    };
+
+    fetchTestimonials();
+
     return () => {
       isMounted = false;
     };
