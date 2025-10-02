@@ -7,4 +7,11 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  // Disable Vite's default error overlay which can crash in some environments
+  // (the app already normalizes thrown values in src/main.tsx)
+  server: {
+    hmr: {
+      overlay: false,
+    },
+  },
 });
