@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Search, Filter, Eye, CheckCircle, XCircle, Clock, User, DollarSign } from 'lucide-react';
-import { useBooking } from '../../contexts/BookingContext';
+import { useEffect, useState } from 'react';
+import { Calendar, Search, Filter, Eye, CheckCircle, XCircle, User } from 'lucide-react';
 import { bookingsApi } from '../../utils/api';
 
 export const AdminBookingsPage: React.FC = () => {
-  const { bookings } = useBooking();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [packageFilter, setPackageFilter] = useState('');
