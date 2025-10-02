@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 import { Booking, UstaadhAvailability } from '../types';
 import { bookingsApi, availabilityApi } from '../utils/api';
 
@@ -30,12 +31,17 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [availability, setAvailability] = useState<UstaadhAvailability[]>([]);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
-    refreshBookings();
-  }, []);
+    if (user) {
+      refreshBookings();
+    }
+  }, [user]);
 
   const refreshBookings = async () => {
+    const token = localStorage.getItem('al-abraar-token');
+    if (!token) return;
     try {
       setLoading(true);
       const response = await bookingsApi.getMyBookings();
