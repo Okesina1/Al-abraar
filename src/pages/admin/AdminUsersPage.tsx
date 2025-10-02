@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Search, Filter, Eye, Shield, Ban, Mail, Phone, MapPin } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Users, Shield, Ban, Mail, Phone, MapPin } from 'lucide-react';
 import { UserManagement } from '../../components/admin/UserManagement';
 import { usersApi } from '../../utils/api';
 
@@ -208,6 +209,13 @@ export const AdminUsersPage: React.FC = () => {
           {users.length} user{users.length !== 1 ? 's' : ''}
         </div>
       </div>
+
+      {error && (
+        <div className="p-3 rounded bg-red-50 text-red-700 border border-red-200 text-sm">{error}</div>
+      )}
+      {loading && !error && (
+        <div className="p-3 rounded bg-blue-50 text-blue-700 border border-blue-200 text-sm">Loading users...</div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
