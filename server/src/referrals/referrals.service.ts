@@ -20,16 +20,22 @@ export class ReferralsService {
     totalRewards: number;
     completedCount: number;
   }> {
-    let referral: Referral | null = await this.referralModel
-      .findOne({ referrerId: new Types.ObjectId(userId) })
+    let userReferralCode: Referral | null = await this.referralModel
+      .findOne({
+        referrerId: new Types.ObjectId(userId),
+        referredUserId: { $exists: false },
+      })
       .exec();
 
-    if (!referral) {
-      referral = await this.createReferralCode(userId);
+    if (!userReferralCode) {
+      userReferralCode = await this.createReferralCode(userId);
     }
 
-    const allReferrals = await this.referralModel
-      .find({ referrerId: new Types.ObjectId(userId) })
+    const allReferrals: Referral[] = await this.referralModel
+      .find({
+        referrerId: new Types.ObjectId(userId),
+        referredUserId: { $exists: true },
+      })
       .sort({ createdAt: -1 })
       .exec();
 
@@ -45,7 +51,7 @@ export class ReferralsService {
     );
 
     return {
-      referralCode: referral.referralCode,
+      referralCode: userReferralCode.referralCode,
       referrals: allReferrals,
       totalRewards,
       completedCount: completedReferrals.length,
@@ -61,7 +67,7 @@ export class ReferralsService {
       status: ReferralStatus.PENDING,
     });
 
-    return referral.save();
+    return await referral.save();
   }
 
   async recordReferralSignup(
@@ -69,13 +75,14 @@ export class ReferralsService {
     referredUserId: string,
     referredEmail: string
   ): Promise<void> {
-    // Find the referrer's referral document by code
-    const referrer = await this.referralModel.findOne({ referralCode });
+    const referrerRecord = await this.referralModel.findOne({
+      referralCode,
+      referredUserId: { $exists: false },
+    });
 
-    if (referrer) {
-      // Create a new referral document for this referred user
+    if (referrerRecord) {
       const newReferral = new this.referralModel({
-        referrerId: referrer.referrerId,
+        referrerId: referrerRecord.referrerId,
         referralCode,
         referredUserId: new Types.ObjectId(referredUserId),
         referredEmail,

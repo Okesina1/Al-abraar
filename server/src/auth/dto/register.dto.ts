@@ -45,4 +45,8 @@ export class RegisterDto {
 
   @IsOptional()
   specialties?: string[];
+
+  @IsOptional()
+  @IsString()
+  referralCode?: string;
 }
