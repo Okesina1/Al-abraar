@@ -47,6 +47,30 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingData.startDate, bookingData.selectedDays]);
+
+  // Poll available slots while modal is open to reflect live booking state
+  useEffect(() => {
+    if (!isOpen || bookingData.selectedDays.length === 0) return;
+    let active = true;
+    const intervalMs = 10000;
+    const fetchForSelected = async () => {
+      const days = bookingData.selectedDays.filter(d => d !== undefined && d !== null);
+      for (const d of days) {
+        try {
+          const date = getNextDateForDay(d, bookingData.startDate);
+          const slots = await availabilityApi.getAvailableTimeSlots(ustaadh.id, date);
+          if (!active) return;
+          setAvailableSlotsByDate(prev => ({ ...prev, [date]: slots || [] }));
+        } catch (err) {
+          // ignore polling errors
+        }
+      }
+    };
+
+    fetchForSelected();
+    const interval = setInterval(fetchForSelected, intervalMs);
+    return () => { active = false; clearInterval(interval); };
+  }, [isOpen, bookingData.startDate, bookingData.selectedDays, ustaadh.id]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
