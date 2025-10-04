@@ -401,9 +401,13 @@ export const AvailabilityCalendar: React.FC = () => {
                             <p className={`text-sm font-medium ${slotInvalid ? 'text-red-800' : 'text-green-800'}`}>
                               {slot.startTime} - {slot.endTime}
                             </p>
-                            <p className={`text-xs ${slot.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
-                              {slot.isAvailable ? 'Available' : 'Unavailable'}
-                            </p>
+                            {isEditing ? (
+                              <p className={`text-xs ${slot.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                                {slot.isAvailable ? 'Available' : 'Unavailable'}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-green-600">Available</p>
+                            )}
                           </div>
                         )}
                       </div>
