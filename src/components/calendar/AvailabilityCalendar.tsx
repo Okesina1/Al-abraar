@@ -37,6 +37,62 @@ export const AvailabilityCalendar: React.FC = () => {
     load();
     return () => { active = false; };
   }, [user?.id, getUstaadhAvailability]);
+
+  // Helper to compute next date for a given dayOfWeek relative to base (today)
+  const getNextDateForDay = (dayOfWeek: number, baseDate?: Date) => {
+    const base = baseDate ? new Date(baseDate) : new Date();
+    const currentDow = base.getDay();
+    const diff = (dayOfWeek - currentDow + 7) % 7;
+    base.setDate(base.getDate() + diff);
+    return base.toISOString().split('T')[0];
+  };
+
+  // When not editing, fetch date-specific available slots and booked slots for next occurrence of each weekday
+  useEffect(() => {
+    if (isEditing) return;
+    let active = true;
+    let interval: any = null;
+
+    const fetchForWeek = async () => {
+      const uId = user?.id || (user as any)?._id;
+      if (!uId) return;
+
+      const newDateSlots: Record<string, Array<{ startTime: string; endTime: string }>> = {};
+      const newBooked: Record<string, Array<{ startTime: string; endTime: string; reserved?: boolean }>> = {};
+
+      for (const d of daysOfWeek) {
+        try {
+          const date = getNextDateForDay(d.id);
+          const slots = await (await import('../../utils/api')).availabilityApi.getAvailableTimeSlots(uId, date);
+          newDateSlots[date] = slots || [];
+          const booked = await (await import('../../utils/api')).availabilityApi.getAvailability(uId).then(() => [] as any).catch(() => []);
+          // prefer booked from dedicated endpoint
+          try {
+            const b = await (await import('../../utils/api')).apiClient.get(`/availability/booked?ustaadhId=${uId}&date=${date}`);
+            newBooked[date] = b || [];
+          } catch (e) {
+            // fallback: empty
+            newBooked[date] = [];
+          }
+        } catch (e) {
+          console.error('Failed to fetch date slots for calendar', e);
+        }
+      }
+
+      if (!active) return;
+      setDateSlots(newDateSlots);
+      setBookedByDate(newBooked);
+    };
+
+    // initial fetch and polling
+    fetchForWeek();
+    interval = setInterval(fetchForWeek, 15000);
+
+    return () => {
+      active = false;
+      if (interval) clearInterval(interval);
+    };
+  }, [isEditing, user?.id]);
   const [isEditing, setIsEditing] = useState(false);
   const [dateSlots, setDateSlots] = useState<Record<string, Array<{ startTime: string; endTime: string }>>>({});
   const [bookedByDate, setBookedByDate] = useState<Record<string, Array<{ startTime: string; endTime: string; reserved?: boolean }>>>({});
