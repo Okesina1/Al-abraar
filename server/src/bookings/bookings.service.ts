@@ -42,7 +42,20 @@ export class BookingsService {
       throw new BadRequestException('Invalid total amount calculation');
     }
 
-    // Check for time conflicts
+    // Ensure all requested slots are within ustaadh availability and not already booked
+    for (const slot of createBookingDto.schedule) {
+      const withinAvailability = await this.availabilityService.checkSlotAvailabilityOnDate(
+        createBookingDto.ustaadhId,
+        slot.date,
+        slot.startTime,
+        slot.endTime
+      );
+      if (!withinAvailability) {
+        throw new BadRequestException('Selected time is not available');
+      }
+    }
+
+    // Check for time conflicts with concurrent requests or edge cases
     const conflicts = await this.checkTimeConflicts(
       createBookingDto.ustaadhId,
       createBookingDto.schedule
