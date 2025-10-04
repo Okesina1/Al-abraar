@@ -333,9 +333,18 @@ export const analyticsApi = {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
     return apiClient.get(`/analytics/revenue${query}`);
   },
+  getRevenueAnalytics: (period?: string) => {
+    const q = period ? `?period=${encodeURIComponent(period)}` : '';
+    return apiClient.get(`/analytics/revenue${q}`);
+  },
   getUserGrowth: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
     return apiClient.get(`/analytics/growth${query}`);
+  },
+  getGrowthMetrics: () => apiClient.get('/analytics/growth'),
+  getTopUstaadhs: (limit?: number) => {
+    const q = limit ? `?limit=${limit}` : '';
+    return apiClient.get(`/analytics/top-ustaadhs${q}`);
   },
   getBookingTrends: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
