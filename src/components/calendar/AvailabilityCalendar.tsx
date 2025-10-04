@@ -39,6 +39,10 @@ export const AvailabilityCalendar: React.FC = () => {
     return () => { active = false; };
   }, [user?.id, getUstaadhAvailability]);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [dateSlots, setDateSlots] = useState<Record<string, Array<{ startTime: string; endTime: string }>>>({});
+  const [bookedByDate, setBookedByDate] = useState<Record<string, Array<{ startTime: string; endTime: string; reserved?: boolean }>>>({});
+
   // Helper to compute next date for a given dayOfWeek relative to base (today)
   const getNextDateForDay = (dayOfWeek: number, baseDate?: Date) => {
     const base = baseDate ? new Date(baseDate) : new Date();
@@ -64,15 +68,14 @@ export const AvailabilityCalendar: React.FC = () => {
       for (const d of daysOfWeek) {
         try {
           const date = getNextDateForDay(d.id);
-          const slots = await (await import('../../utils/api')).availabilityApi.getAvailableTimeSlots(uId, date);
+          // fetch free segments
+          const slots = await availabilityApi.getAvailableTimeSlots(uId, date);
           newDateSlots[date] = slots || [];
-          const booked = await (await import('../../utils/api')).availabilityApi.getAvailability(uId).then(() => [] as any).catch(() => []);
-          // prefer booked from dedicated endpoint
+          // fetch booked/reserved segments
           try {
             const b = await (await import('../../utils/api')).apiClient.get(`/availability/booked?ustaadhId=${uId}&date=${date}`);
             newBooked[date] = b || [];
           } catch (e) {
-            // fallback: empty
             newBooked[date] = [];
           }
         } catch (e) {
@@ -94,9 +97,6 @@ export const AvailabilityCalendar: React.FC = () => {
       if (interval) clearInterval(interval);
     };
   }, [isEditing, user?.id]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [dateSlots, setDateSlots] = useState<Record<string, Array<{ startTime: string; endTime: string }>>>({});
-  const [bookedByDate, setBookedByDate] = useState<Record<string, Array<{ startTime: string; endTime: string; reserved?: boolean }>>>({});
 
   const daysOfWeek = [
     { id: 0, name: 'Sunday', short: 'Sun' },
