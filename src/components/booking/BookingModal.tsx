@@ -14,7 +14,7 @@ interface BookingModalProps {
 
 export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ustaadh }) => {
   const { user } = useAuth();
-  const { createBooking } = useBooking();
+  const { createBooking, checkTimeSlotAvailability } = useBooking();
   const [step, setStep] = useState(1);
   const [bookingData, setBookingData] = useState({
     packageType: 'basic' as 'basic' | 'complete',
@@ -162,7 +162,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
           <p className="text-2xl font-bold text-green-600 mb-2">$5/hour</p>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>• Qur'an recitation</li>
-            <li>• Tajweed rules</li>
+            <li>��� Tajweed rules</li>
             <li>• Pronunciation correction</li>
           </ul>
         </div>
