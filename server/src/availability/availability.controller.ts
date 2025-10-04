@@ -33,6 +33,17 @@ export class AvailabilityController {
     return this.availabilityService.getAvailableTimeSlots(ustaadhId, date);
   }
 
+  @Get('check')
+  async checkSlot(
+    @Query('ustaadhId') ustaadhId: string,
+    @Query('date') date: string,
+    @Query('startTime') startTime: string,
+    @Query('endTime') endTime: string,
+  ) {
+    const available = await this.availabilityService.checkSlotAvailabilityOnDate(ustaadhId, date, startTime, endTime);
+    return { available };
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USTAADH)
   @Get('my-availability')
