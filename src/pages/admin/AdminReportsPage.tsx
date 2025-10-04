@@ -1,25 +1,56 @@
 import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Users, DollarSign, Star, Calendar, BookOpen } from 'lucide-react';
+import { analyticsApi } from '../../utils/api';
+import { useToast } from '../../contexts/ToastContext';
 
 export const AdminReportsPage: React.FC = () => {
-  const kpis = [
-    { title: 'Active Students', value: '1,247', change: '+12%', color: 'bg-green-500', icon: Users },
-    { title: 'Active Ustaadhs', value: '89', change: '+5%', color: 'bg-blue-500', icon: BookOpen },
-    { title: 'Monthly Revenue', value: '$24,580', change: '+18%', color: 'bg-yellow-500', icon: DollarSign },
-    { title: 'Avg. Rating', value: '4.8/5', change: '+0.1', color: 'bg-purple-500', icon: Star }
-  ];
+  const toast = useToast();
+  const [loading, setLoading] = useState(true);
+  const [kpis, setKpis] = useState<any[]>([]);
+  const [topUstaadhs, setTopUstaadhs] = useState<any[]>([]);
+  const [monthlySummary, setMonthlySummary] = useState<any[]>([]);
+  const [growth, setGrowth] = useState<any>(null);
 
-  const topUstaadhs = [
-    { name: 'Ahmed Al-Hafiz', country: 'Saudi Arabia', students: 42, rating: 4.9, earnings: 2450 },
-    { name: 'Dr. Fatima Al-Zahra', country: 'Egypt', students: 35, rating: 4.8, earnings: 1890 },
-    { name: 'Ustadh Omar Hassan', country: 'UAE', students: 28, rating: 4.7, earnings: 1760 }
-  ];
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [dashboard, revenue, top, growthMetrics] = await Promise.all([
+          analyticsApi.getDashboardStats(),
+          analyticsApi.getRevenueAnalytics('6m'),
+          analyticsApi.getTopUstaadhs(10),
+          analyticsApi.getGrowthMetrics(),
+        ]);
 
-  const monthlySummary = [
-    { month: 'Nov', bookings: 188, revenue: 18250 },
-    { month: 'Dec', bookings: 204, revenue: 20560 },
-    { month: 'Jan', bookings: 221, revenue: 24580 }
-  ];
+        if (!active) return;
+
+        // build KPI cards from dashboard
+        const k = [
+          { title: 'Active Students', value: dashboard.totalStudents.toLocaleString(), change: `${dashboard.studentGrowth ?? 0}%`, color: 'bg-green-500', icon: Users },
+          { title: 'Active Ustaadhs', value: dashboard.totalUstaadhss.toLocaleString(), change: `${dashboard.ustaadhGrowth ?? 0}%`, color: 'bg-blue-500', icon: BookOpen },
+          { title: 'Monthly Revenue', value: `$${dashboard.monthlyRevenue.toLocaleString()}`, change: `${dashboard.revenueGrowth}%`, color: 'bg-yellow-500', icon: DollarSign },
+          { title: 'Avg. Rating', value: `${dashboard.averageRating}/5`, change: `+0`, color: 'bg-purple-500', icon: Star }
+        ];
+
+        setKpis(k);
+        setTopUstaadhs(Array.isArray(top) ? top : []);
+        setMonthlySummary(Array.isArray(revenue) ? revenue : []);
+        setGrowth(growthMetrics || null);
+      } catch (err: any) {
+        console.error('Failed to load reports', err);
+        toast.error('Failed to load reports');
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    load();
+    return () => { active = false; };
+  }, [toast]);
+
+  if (loading) return <div className="p-6">Loading...</div>;
 
   return (
     <div className="space-y-6">
@@ -50,8 +81,8 @@ export const AdminReportsPage: React.FC = () => {
         <div className="bg-white rounded-xl shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Monthly Bookings</h3>
           <div className="space-y-3">
-            {monthlySummary.map((m) => (
-              <div key={m.month} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            {monthlySummary.map((m: any) => (
+              <div key={m.date || m.month} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     <Calendar className="h-4 w-4 text-blue-600" />
@@ -80,15 +111,15 @@ export const AdminReportsPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {topUstaadhs.map((u) => (
-                  <tr key={u.name} className="hover:bg-gray-50">
+                {topUstaadhs.map((u: any) => (
+                  <tr key={u._id || u.fullName} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-800">{u.name}</div>
-                      <div className="text-sm text-gray-500">{u.country}</div>
+                      <div className="font-medium text-gray-800">{u.fullName || u.name}</div>
+                      <div className="text-sm text-gray-500">{u.country || u.city}</div>
                     </td>
-                    <td className="px-4 py-3">{u.students}</td>
-                    <td className="px-4 py-3">{u.rating}</td>
-                    <td className="px-4 py-3">${u.earnings}</td>
+                    <td className="px-4 py-3">{u.studentCount || u.students || '—'}</td>
+                    <td className="px-4 py-3">{u.rating || '—'}</td>
+                    <td className="px-4 py-3">${u.earnings || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -103,17 +134,17 @@ export const AdminReportsPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 bg-green-50 rounded-lg">
             <div className="text-sm text-gray-600">Student Growth</div>
-            <div className="text-2xl font-bold text-green-700 mt-1">+12%</div>
+            <div className="text-2xl font-bold text-green-700 mt-1">{growth?.studentGrowth ?? '+0'}%</div>
             <div className="text-xs text-gray-500 mt-1">vs last month</div>
           </div>
           <div className="p-4 bg-blue-50 rounded-lg">
             <div className="text-sm text-gray-600">Ustaadh Growth</div>
-            <div className="text-2xl font-bold text-blue-700 mt-1">+5%</div>
+            <div className="text-2xl font-bold text-blue-700 mt-1">{growth?.ustaadhGrowth ?? '+0'}%</div>
             <div className="text-xs text-gray-500 mt-1">vs last month</div>
           </div>
           <div className="p-4 bg-yellow-50 rounded-lg">
             <div className="text-sm text-gray-600">Revenue Growth</div>
-            <div className="text-2xl font-bold text-yellow-700 mt-1">+18%</div>
+            <div className="text-2xl font-bold text-yellow-700 mt-1">{Number.isFinite(parseFloat((kpis[2]?.change || '0').toString().replace('%',''))) ? kpis[2]?.change : '+0'}</div>
             <div className="text-xs text-gray-500 mt-1">vs last month</div>
           </div>
         </div>
