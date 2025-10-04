@@ -89,15 +89,16 @@ export class BookingsService {
         }));
 
         // attempt to insert all reservations; unique index will prevent duplicates
-        await this.reservationModel.insertMany(reservationDocs, { session, ordered: true });
+        const inserted = await this.reservationModel.insertMany(reservationDocs, { session, ordered: true });
 
         // create booking under transaction
         const bookingDoc = new this.bookingModel(bookingData);
         savedBooking = await bookingDoc.save({ session });
 
-        // attach bookingId to reservations
+        // attach bookingId to inserted reservations
+        const insertedIds = inserted.map((d: any) => d._id);
         await this.reservationModel.updateMany(
-          { ustaadhId: new (this.reservationModel.db!.model('ObjectId'))(createBookingDto.ustaadhId) || createBookingDto.ustaadhId, date: { $in: createBookingDto.schedule.map(s => s.date) } },
+          { _id: { $in: insertedIds } },
           { bookingId: savedBooking._id },
           { session }
         );
