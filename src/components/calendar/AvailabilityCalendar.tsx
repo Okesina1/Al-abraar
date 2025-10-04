@@ -4,6 +4,7 @@ import { UstaadhAvailability } from '../../types';
 import { useBooking } from '../../contexts/BookingContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { availabilityApi } from '../../utils/api';
 
 export const AvailabilityCalendar: React.FC = () => {
   const { user } = useAuth();
