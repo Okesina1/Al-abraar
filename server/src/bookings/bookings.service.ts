@@ -73,39 +73,42 @@ export class BookingsService {
       bookingData.reservedUntil = new Date(createBookingDto.reservedUntil);
     }
 
-    // Create reservation entries for each schedule slot to avoid race conditions
-    const toCleanup: Array<any> = [];
+    // Use MongoDB transaction to create reservations and booking atomically
+    const session = await this.bookingModel.db.startSession();
+    let savedBooking: any = null;
     try {
-      for (const slot of createBookingDto.schedule) {
-        const resObj: any = {
+      await session.withTransaction(async () => {
+        // prepare reservation documents
+        const reservationDocs = createBookingDto.schedule.map((slot: any) => ({
           ustaadhId: slot.ustaadhId ? slot.ustaadhId : createBookingDto.ustaadhId,
           date: slot.date,
           startTime: slot.startTime,
           endTime: slot.endTime,
           bookingId: null,
           reservedUntil: bookingData.reservedUntil ? new Date(bookingData.reservedUntil) : new Date(Date.now() + 10 * 60 * 1000),
-        };
-        // Insert sequentially to detect duplicates and throw
-        const created = await this.reservationModel.create(resObj);
-        toCleanup.push(created._id);
-      }
-    } catch (err) {
-      // rollback created reservations
-      if (toCleanup.length > 0) {
-        await this.reservationModel.deleteMany({ _id: { $in: toCleanup } }).catch(() => null);
-      }
-      throw new BadRequestException('Selected time was reserved by another student');
-    }
+        }));
 
-    const booking = new this.bookingModel(bookingData);
-    const savedBooking = await booking.save();
+        // attempt to insert all reservations; unique index will prevent duplicates
+        await this.reservationModel.insertMany(reservationDocs, { session, ordered: true });
 
-    // attach bookingId to reservations
-    try {
-      await this.reservationModel.updateMany({ _id: { $in: toCleanup } }, { bookingId: savedBooking._id });
-    } catch (e) {
-      // not critical, log and continue
-      console.error('Failed to attach bookingId to reservations', e);
+        // create booking under transaction
+        const bookingDoc = new this.bookingModel(bookingData);
+        savedBooking = await bookingDoc.save({ session });
+
+        // attach bookingId to reservations
+        await this.reservationModel.updateMany(
+          { ustaadhId: new (this.reservationModel.db!.model('ObjectId'))(createBookingDto.ustaadhId) || createBookingDto.ustaadhId, date: { $in: createBookingDto.schedule.map(s => s.date) } },
+          { bookingId: savedBooking._id },
+          { session }
+        );
+      });
+    } catch (err: any) {
+      // Transaction aborted - likely duplicate reservation or other conflict
+      // attempt to give a clear message
+      const msg = err && err.code === 11000 ? 'Selected time was reserved by another student' : (err.message || 'Failed to create booking');
+      throw new BadRequestException(msg);
+    } finally {
+      session.endSession();
     }
 
     // Send notification to Ustaadh about new booking
