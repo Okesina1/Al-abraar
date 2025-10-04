@@ -1,4 +1,3 @@
-import React from 'react';
 import React, { useEffect, useState } from 'react';
 import { Users, DollarSign, Star, Calendar, BookOpen } from 'lucide-react';
 import { analyticsApi } from '../../utils/api';
