@@ -84,7 +84,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
 
       // Client-side validation: ensure each selected slot is still available
       for (const s of schedule) {
-        const ok = await availabilityApi.checkSlotAvailability(ustaadh.id, s.date, s.startTime, s.endTime);
+        const ok = await checkTimeSlotAvailability(ustaadh.id, s.date, s.startTime, s.endTime);
         if (!ok) {
           toast.error(`Selected time ${s.startTime}-${s.endTime} on ${s.date} is no longer available.`);
           setLoading(false);
@@ -162,7 +162,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
           <p className="text-2xl font-bold text-green-600 mb-2">$5/hour</p>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>• Qur'an recitation</li>
-            <li>��� Tajweed rules</li>
+            <li>• Tajweed rules</li>
             <li>• Pronunciation correction</li>
           </ul>
         </div>
