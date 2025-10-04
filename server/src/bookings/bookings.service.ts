@@ -10,11 +10,13 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { DateUtils } from '../common/utils/date.utils';
 import { BookingUtils } from '../common/utils/booking.utils';
 import { AvailabilityService } from '../availability/availability.service';
+import { Reservation } from '../availability/schemas/reservation.schema';
 
 @Injectable()
 export class BookingsService {
   constructor(
     @InjectModel(Booking.name) private bookingModel: Model<Booking>,
+    @InjectModel(Reservation.name) private reservationModel: Model<Reservation>,
     private notificationsService: NotificationsService,
     private availabilityService: AvailabilityService,
   ) {}
