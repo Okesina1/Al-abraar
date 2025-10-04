@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Booking, BookingStatus } from '../../bookings/schemas/booking.schema';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { EmailService } from './email.service';
 import { SmsService } from './sms.service';
+import { Reservation } from '../../availability/schemas/reservation.schema';
 
 @Injectable()
 export class SchedulerService {
@@ -13,6 +14,7 @@ export class SchedulerService {
 
   constructor(
     @InjectModel(Booking.name) private bookingModel: Model<Booking>,
+    @InjectModel(Reservation.name) private reservationModel: Model<Reservation>,
     private notificationsService: NotificationsService,
     private emailService: EmailService,
     private smsService: SmsService,
