@@ -207,6 +207,17 @@ export const availabilityApi = {
 
   checkSlotAvailability: (ustaadhId: string, date: string, startTime: string, endTime: string) =>
     apiClient.get(`/availability/check?ustaadhId=${ustaadhId}&date=${date}&startTime=${startTime}&endTime=${endTime}`),
+
+  getReservations: (ustaadhId?: string, date?: string) => {
+    const params: string[] = [];
+    if (ustaadhId) params.push(`ustaadhId=${encodeURIComponent(ustaadhId)}`);
+    if (date) params.push(`date=${encodeURIComponent(date)}`);
+    const q = params.length ? `?${params.join('&')}` : '';
+    return apiClient.get(`/availability/admin/reservations${q}`);
+  },
+
+  deleteReservation: (id: string) =>
+    apiClient.delete(`/availability/admin/reservations/${id}`),
 };
 
 export const paymentsApi = {
