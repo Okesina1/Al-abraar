@@ -11,16 +11,33 @@ export class CloudinaryService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    const cloudName = this.cfg.cloudName || this.config.get<string>('CLOUDINARY_CLOUD_NAME');
-    const apiKey = this.cfg.apiKey || this.config.get<string>('CLOUDINARY_API_KEY');
-    const apiSecret = this.cfg.apiSecret || this.config.get<string>('CLOUDINARY_API_SECRET');
+    const rawCloudName = this.cfg.cloudName || this.config.get<string>('CLOUDINARY_CLOUD_NAME');
+    const rawApiKey = this.cfg.apiKey || this.config.get<string>('CLOUDINARY_API_KEY');
+    const rawApiSecret = this.cfg.apiSecret || this.config.get<string>('CLOUDINARY_API_SECRET');
+
+    const sanitize = (v?: string) => {
+      if (!v) return v;
+      let s = v.trim();
+      // sometimes .env entries accidentally include leading '=' or other stray chars
+      // strip a single leading '=' if present
+      if (s.startsWith('=')) s = s.slice(1).trim();
+      return s;
+    };
+
+    const cloudName = sanitize(rawCloudName);
+    const apiKey = sanitize(rawApiKey);
+    const apiSecret = sanitize(rawApiSecret);
 
     if (!cloudName || !apiKey || !apiSecret) {
       // Configuration errors should be visible at boot time
       // but we avoid throwing to not crash dev server without envs
       // Consumers will get a clear error when trying to upload
       // eslint-disable-next-line no-console
-      console.warn('Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET');
+      console.warn('Cloudinary is not fully configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET');
+      if (apiKey && !/^[A-Za-z0-9_\-]+$/.test(apiKey)) {
+        // eslint-disable-next-line no-console
+        console.warn('CLOUDINARY_API_KEY looks malformed. Please check for stray characters or leading = in your .env file.');
+      }
     }
 
     cloudinary.config({
@@ -38,7 +55,14 @@ export class CloudinaryService implements OnModuleInit {
 
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
-        if (error) return reject(error);
+        if (error) {
+          // Wrap error with more context so logs are actionable
+          const err = new Error(
+            `Cloudinary upload failed: ${error?.message || 'unknown error'}${(error as any)?.http_code ? ` (http_code=${(error as any).http_code})` : ''}`
+          );
+          (err as any).original = error;
+          return reject(err);
+        }
         if (!result) return reject(new Error('No result from Cloudinary'));
         resolve(result);
       });
@@ -51,6 +75,15 @@ export class CloudinaryService implements OnModuleInit {
     if (!cloudinary.config().cloud_name) {
       throw new Error('Cloudinary is not configured. Please set environment variables.');
     }
-    return cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+
+    try {
+      return await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+    } catch (error) {
+      const err = new Error(
+        `Cloudinary delete failed: ${((error as any)?.message) || 'unknown error'}${(error as any)?.http_code ? ` (http_code=${(error as any).http_code})` : ''}`
+      );
+      (err as any).original = error;
+      throw err;
+    }
   }
 }

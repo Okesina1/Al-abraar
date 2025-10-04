@@ -3,11 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CompensationPlan, SalaryRecord } from './schemas/compensation-plan.schema';
 import { AddAdjustmentDto, MarkPaidDto, UpsertCompensationPlanDto } from './dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PayrollService {
   constructor(
     @InjectModel(CompensationPlan.name) private planModel: Model<CompensationPlan>,
+    private notificationsService: NotificationsService,
   ) {}
 
   async getPlanForUstaadh(ustaadhId: string): Promise<CompensationPlan | null> {
@@ -30,6 +32,43 @@ export class PayrollService {
       { $set: update, $setOnInsert: { ustaadhId: ustaadhObjectId } },
       { upsert: true, new: true },
     );
+
+    // Ensure there is a scheduled salary record for the current month so admins and ustaadhs see scheduled payouts
+    try {
+      const now = new Date();
+      const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      plan.salaryHistory = plan.salaryHistory || [];
+      const hasCurrent = plan.salaryHistory.some((r) => r.month === monthKey);
+      if (!hasCurrent) {
+        const record: SalaryRecord = {
+          id: `${dto.ustaadhId}-${monthKey}`,
+          month: monthKey,
+          amount: plan.monthlySalary,
+          status: 'scheduled',
+          scheduledPayoutDate: this.toScheduledDateISO(monthKey, plan.paymentDayOfMonth),
+          adjustments: [],
+        } as SalaryRecord;
+        plan.salaryHistory.push(record);
+        await plan.save();
+
+        // notify the ustaadh about the scheduled payout
+        try {
+          await this.notificationsService.createNotification(
+            dto.ustaadhId,
+            'Payroll scheduled',
+            `A salary of ${plan.currency} ${plan.monthlySalary} has been scheduled for ${monthKey}`,
+            undefined,
+            '/ustaadh/earnings'
+          );
+        } catch (e) {
+          // non-fatal
+          console.warn('Failed to notify ustaadh about scheduled payroll', e);
+        }
+      }
+    } catch (e) {
+      // ignore notification errors but don't block the main flow
+      console.warn('upsertPlan post-processing failed', e);
+    }
 
     return plan;
   }
@@ -71,6 +110,19 @@ export class PayrollService {
     });
 
     await plan.save();
+
+    // Notify ustaadh that an adjustment was added (and a scheduled payout exists/updated)
+    try {
+      await this.notificationsService.createNotification(
+        ustaadhId,
+        'Payroll adjustment recorded',
+        `An adjustment (${dto.type}) of ${plan.currency} ${dto.amount} was recorded for ${monthKey}.`,
+        undefined,
+        '/ustaadh/earnings'
+      );
+    } catch (e) {
+      console.warn('Failed to notify ustaadh about adjustment', e);
+    }
     return plan;
   }
 
@@ -86,6 +138,19 @@ export class PayrollService {
     record.paidOn = dto.paidOn ?? new Date().toISOString();
 
     await plan.save();
+
+    // Notify ustaadh that payment was marked as paid
+    try {
+      await this.notificationsService.createNotification(
+        ustaadhId,
+        'Payroll paid',
+        `Your salary for ${monthKey} has been marked as paid. Amount: ${plan.currency} ${record.amount}.`,
+        undefined,
+        '/ustaadh/earnings'
+      );
+    } catch (e) {
+      console.warn('Failed to notify ustaadh about paid payroll', e);
+    }
     return plan;
   }
 
@@ -117,5 +182,9 @@ export class PayrollService {
     );
 
     return { totals, breakdown: result };
+  }
+  
+  async listPlans() {
+    return this.planModel.find().exec();
   }
 }

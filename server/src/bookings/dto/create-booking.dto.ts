@@ -56,6 +56,10 @@ export class CreateBookingDto {
   @IsDateString()
   endDate: string;
 
+  @IsOptional()
+  @IsDateString()
+  reservedUntil?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ScheduleSlotDto)

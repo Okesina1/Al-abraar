@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { Booking, UstaadhAvailability } from '../types';
 import { bookingsApi, availabilityApi } from '../utils/api';
@@ -11,7 +11,7 @@ interface BookingContextType {
   updateBooking: (bookingId: string, updates: Partial<Booking>) => Promise<void>;
   cancelBooking: (bookingId: string, reason: string) => Promise<void>;
   getUstaadhAvailability: (ustaadhId: string) => Promise<UstaadhAvailability[]>;
-  setUstaadhAvailability: (ustaadhId: string, availability: UstaadhAvailability[]) => Promise<void>;
+  setUstaadhAvailability: (ustaadhId: string, availability: UstaadhAvailability[]) => Promise<any>;
   refreshBookings: () => Promise<void>;
   checkTimeSlotAvailability: (ustaadhId: string, date: string, startTime: string, endTime: string) => Promise<boolean>;
   getBookingsByUser: (userId: string, role: 'student' | 'ustaadh') => Booking[];
@@ -33,13 +33,7 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      refreshBookings();
-    }
-  }, [user]);
-
-  const refreshBookings = async () => {
+  const refreshBookings = useCallback(async () => {
     const token = localStorage.getItem('al-abraar-token');
     if (!token) return;
     try {
@@ -51,7 +45,13 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      refreshBookings();
+    }
+  }, [user, refreshBookings]);
 
   const createBooking = async (bookingData: Partial<Booking>): Promise<string> => {
     try {
@@ -81,7 +81,13 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  const getUstaadhAvailability = async (ustaadhId: string): Promise<UstaadhAvailability[]> => {
+  const getUstaadhAvailability = useCallback(async (ustaadhId: string): Promise<UstaadhAvailability[]> => {
+    if (!ustaadhId) {
+      console.warn('getUstaadhAvailability called with falsy ustaadhId');
+      setAvailability([]);
+      return [];
+    }
+    console.debug('[BookingContext] getUstaadhAvailability id=', ustaadhId);
     try {
       const response = await availabilityApi.getAvailability(ustaadhId);
       const availabilityData = response.availability || response;
@@ -91,16 +97,26 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
       console.error('Failed to fetch availability:', error);
       return [];
     }
-  };
+  }, [setAvailability]);
 
-  const setUstaadhAvailability = async (ustaadhId: string, newAvailability: UstaadhAvailability[]) => {
+  const setUstaadhAvailability = useCallback(async (ustaadhId: string, newAvailability: UstaadhAvailability[]) => {
+    if (!ustaadhId) {
+      throw new Error('Missing ustaadhId when setting availability');
+    }
     try {
-      await availabilityApi.setAvailability(newAvailability);
-      await getUstaadhAvailability(ustaadhId);
+      // return server response so callers can immediately use persisted documents
+      const response = await availabilityApi.setAvailability(newAvailability);
+      // refresh cached availability afterwards to ensure consistency
+      try {
+        await getUstaadhAvailability(ustaadhId);
+      } catch (e) {
+        // ignore refresh errors here; caller may handle
+      }
+      return response;
     } catch (error: any) {
       throw new Error(error.message || 'Failed to set availability');
     }
-  };
+  }, [getUstaadhAvailability]);
 
   const checkTimeSlotAvailability = async (
     ustaadhId: string,

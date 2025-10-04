@@ -48,5 +48,10 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => value?.trim())
+  cvUrl?: string;
+
+  @IsOptional()
+  @IsString()
   referralCode?: string;
 }

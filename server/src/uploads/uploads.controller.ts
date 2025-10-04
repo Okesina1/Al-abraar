@@ -7,7 +7,6 @@ import { UploadsService } from './uploads.service';
 import { UploadParamsDto } from './dto/upload-params.dto';
 
 @Controller('uploads')
-@UseGuards(JwtAuthGuard)
 export class UploadsController {
   constructor(private readonly uploadsService: UploadsService) {}
 
@@ -48,6 +47,7 @@ export class UploadsController {
   }
 
   @Delete(':publicId')
+  @UseGuards(JwtAuthGuard)
   async delete(@Param('publicId') publicId: string) {
     const res = await this.uploadsService.deleteFile(publicId, 'auto');
     return res;

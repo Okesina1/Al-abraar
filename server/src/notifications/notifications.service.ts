@@ -11,7 +11,7 @@ interface LessonDetails {
   meetingLink: string;
 }
 
-interface UserNotification {
+export interface UserNotification {
   id: string;
   title: string;
   message: string;

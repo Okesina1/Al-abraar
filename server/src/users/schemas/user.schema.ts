@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export enum UserRole {
   ADMIN = "admin",
@@ -84,6 +84,15 @@ export class User extends Document {
 
   @Prop({ default: Date.now })
   lastLogin: Date;
+
+  @Prop({ type: Types.ObjectId, ref: "User", required: false })
+  suspendedBy?: Types.ObjectId;
+
+  @Prop({ required: false })
+  suspensionReason?: string;
+
+  @Prop({ required: false })
+  suspendedAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

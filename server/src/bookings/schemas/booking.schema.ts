@@ -91,6 +91,9 @@ export class Booking extends Document {
 
   @Prop()
   cancellationReason: string;
+
+  @Prop()
+  reservedUntil?: Date;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);

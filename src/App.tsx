@@ -52,6 +52,7 @@ import { StudentPaymentsPage } from "./pages/student/StudentPaymentsPage";
 // Shared Pages
 import { MessagesPage } from "./pages/shared/MessagesPage";
 import { ProfilePage } from "./pages/shared/ProfilePage";
+import { SuspendedPage } from "./pages/shared/SuspendedPage";
 
 // Layout Components
 import { DashboardLayout } from "./components/layout/DashboardLayout";
@@ -363,6 +364,7 @@ function AppRoutes() {
       />
 
       {/* Shared Routes */}
+      <Route path="/suspended" element={<SuspendedPage />} />
       <Route
         path="/messages"
         element={
@@ -395,18 +397,18 @@ function App() {
     <AuthProvider>
       <BookingProvider>
         <PayrollProvider>
-          <MessagingProvider>
-            <NotificationsProvider>
-              <I18nProvider>
-                <ToastProvider>
+          <ToastProvider>
+            <MessagingProvider>
+              <NotificationsProvider>
+                <I18nProvider>
                   <Router>
                     <ScrollToTop />
                     <AppRoutes />
                   </Router>
-                </ToastProvider>
-              </I18nProvider>
-            </NotificationsProvider>
-          </MessagingProvider>
+                </I18nProvider>
+              </NotificationsProvider>
+            </MessagingProvider>
+          </ToastProvider>
         </PayrollProvider>
       </BookingProvider>
     </AuthProvider>

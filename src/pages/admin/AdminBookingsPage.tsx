@@ -19,7 +19,7 @@ export const AdminBookingsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await bookingsApi.getAllBookings({ limit: '200' });
+  const res = await bookingsApi.getAllBookings({ limit: '100' });
         const list = Array.isArray(res?.bookings) ? res.bookings : Array.isArray(res) ? res : [];
         if (!isMounted) return;
         setAllBookings(list.map((b: any) => ({ ...b, id: b.id || b._id })));

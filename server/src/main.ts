@@ -20,7 +20,8 @@ async function bootstrap() {
     ].filter(Boolean),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    // Allow the custom cache-bust header used by the frontend to force fresh GETs
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Cache-Bust', 'x-cache-bust'],
   }));
   
   // Global exception filter

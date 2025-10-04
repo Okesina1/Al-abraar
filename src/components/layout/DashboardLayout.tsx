@@ -173,8 +173,18 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* User info at bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 mb-3">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-              <User className="h-4 w-4 text-green-600" />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.fullName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-green-100 flex items-center justify-center">
+                  <User className="h-4 w-4 text-green-600" />
+                </div>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
@@ -244,8 +254,18 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               </button>
 
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-green-600" />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.fullName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-green-100 flex items-center justify-center">
+                      <User className="h-4 w-4 text-green-600" />
+                    </div>
+                  )}
                 </div>
                 <div className="hidden xl:block">
                   <p className="text-sm font-medium text-gray-900">

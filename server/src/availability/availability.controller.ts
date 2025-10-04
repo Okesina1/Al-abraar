@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request, Put, Query } from '@nestjs/common';
 import { AvailabilityService } from './availability.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -26,6 +26,11 @@ export class AvailabilityController {
   @Get('ustaadh/:ustaadhId')
   async getUstaadhAvailability(@Param('ustaadhId') ustaadhId: string) {
     return this.availabilityService.getUstaadhAvailability(ustaadhId);
+  }
+
+  @Get('ustaadh/:ustaadhId/available')
+  async getAvailableForDate(@Param('ustaadhId') ustaadhId: string, @Query('date') date: string) {
+    return this.availabilityService.getAvailableTimeSlots(ustaadhId, date);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

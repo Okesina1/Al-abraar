@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   User,
@@ -14,8 +14,18 @@ import { fetchCountries, fetchStates } from "../../utils/locations";
 
 export const ProfilePage: React.FC = () => {
   const { user, updateUser } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const SPECIALTIES_OPTIONS = [
+    "Tajweed",
+    "Arabic",
+    "Quran",
+    "Hadeeth",
+  ];
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCv, setUploadingCv] = useState(false);
+  const [uploadingCvProgress, setUploadingCvProgress] = useState(0);
   const [formData, setFormData] = useState({
     fullName: user?.fullName || "",
     phoneNumber: user?.phoneNumber || "",
@@ -23,6 +33,8 @@ export const ProfilePage: React.FC = () => {
     city: user?.city || "",
     age: user?.age || "",
     bio: user?.bio || "",
+    experience: (user as any)?.experience || "",
+    specialties: (user as any)?.specialties || [],
     emailNotifications: user?.emailNotifications ?? true,
     smsNotifications: user?.smsNotifications ?? false,
     profileVisibility: user?.profileVisibility ?? true,
@@ -37,6 +49,8 @@ export const ProfilePage: React.FC = () => {
         city: user.city || "",
         age: user.age || "",
         bio: user.bio || "",
+        experience: (user as any).experience || "",
+        specialties: (user as any).specialties || [],
         emailNotifications: user.emailNotifications ?? true,
         smsNotifications: user.smsNotifications ?? false,
         profileVisibility: user.profileVisibility ?? true,
@@ -108,6 +122,17 @@ export const ProfilePage: React.FC = () => {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
+    // Special handling for multi-select specialties
+    if (e.target.name === "specialties") {
+      const select = e.target as HTMLSelectElement;
+      const values = Array.from(select.selectedOptions).map((o) => o.value);
+      setFormData({
+        ...formData,
+        specialties: values,
+      });
+      return;
+    }
+
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -168,13 +193,167 @@ export const ProfilePage: React.FC = () => {
     }
 
     try {
+      // Ensure specialties is an array and validate 1-4 selection
+      const specialtiesArray = Array.isArray(formData.specialties)
+        ? (formData.specialties as string[])
+        : [];
+
+      if (specialtiesArray.length < 1) {
+        setError("Please select at least 1 specialty");
+        return;
+      }
+      if (specialtiesArray.length > 4) {
+        setError("You can select up to 4 specialties");
+        return;
+      }
+
       await updateUser({
         ...formData,
         age: ageData,
-      });
+        specialties: specialtiesArray,
+      } as any);
       setIsEditing(false);
     } catch (err: unknown) {
       setError((err as Error).message || "Failed to update profile");
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Define allowed image types
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    // Validate file type
+    if (!allowedTypes.includes(file.type)) {
+      setError("Please select a valid image file (JPEG, PNG, or WebP)");
+      return;
+    }
+
+    // Validate file size (max 10MB - matching server config)
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Image size should be less than 10MB");
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+      setError("");
+
+      // Create form data
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "avatars"); // Store in avatars folder
+      formData.append("resourceType", "image");
+
+      // Upload to server
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api"}/users/avatar`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("al-abraar-token")}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
+      }
+
+      const data = await response.json();
+
+      // Update user state with new avatar URL
+      if (data.url) {
+        await updateUser({ avatar: data.url });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload avatar");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleCvChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Accept common document types
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError("Please select a PDF or Word document for your CV");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError("CV size should be less than 10MB");
+      return;
+    }
+
+    try {
+      setUploadingCv(true);
+      setUploadingCvProgress(0);
+      setError("");
+
+      // Use XMLHttpRequest to get upload progress and send multipart/form-data to /uploads
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api"}/uploads`;
+        xhr.open('POST', url);
+        const token = localStorage.getItem('al-abraar-token');
+        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            const pct = Math.round((ev.loaded / ev.total) * 100);
+            setUploadingCvProgress(pct);
+          }
+        };
+
+        xhr.onload = async () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const res = JSON.parse(xhr.responseText);
+              const cvUrl = res?.url;
+              if (!cvUrl) return reject(new Error('Upload returned no URL'));
+              // Persist cvUrl (cast to any because User type doesn't include cvUrl in TS defs)
+              await updateUser({ cvUrl } as any);
+              resolve(undefined);
+            } catch (e) {
+              reject(e);
+            }
+          } else {
+            // Try to parse error from server
+            try {
+              const err = JSON.parse(xhr.responseText);
+              reject(new Error(err?.message || `Upload failed with status ${xhr.status}`));
+            } catch (e) {
+              reject(new Error(`Upload failed with status ${xhr.status}`));
+            }
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error during file upload'));
+
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('folder', 'cvs');
+        fd.append('resourceType', 'auto');
+
+        xhr.send(fd);
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload CV');
+    } finally {
+      setUploadingCv(false);
+      setUploadingCvProgress(0);
     }
   };
 
@@ -187,6 +366,8 @@ export const ProfilePage: React.FC = () => {
       city: user?.city || "",
       age: user?.age || "",
       bio: user?.bio || "",
+      experience: (user as any)?.experience || "",
+      specialties: (user as any)?.specialties || [],
       emailNotifications: user?.emailNotifications ?? true,
       smsNotifications: user?.smsNotifications ?? false,
       profileVisibility: user?.profileVisibility ?? true,
@@ -234,13 +415,89 @@ export const ProfilePage: React.FC = () => {
       <div className="bg-white rounded-xl shadow-md p-6">
         <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
           <div className="relative">
-            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
-              <User className="h-12 w-12 text-green-600" />
+            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center overflow-hidden">
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.fullName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="h-12 w-12 text-green-600" />
+              )}
+              {uploadingAvatar && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                </div>
+              )}
             </div>
             {isEditing && (
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors">
-                <Camera className="h-4 w-4" />
-              </button>
+              <>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors"
+                  disabled={uploadingAvatar}
+                >
+                  <Camera className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
+          <div className="ml-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">CV</label>
+            {(user as any).cvUrl ? (<>
+              <div className="flex items-center space-x-3">
+                <a
+                  href={(user as any).cvUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-green-600 underline"
+                >
+                  View uploaded CV
+                </a>
+                {isEditing && (
+                  <>
+                    <input
+                      type="file"
+                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      onChange={handleCvChange}
+                      className="hidden"
+                      id="cv-input"
+                    />
+                    <label htmlFor="cv-input" className="text-sm px-3 py-1 bg-green-600 text-white rounded cursor-pointer">{uploadingCv ? 'Uploading...' : 'Replace CV'}</label>
+                  </>
+                )}
+              </div>
+              {uploadingCv && (
+                <div className="mt-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-green-600 h-2 rounded-full" style={{ width: `${uploadingCvProgress}%` }} />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Uploading CV... {uploadingCvProgress}%</p>
+                </div>
+              )}
+            </>) : (
+              isEditing ? (
+                <>
+                  <input
+                    type="file"
+                    accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={handleCvChange}
+                    className="hidden"
+                    id="cv-input2"
+                  />
+                  <label htmlFor="cv-input2" className="text-sm px-3 py-1 bg-green-600 text-white rounded cursor-pointer">{uploadingCv ? 'Uploading...' : 'Upload CV'}</label>
+                </>
+              ) : (
+                <p className="text-sm text-gray-600">No CV uploaded</p>
+              )
             )}
           </div>
           <div className="text-center sm:text-left">
@@ -488,9 +745,18 @@ export const ProfilePage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Experience
               </label>
-              <p className="text-gray-800 py-3">
-                {user.experience || "Not provided"}
-              </p>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    name="experience"
+                    value={(formData as any).experience}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Describe your teaching experience"
+                  />
+                ) : (
+                  <p className="text-gray-800 py-3">{user.experience || "Not provided"}</p>
+                )}
             </div>
 
             <div>
@@ -520,6 +786,49 @@ export const ProfilePage: React.FC = () => {
                   </span>
                 ))}
               </div>
+            </div>
+          )}
+          {isEditing && (
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Specialties (choose 1–4)
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {SPECIALTIES_OPTIONS.map((opt) => {
+                  const checked = (formData as any).specialties.includes(opt);
+                  return (
+                    <label key={opt} className="inline-flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        name="specialties"
+                        value={opt}
+                        checked={checked}
+                        onChange={() => {
+                          // toggle with enforcement: allow up to 4 selections
+                          const current: string[] = Array.isArray((formData as any).specialties)
+                            ? (formData as any).specialties
+                            : [];
+                          if (checked) {
+                            // remove
+                            const next = current.filter((s) => s !== opt);
+                            setFormData({ ...formData, specialties: next });
+                          } else {
+                            if (current.length >= 4) {
+                              setError("You can select up to 4 specialties");
+                              return;
+                            }
+                            const next = [...current, opt];
+                            setFormData({ ...formData, specialties: next });
+                          }
+                        }}
+                        className="form-checkbox h-4 w-4 text-green-600"
+                      />
+                      <span className="text-sm text-gray-700">{opt}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-sm text-gray-500 mt-2">{(formData as any).specialties.length} selected (1-4)</p>
             </div>
           )}
         </div>

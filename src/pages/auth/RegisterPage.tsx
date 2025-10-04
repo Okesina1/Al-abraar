@@ -42,7 +42,7 @@ export const RegisterPage: React.FC = () => {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const { register, loading } = useAuth();
+  const { register, authenticating } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -165,10 +165,12 @@ export const RegisterPage: React.FC = () => {
       const email = res?.email || formData.email;
       navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Registration failed. Please try again.";
+      // Try to extract friendly message from different error shapes
+      let message = "Registration failed. Please try again.";
+      if (err instanceof Error && err.message) message = err.message;
+      // If the API returned an object-like error payload, try to read .message
+      if ((err as any)?.response?.message) message = (err as any).response.message;
+      if ((err as any)?.message?.includes('ECONNREFUSED')) message = 'Cannot reach server. Please try later.';
       setError(message);
     }
   };
@@ -493,10 +495,10 @@ export const RegisterPage: React.FC = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={authenticating}
             className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {authenticating ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 

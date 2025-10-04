@@ -8,7 +8,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const { login, loading } = useAuth();
+  const { login, authenticating } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +23,10 @@ export const LoginPage: React.FC = () => {
       await login(email, password);
       // Navigation will be handled by the router based on user role
     } catch (err: unknown) {
-      setError((err as Error).message || "Invalid email or password");
+      let message = "Invalid email or password";
+      if (err instanceof Error && err.message) message = err.message;
+      if ((err as any)?.response?.message) message = (err as any).response.message;
+      setError(message);
     }
   };
 
@@ -114,10 +117,10 @@ export const LoginPage: React.FC = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={authenticating}
             className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
           >
-            {loading ? "Signing In..." : "Sign In"}
+            {authenticating ? "Signing In..." : "Sign In"}
           </button>
         </form>
 

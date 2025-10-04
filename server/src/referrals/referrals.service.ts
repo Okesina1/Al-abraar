@@ -20,12 +20,12 @@ export class ReferralsService {
     totalRewards: number;
     completedCount: number;
   }> {
-    let userReferralCode: Referral | null = await this.referralModel
-      .findOne({
-        referrerId: new Types.ObjectId(userId),
-        referredUserId: { $exists: false },
-      })
-      .exec();
+  let userReferralCode: any = await this.referralModel
+    .findOne({
+      referrerId: new Types.ObjectId(userId),
+      referredUserId: { $exists: false },
+    })
+    .exec();
 
     if (!userReferralCode) {
       userReferralCode = await this.createReferralCode(userId);
@@ -58,7 +58,7 @@ export class ReferralsService {
     };
   }
 
-  async createReferralCode(userId: string): Promise<Referral> {
+  async createReferralCode(userId: string): Promise<any> {
     const code = this.generateReferralCode();
 
     const referral = new this.referralModel({

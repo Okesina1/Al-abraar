@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, CreditCard } from 'lucide-react';
 import { User } from '../../types';
 import { useBooking } from '../../contexts/BookingContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { availabilityApi } from '../../utils/api';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -24,6 +25,28 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
     selectedTimes: [] as string[],
     startDate: new Date().toISOString().split('T')[0]
   });
+  const [availableSlotsByDate, setAvailableSlotsByDate] = useState<Record<string, Array<{ startTime: string; endTime: string }>>>({});
+
+  useEffect(() => {
+    // when startDate or selectedDays change, prefetch available slots for those dates
+    const fetchForSelected = async () => {
+      const days = bookingData.selectedDays.filter(d => d !== undefined && d !== null);
+      for (const d of days) {
+        try {
+          const date = getNextDateForDay(d, bookingData.startDate);
+          const slots = await availabilityApi.getAvailableTimeSlots(ustaadh.id, date);
+          setAvailableSlotsByDate(prev => ({ ...prev, [date]: slots || [] }));
+        } catch (err) {
+          console.error('Failed to fetch available slots for date', err);
+        }
+      }
+    };
+
+    if (bookingData.selectedDays.length > 0) {
+      fetchForSelected();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingData.startDate, bookingData.selectedDays]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
@@ -45,18 +68,27 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
     
     setLoading(true);
     try {
-      // Generate schedule slots
-      const schedule = bookingData.selectedDays.map((day, index) => ({
-        id: `slot-${Date.now()}-${index}`,
-        dayOfWeek: day,
-        startTime: bookingData.selectedTimes[index] || '14:00',
-        endTime: addHours(bookingData.selectedTimes[index] || '14:00', bookingData.hoursPerDay),
-        status: 'scheduled' as const,
-        date: getNextDateForDay(day, bookingData.startDate)
-      }));
+      // Generate schedule slots matching server DTO (no extra fields)
+      const schedule: any[] = bookingData.selectedDays.map((day, index) => {
+        // If user picked an available slot for that date, use it; otherwise fallback to selectedTimes
+        const date = getNextDateForDay(day, bookingData.startDate);
+        const picked = (availableSlotsByDate[date] || [])[0];
+        // allow user to have set a specific time in the input (backwards compatible)
+        const start = bookingData.selectedTimes[index] || (picked ? picked.startTime : '14:00');
+        const end = addHours(start, bookingData.hoursPerDay);
+        return {
+          dayOfWeek: Number(day),
+          startTime: start,
+          endTime: end,
+          date,
+        };
+  });
 
       const endDate = new Date(bookingData.startDate);
       endDate.setMonth(endDate.getMonth() + bookingData.subscriptionMonths);
+
+      // create a PENDING booking and set reservedUntil to 10 minutes from now to hold the slot
+      const reservedUntil = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
       await createBooking({
         studentId: user.id,
@@ -68,8 +100,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
         totalAmount: calculateTotal(),
         startDate: bookingData.startDate,
         endDate: endDate.toISOString().split('T')[0],
-        schedule
-      });
+        // schedule may be a lightweight DTO (no id/status). cast to any to avoid TS mismatch with client-side Booking type
+        schedule: schedule as any,
+        reservedUntil
+      } as any);
 
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -92,14 +126,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
   };
 
   const getNextDateForDay = (dayOfWeek: number, startDate: string): string => {
-    const date = new Date(startDate);
-    const diff = dayOfWeek - date.getDay();
-    if (diff < 0) {
-      date.setDate(date.getDate() + diff + 7);
-    } else {
-      date.setDate(date.getDate() + diff);
+    // Validate inputs: if startDate is invalid, fall back to today
+    const base = (!startDate || isNaN(new Date(startDate).getTime())) ? new Date() : new Date(startDate);
+    if (typeof dayOfWeek !== 'number' || isNaN(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+      // invalid dayOfWeek - return base date
+      return base.toISOString().split('T')[0];
     }
-    return date.toISOString().split('T')[0];
+
+    // compute next date (including same day)
+    const currentDow = base.getDay();
+    const diff = (dayOfWeek - currentDow + 7) % 7;
+    base.setDate(base.getDate() + diff);
+    return base.toISOString().split('T')[0];
   };
 
   const renderStep1 = () => (
@@ -218,38 +256,83 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Select Days & Times</label>
         <div className="space-y-3">
-          {Array.from({length: bookingData.daysPerWeek}, (_, i) => (
-            <div key={i} className="flex space-x-4">
-              <select 
-                value={bookingData.selectedDays[i] || ''}
-                onChange={(e) => {
-                  const newDays = [...bookingData.selectedDays];
-                  newDays[i] = parseInt(e.target.value);
-                  setBookingData({...bookingData, selectedDays: newDays});
-                }}
-                className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              >
-                <option value="">Select Day</option>
-                <option value={1}>Monday</option>
-                <option value={2}>Tuesday</option>
-                <option value={3}>Wednesday</option>
-                <option value={4}>Thursday</option>
-                <option value={5}>Friday</option>
-                <option value={6}>Saturday</option>
-                <option value={0}>Sunday</option>
-              </select>
-              <input
-                type="time"
-                value={bookingData.selectedTimes[i] || ''}
-                onChange={(e) => {
-                  const newTimes = [...bookingData.selectedTimes];
-                  newTimes[i] = e.target.value;
-                  setBookingData({...bookingData, selectedTimes: newTimes});
-                }}
-                className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-          ))}
+          {Array.from({length: bookingData.daysPerWeek}, (_, i) => {
+            const selectedDay = bookingData.selectedDays[i];
+            const dateForDay = selectedDay !== undefined && selectedDay !== null ? getNextDateForDay(selectedDay, bookingData.startDate) : null;
+            const availableSlots = dateForDay ? availableSlotsByDate[dateForDay] || [] : [];
+
+            return (
+              <div key={i} className="flex flex-col space-y-2">
+                <div className="flex space-x-4">
+                  <select 
+                    value={bookingData.selectedDays[i] || ''}
+                    onChange={async (e) => {
+                      const val = e.target.value;
+                      const dayNum = val === '' ? NaN : parseInt(val);
+                      const newDays = [...bookingData.selectedDays];
+                      newDays[i] = dayNum;
+                      setBookingData({...bookingData, selectedDays: newDays});
+
+                      // Only fetch if a valid day is selected
+                      if (!isNaN(dayNum) && dayNum >= 0 && dayNum <= 6) {
+                        const date = getNextDateForDay(dayNum, bookingData.startDate);
+                        try {
+                          const slots = await availabilityApi.getAvailableTimeSlots(ustaadh.id, date);
+                          setAvailableSlotsByDate(prev => ({ ...prev, [date]: slots || [] }));
+                        } catch (err) {
+                          // ignore and keep existing state
+                          console.error('Failed to load available slots', err);
+                        }
+                      }
+                    }}
+                    className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="">Select Day</option>
+                    <option value={1}>Monday</option>
+                    <option value={2}>Tuesday</option>
+                    <option value={3}>Wednesday</option>
+                    <option value={4}>Thursday</option>
+                    <option value={5}>Friday</option>
+                    <option value={6}>Saturday</option>
+                    <option value={0}>Sunday</option>
+                  </select>
+                  <div className="flex-1">
+                    {availableSlots.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        {availableSlots.map((s, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              const newTimes = [...bookingData.selectedTimes];
+                              newTimes[i] = s.startTime;
+                              setBookingData({...bookingData, selectedTimes: newTimes});
+                            }}
+                            className={`p-2 border rounded-lg text-sm ${bookingData.selectedTimes[i] === s.startTime ? 'bg-green-600 text-white' : 'bg-white text-gray-700'}`}
+                          >
+                            {s.startTime} - {s.endTime}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <input
+                        type="time"
+                        value={bookingData.selectedTimes[i] || ''}
+                        onChange={(e) => {
+                          const newTimes = [...bookingData.selectedTimes];
+                          newTimes[i] = e.target.value;
+                          setBookingData({...bookingData, selectedTimes: newTimes});
+                        }}
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                      />
+                    )}
+                  </div>
+                </div>
+                {dateForDay && availableSlots.length === 0 && (
+                  <p className="text-sm text-gray-500">No available slots for the chosen day on {dateForDay} — you can pick a time manually.</p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

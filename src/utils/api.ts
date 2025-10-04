@@ -1,10 +1,6 @@
 const API_BASE_URL: string = (import.meta as any)?.env?.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
-interface ApiResponse<T = any> {
-  data?: T;
-  message?: string;
-  statusCode?: number;
-}
+// ApiResponse interface removed (not used) to avoid unused declaration warnings
 
 class ApiClient {
   private getAuthHeaders() {
@@ -17,15 +13,29 @@ class ApiClient {
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
+      // If user is suspended the server may return 403. Redirect to suspended page.
+      if (response.status === 403) {
+        try {
+          // client-side redirect to a friendly suspended page
+          if (typeof window !== 'undefined') {
+            window.location.href = '/suspended';
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
       const error = await response.json().catch(() => ({ message: response.statusText }));
       throw new Error(error.message || `API Error: ${response.statusText}`);
     }
     return response.json();
   }
 
-  async get<T = any>(endpoint: string): Promise<T> {
+  async get<T = any>(endpoint: string, headers?: Record<string, string>): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: this.getAuthHeaders(),
+      headers: {
+        ...this.getAuthHeaders(),
+        ...(headers || {}),
+      },
     });
     return this.handleResponse<T>(response);
   }
@@ -39,20 +49,20 @@ class ApiClient {
     return this.handleResponse<T>(response);
   }
 
-  async patch<T = any>(endpoint: string, data: any): Promise<T> {
+  async patch<T = any>(endpoint: string, data?: any): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
+      body: data ? JSON.stringify(data) : undefined,
     });
     return this.handleResponse<T>(response);
   }
 
-  async put<T = any>(endpoint: string, data: any): Promise<T> {
+  async put<T = any>(endpoint: string, data?: any): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
+      body: data ? JSON.stringify(data) : undefined,
     });
     return this.handleResponse<T>(response);
   }
@@ -104,10 +114,10 @@ export const authApi = {
     apiClient.post('/auth/resend-verification', { email }),
 
   approveUstaadh: (id: string) =>
-    apiClient.post(`/auth/approve-ustaadh/${id}`),
+    apiClient.patch(`/auth/approve-ustaadh/${id}`),
 
   rejectUstaadh: (id: string, reason?: string) =>
-    apiClient.post(`/auth/reject-ustaadh/${id}`, { reason }),
+    apiClient.patch(`/auth/reject-ustaadh/${id}`, { reason }),
 };
 
 export const usersApi = {
@@ -130,6 +140,12 @@ export const usersApi = {
 
   deleteUser: (id: string) =>
     apiClient.delete(`/users/${id}`),
+
+  suspendUser: (id: string, data?: { reason?: string }) =>
+    apiClient.patch(`/users/${id}/suspend`, data),
+
+  activateUser: (id: string) =>
+    apiClient.patch(`/users/${id}/activate`),
 
   getPendingUstaadhss: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
@@ -173,8 +189,18 @@ export const bookingsApi = {
 };
 
 export const availabilityApi = {
-  getAvailability: (ustaadhId: string) =>
-    apiClient.get(`/availability/ustaadh/${ustaadhId}`),
+  getAvailability: (ustaadhId: string) => {
+    const ts = Date.now().toString();
+    console.debug('[API] availability.getAvailability called for id=', ustaadhId);
+    return apiClient.get(`/availability/ustaadh/${ustaadhId}`, { 'x-cache-bust': ts });
+  },
+
+  getAvailableTimeSlots: (ustaadhId: string, date: string) => {
+    const ts = Date.now().toString();
+    console.debug('[API] availability.getAvailableTimeSlots called for id=', ustaadhId, 'date=', date);
+    const query = `?date=${encodeURIComponent(date)}&ts=${ts}`;
+    return apiClient.get(`/availability/ustaadh/${ustaadhId}/available${query}`);
+  },
 
   setAvailability: (data: any[]) =>
     apiClient.post('/availability', data),
@@ -212,13 +238,15 @@ export const payrollApi = {
   addAdjustment: (ustaadhId: string, data: any) =>
     apiClient.patch(`/payroll/plan/${ustaadhId}/adjustments`, data),
 
-  markPaid: (ustaadhId: string, data: { month: string; amount: number }) =>
+  // Server MarkPaidDto expects { month: string, paidOn?: string }
+  markPaid: (ustaadhId: string, data: { month: string; paidOn?: string }) =>
     apiClient.patch(`/payroll/plan/${ustaadhId}/pay`, data),
 
   getPayrollObligations: (month?: string) => {
     const query = month ? `?month=${month}` : '';
     return apiClient.get(`/payroll/obligations${query}`);
   },
+  getAllPlans: () => apiClient.get('/payroll/plans'),
 };
 
 export const messagesApi = {

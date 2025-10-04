@@ -1,16 +1,45 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { CreditCard, Search, Filter, Download, DollarSign, TrendingUp, Calendar, RefreshCw, ClipboardList } from 'lucide-react';
-import { usePayroll } from '../../contexts/PayrollContext';
-import { paymentsApi } from '../../utils/api';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  CreditCard,
+  Search,
+  Filter,
+  Download,
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  RefreshCw,
+  ClipboardList,
+} from "lucide-react";
+import { usePayroll } from "../../contexts/hooks/usePayroll";
+import { paymentsApi } from "../../utils/api";
+import { LoadingSpinner } from "../../components/common/LoadingSpinner";
+import { SalaryAdjustment, SalaryRecord } from "../../types";
 
-const formatCurrency = (amount: number, currency = 'USD') => new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amount);
+interface Payment {
+  id: string;
+  bookingId: string;
+  studentName: string;
+  ustaadhName: string;
+  amount: number;
+  currency: string;
+  status: string;
+  paymentMethod: string;
+  transactionId: string;
+  createdAt: string;
+  platformFee: number;
+  ustaadhEarning: number;
+}
+
+const formatCurrency = (amount: number, currency = "USD") =>
+  new Intl.NumberFormat(undefined, { style: "currency", currency }).format(
+    amount
+  );
 
 export const AdminPaymentsPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
-  const [payments, setPayments] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { plans } = usePayroll();
@@ -21,56 +50,74 @@ export const AdminPaymentsPage: React.FC = () => {
     const fetchPayments = async () => {
       setLoading(true);
       try {
-        const response = await paymentsApi.getPaymentHistory({ limit: '100' });
+        const response = await paymentsApi.getPaymentHistory({ limit: "100" });
 
         if (!isMounted) return;
 
         const paymentsData = Array.isArray(response?.payments)
           ? response.payments
           : Array.isArray(response)
-          ? response
-          : [];
+            ? response
+            : [];
 
-        const normalizedPayments = paymentsData.map((p: any) => {
+        interface RawPayment {
+          id?: string;
+          _id?: string;
+          paymentIntentId?: string;
+          studentId?: { fullName: string } | string;
+          ustaadhId?: { fullName: string } | string;
+          bookingId?: { id?: string; _id?: string } | string;
+          studentName?: string;
+          ustaadhName?: string;
+          amount: number;
+          currency?: string;
+          status: string;
+          paymentMethod?: string;
+          transactionId?: string;
+          createdAt: string;
+        }
+
+        const normalizedPayments = paymentsData.map((p: RawPayment) => {
           const studentName =
-            typeof p.studentId === 'object' && p.studentId !== null
+            typeof p.studentId === "object" && p.studentId !== null
               ? p.studentId.fullName
-              : p.studentName || 'Student';
+              : p.studentName || "Student";
 
           const ustaadhName =
-            typeof p.ustaadhId === 'object' && p.ustaadhId !== null
+            typeof p.ustaadhId === "object" && p.ustaadhId !== null
               ? p.ustaadhId.fullName
-              : p.ustaadhName || 'Ustaadh';
+              : p.ustaadhName || "Ustaadh";
 
           const bookingId =
-            typeof p.bookingId === 'object' && p.bookingId !== null
+            typeof p.bookingId === "object" && p.bookingId !== null
               ? p.bookingId.id || p.bookingId._id
-              : p.bookingId || '';
+              : p.bookingId || "";
 
           const platformFeeRate = 0.3;
-          const platformFee = p.status === 'succeeded' || p.status === 'completed'
-            ? p.amount * platformFeeRate
-            : 0;
+          const platformFee =
+            p.status === "succeeded" || p.status === "completed"
+              ? p.amount * platformFeeRate
+              : 0;
 
           return {
-            id: p.id || p._id || p.paymentIntentId,
+            id: p.id || p._id || p.paymentIntentId || "",
             bookingId,
             studentName,
             ustaadhName,
             amount: p.amount,
-            currency: p.currency || 'USD',
-            status: p.status === 'succeeded' ? 'completed' : p.status,
-            paymentMethod: p.paymentMethod || 'Credit Card',
-            transactionId: p.paymentIntentId || p.transactionId || p.id,
+            currency: p.currency || "USD",
+            status: p.status === "succeeded" ? "completed" : p.status,
+            paymentMethod: p.paymentMethod || "Credit Card",
+            transactionId: p.paymentIntentId || p.transactionId || p.id || "",
             createdAt: p.createdAt,
             platformFee,
-            ustaadhEarning: p.amount - platformFee
+            ustaadhEarning: p.amount - platformFee,
           };
         });
 
         setPayments(normalizedPayments);
       } catch (error) {
-        console.error('Failed to fetch payments:', error);
+        console.error("Failed to fetch payments:", error);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -85,64 +132,120 @@ export const AdminPaymentsPage: React.FC = () => {
     };
   }, []);
 
-  const filteredPayments = payments.filter(payment => {
-    const matchesSearch = payment.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         payment.ustaadhName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         payment.transactionId.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredPayments = payments.filter((payment) => {
+    const matchesSearch =
+      payment.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      payment.ustaadhName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      payment.transactionId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = !statusFilter || payment.status === statusFilter;
     const matchesDate = !dateFilter || payment.createdAt.startsWith(dateFilter);
-    
+
     return matchesSearch && matchesStatus && matchesDate;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'refunded': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "failed":
+        return "bg-red-100 text-red-800";
+      case "refunded":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
-  const platformShare = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.platformFee, 0);
-  const pendingPayments = payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
-  const failedPayments = payments.filter(p => p.status === 'failed').length;
+  const totalRevenue = payments
+    .filter((p) => p.status === "completed")
+    .reduce((sum, p) => sum + p.amount, 0);
+  const platformShare = payments
+    .filter((p) => p.status === "completed")
+    .reduce((sum, p) => sum + p.platformFee, 0);
+  const pendingPayments = payments
+    .filter((p) => p.status === "pending")
+    .reduce((sum, p) => sum + p.amount, 0);
+  const failedPayments = payments.filter((p) => p.status === "failed").length;
 
   const currentMonthKey = useMemo(() => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   }, []);
 
   const payrollSummary = useMemo(() => {
-    const getAdj = (r: any) => (r.adjustments ?? []).reduce((s: number, a: any) => (a.type === 'deduction' ? s - a.amount : s + a.amount), 0);
-    const getNet = (r: any) => r.amount + getAdj(r);
+    const getAdj = (r: SalaryRecord) =>
+      (r.adjustments ?? []).reduce(
+        (s: number, a: SalaryAdjustment) =>
+          a.type === "deduction" ? s - a.amount : s + a.amount,
+        0
+      );
+    const getNet = (r: SalaryRecord) => r.amount + getAdj(r);
 
     let scheduled = 0;
     let paid = 0;
 
     plans.forEach((plan) => {
-      const record = plan.salaryHistory.find((r) => r.month === currentMonthKey) || {
+      const record = plan.salaryHistory.find(
+        (r) => r.month === currentMonthKey
+      ) || {
+        id: `${plan.ustaadhId}-${currentMonthKey}`,
+        month: currentMonthKey,
         amount: plan.monthlySalary,
+        status: "scheduled",
+        scheduledPayoutDate: new Date(
+          Number(currentMonthKey.split("-")[0]),
+          Number(currentMonthKey.split("-")[1]) - 1,
+          plan.paymentDayOfMonth || 1
+        ).toISOString(),
         adjustments: [],
-        status: 'scheduled',
       };
-      if (record.status === 'paid') paid += getNet(record); else scheduled += getNet(record);
+      if (record.status === "paid") paid += getNet(record);
+      else scheduled += getNet(record);
     });
 
-    const ytd = plans.reduce((sum, plan) => sum + plan.salaryHistory
-      .filter((r) => r.status === 'paid' && r.month.startsWith(`${new Date().getFullYear()}-`))
-      .reduce((s, r) => s + getNet(r), 0), 0);
+    const ytd = plans.reduce(
+      (sum, plan) =>
+        sum +
+        plan.salaryHistory
+          .filter(
+            (r) =>
+              r.status === "paid" &&
+              r.month.startsWith(`${new Date().getFullYear()}-`)
+          )
+          .reduce((s, r) => s + getNet(r), 0),
+      0
+    );
 
-    return { scheduled, paid, ytd, currency: plans[0]?.currency || 'USD' };
+    return { scheduled, paid, ytd, currency: plans[0]?.currency || "USD" };
   }, [plans, currentMonthKey]);
 
   const stats = [
-    { title: 'Total Revenue (bookings)', value: formatCurrency(totalRevenue), color: 'bg-green-500', icon: DollarSign },
-    { title: 'Platform Share', value: formatCurrency(platformShare), color: 'bg-blue-500', icon: TrendingUp },
-    { title: 'Pending Student Payments', value: formatCurrency(pendingPayments), color: 'bg-yellow-500', icon: Calendar },
-    { title: 'Failed Student Payments', value: failedPayments.toString(), color: 'bg-red-500', icon: RefreshCw }
+    {
+      title: "Total Revenue (bookings)",
+      value: formatCurrency(totalRevenue),
+      color: "bg-green-500",
+      icon: DollarSign,
+    },
+    {
+      title: "Platform Share",
+      value: formatCurrency(platformShare),
+      color: "bg-blue-500",
+      icon: TrendingUp,
+    },
+    {
+      title: "Pending Student Payments",
+      value: formatCurrency(pendingPayments),
+      color: "bg-yellow-500",
+      icon: Calendar,
+    },
+    {
+      title: "Failed Student Payments",
+      value: failedPayments.toString(),
+      color: "bg-red-500",
+      icon: RefreshCw,
+    },
   ];
 
   if (loading) {
@@ -172,10 +275,16 @@ export const AdminPaymentsPage: React.FC = () => {
           <div key={index} className="bg-white rounded-xl shadow-md p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lg:text-sm text-gray-600 mb-1">{stat.title}</p>
-                <p className="text-xl lg:text-2xl font-bold text-gray-800">{stat.value}</p>
+                <p className="text-xs lg:text-sm text-gray-600 mb-1">
+                  {stat.title}
+                </p>
+                <p className="text-xl lg:text-2xl font-bold text-gray-800">
+                  {stat.value}
+                </p>
               </div>
-              <div className={`w-10 h-10 lg:w-12 lg:h-12 ${stat.color} rounded-lg flex items-center justify-center`}>
+              <div
+                className={`w-10 h-10 lg:w-12 lg:h-12 ${stat.color} rounded-lg flex items-center justify-center`}
+              >
                 <stat.icon className="h-5 w-5 lg:h-6 lg:w-6 text-white" />
               </div>
             </div>
@@ -219,7 +328,8 @@ export const AdminPaymentsPage: React.FC = () => {
           <div className="flex items-center space-x-2">
             <Filter className="h-5 w-5 text-gray-400" />
             <span className="text-sm text-gray-600">
-              {filteredPayments.length} payment{filteredPayments.length !== 1 ? 's' : ''}
+              {filteredPayments.length} payment
+              {filteredPayments.length !== 1 ? "s" : ""}
             </span>
           </div>
         </div>
@@ -259,28 +369,48 @@ export const AdminPaymentsPage: React.FC = () => {
                 <tr key={payment.id} className="hover:bg-gray-50">
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">#{payment.id}</div>
-                      <div className="text-sm text-gray-500">{payment.transactionId}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        #{payment.id}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {payment.transactionId}
+                      </div>
                     </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{payment.studentName}</div>
-                    <div className="text-sm text-gray-500">Booking #{payment.bookingId}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {payment.studentName}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Booking #{payment.bookingId}
+                    </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{payment.ustaadhName}</div>
-                    <div className="text-sm text-gray-500">Payroll-based salary model</div>
+                    <div className="text-sm text-gray-900">
+                      {payment.ustaadhName}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Payroll-based salary model
+                    </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">${payment.amount}</div>
-                    <div className="text-sm text-gray-500">{payment.currency}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      ${payment.amount}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {payment.currency}
+                    </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-green-600">${payment.platformFee}</div>
+                    <div className="text-sm font-medium text-green-600">
+                      ${payment.platformFee}
+                    </div>
                     <div className="text-sm text-gray-500">Platform share</div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}
+                    >
                       {payment.status}
                     </span>
                   </td>
@@ -304,43 +434,67 @@ export const AdminPaymentsPage: React.FC = () => {
       {/* Revenue Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Revenue Breakdown (bookings)</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Revenue Breakdown (bookings)
+          </h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
               <span className="font-medium text-gray-800">Total Revenue</span>
-              <span className="font-semibold text-green-600">{formatCurrency(totalRevenue)}</span>
+              <span className="font-semibold text-green-600">
+                {formatCurrency(totalRevenue)}
+              </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
               <span className="font-medium text-gray-800">Platform Share</span>
-              <span className="font-semibold text-blue-600">{formatCurrency(platformShare)}</span>
+              <span className="font-semibold text-blue-600">
+                {formatCurrency(platformShare)}
+              </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-              <span className="font-medium text-gray-800">Planned Salaries (YTD)</span>
-              <span className="font-semibold text-purple-600">{formatCurrency(payrollSummary.ytd, payrollSummary.currency)}</span>
+              <span className="font-medium text-gray-800">
+                Planned Salaries (YTD)
+              </span>
+              <span className="font-semibold text-purple-600">
+                {formatCurrency(payrollSummary.ytd, payrollSummary.currency)}
+              </span>
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Payroll Summary</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Payroll Summary
+          </h3>
           <div className="space-y-3 text-sm text-gray-700">
             <div className="flex justify-between items-center">
               <span>Current month scheduled</span>
-              <span className="font-semibold text-gray-900">{formatCurrency(payrollSummary.scheduled, payrollSummary.currency)}</span>
+              <span className="font-semibold text-gray-900">
+                {formatCurrency(
+                  payrollSummary.scheduled,
+                  payrollSummary.currency
+                )}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span>Current month paid</span>
-              <span className="font-semibold text-gray-900">{formatCurrency(payrollSummary.paid, payrollSummary.currency)}</span>
+              <span className="font-semibold text-gray-900">
+                {formatCurrency(payrollSummary.paid, payrollSummary.currency)}
+              </span>
             </div>
             <div className="flex items-center space-x-2 pt-2 text-xs text-gray-500">
               <ClipboardList className="h-4 w-4" />
-              <span>Admin controls salary payouts monthly. Student payments do not auto-disburse to ustaadhs.</span>
+              <span>
+                Admin controls salary payouts monthly. Student payments do not
+                auto-disburse to ustaadhs.
+              </span>
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Methods</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Payment Methods
+          </h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-3">
@@ -351,7 +505,10 @@ export const AdminPaymentsPage: React.FC = () => {
               </div>
               <div className="text-right">
                 <div className="font-semibold text-gray-800">
-                  {payments.filter(p => p.paymentMethod === 'Credit Card').length}
+                  {
+                    payments.filter((p) => p.paymentMethod === "Credit Card")
+                      .length
+                  }
                 </div>
                 <div className="text-sm text-gray-500">transactions</div>
               </div>

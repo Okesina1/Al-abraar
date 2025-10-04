@@ -6,12 +6,14 @@ import React, {
   ReactNode,
 } from "react";
 import { authApi, usersApi, uploadsApi } from "../utils/api";
+import { normalizeUser } from '../utils/user';
 
 import { User } from "../types";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  authenticating: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (userData: RegisterData) => Promise<any>;
   logout: () => void;
@@ -48,6 +50,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authenticating, setAuthenticating] = useState(false);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -57,8 +60,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       if (storedUser && token) {
         try {
           const profile = await usersApi.getProfile();
-          setUser(profile);
-          localStorage.setItem("al-abraar-user", JSON.stringify(profile));
+          // Normalize profile so consumers can reliably use `user.id`
+          const normalized = normalizeUser(profile);
+          setUser(normalized);
+          localStorage.setItem("al-abraar-user", JSON.stringify(normalized));
         } catch (error) {
           localStorage.removeItem("al-abraar-user");
           localStorage.removeItem("al-abraar-token");
@@ -71,25 +76,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const login = async (email: string, password: string) => {
-    setLoading(true);
+    setAuthenticating(true);
     try {
       const response = await authApi.login(email, password);
 
-      const userData = response.user;
+      const userData = normalizeUser(response.user);
       const token = response.access_token;
 
       setUser(userData);
       localStorage.setItem("al-abraar-user", JSON.stringify(userData));
       localStorage.setItem("al-abraar-token", token);
     } catch (error: any) {
-      throw new Error(error.message || "Invalid email or password");
+      // rethrow so callers can display the message
+      throw new Error(error?.message || "Invalid email or password");
     } finally {
-      setLoading(false);
+      setAuthenticating(false);
     }
   };
 
   const register = async (userData: RegisterData) => {
-    setLoading(true);
+    setAuthenticating(true);
     try {
       let cvUrl;
       if (userData.cv) {
@@ -114,16 +120,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           bio: userData.bio,
           experience: userData.experience,
           specialties: userData.specialties,
-          cv: cvUrl,
+          cvUrl: cvUrl,
         }),
       };
 
       const response = await authApi.register(registrationData);
       return response;
     } catch (error: any) {
-      throw new Error(error.message || "Registration failed");
+      throw new Error(error?.message || "Registration failed");
     } finally {
-      setLoading(false);
+      setAuthenticating(false);
     }
   };
 
@@ -136,16 +142,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const updateUser = async (userData: Partial<User>) => {
     try {
       const updatedUser = await usersApi.updateProfile(userData);
-      setUser(updatedUser);
-      localStorage.setItem("al-abraar-user", JSON.stringify(updatedUser));
+      const normalized = normalizeUser(updatedUser);
+      setUser(normalized);
+      localStorage.setItem("al-abraar-user", JSON.stringify(normalized));
     } catch (error: any) {
       throw new Error(error.message || "Failed to update profile");
     }
   };
 
+  // helper comes from shared util
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, updateUser }}
+      value={{ user, loading, authenticating, login, register, logout, updateUser }}
     >
       {children}
     </AuthContext.Provider>

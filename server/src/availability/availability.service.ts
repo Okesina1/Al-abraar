@@ -3,11 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Availability } from './schemas/availability.schema';
 import { DateUtils } from '../common/utils/date.utils';
+import { Booking, BookingStatus } from '../bookings/schemas/booking.schema';
 
 @Injectable()
 export class AvailabilityService {
   constructor(
     @InjectModel(Availability.name) private availabilityModel: Model<Availability>,
+    @InjectModel(Booking.name) private bookingModel: Model<Booking>,
   ) {}
 
   async setUstaadhAvailability(ustaadhId: string, availabilityData: any[]): Promise<Availability[]> {
@@ -66,21 +68,51 @@ export class AvailabilityService {
   }
 
   async getAvailableTimeSlots(ustaadhId: string, date: string): Promise<any[]> {
+    // Return availability slots for the given date, excluding slots that overlap existing bookings
+    if (!ustaadhId) throw new BadRequestException('Missing ustaadhId');
+    if (!date) throw new BadRequestException('Missing date');
+
     const dayOfWeek = new Date(date).getDay();
     const availability = await this.getUstaadhAvailability(ustaadhId);
-    
-    const dayAvailability = availability.filter(slot => 
+
+    const dayAvailability = availability.filter(slot =>
       slot.dayOfWeek === dayOfWeek && slot.isAvailable
     );
 
-    // In a real implementation, you would also check for existing bookings
-    // and remove those time slots from available slots
-    
-    return dayAvailability.map(slot => ({
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-      available: true
-    }));
+    // Fetch bookings for this ustaadh on that date that are pending or confirmed
+    const existingBookings = await this.bookingModel.find({
+      ustaadhId: new Types.ObjectId(ustaadhId),
+      status: { $in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
+      'schedule.date': date,
+    }).exec();
+
+    // flatten booked slots for the date
+    const bookedSlots: Array<{ startTime: string; endTime: string }> = [];
+    for (const b of existingBookings) {
+      if (!Array.isArray((b as any).schedule)) continue;
+      for (const s of (b as any).schedule) {
+        if (s && s.date === date) {
+          bookedSlots.push({ startTime: s.startTime, endTime: s.endTime });
+        }
+      }
+    }
+
+    const available = [] as any[];
+
+    for (const slot of dayAvailability) {
+      let overlaps = false;
+      for (const booked of bookedSlots) {
+        if (DateUtils.isTimeSlotOverlapping(slot.startTime, slot.endTime, booked.startTime, booked.endTime)) {
+          overlaps = true;
+          break;
+        }
+      }
+      if (!overlaps) {
+        available.push({ startTime: slot.startTime, endTime: slot.endTime, available: true });
+      }
+    }
+
+    return available;
   }
 
   async updateAvailabilitySlot(

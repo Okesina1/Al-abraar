@@ -20,6 +20,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { APP_GUARD } from '@nestjs/core';
+import { ActiveUserGuard } from './auth/guards/active-user.guard';
 import { EmailService } from './common/services/email.service';
 import { SmsService } from './common/services/sms.service';
 import { CacheService } from './common/services/cache.service';
@@ -64,6 +66,10 @@ import { ReferralsModule } from './referrals/referrals.module';
     CacheService,
     AuditService,
     SchedulerService,
+    {
+      provide: APP_GUARD,
+      useClass: ActiveUserGuard,
+    },
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,

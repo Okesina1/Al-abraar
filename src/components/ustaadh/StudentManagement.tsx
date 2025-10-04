@@ -1,40 +1,124 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Search, MessageCircle, Calendar, TrendingUp, Clock, BookOpen } from 'lucide-react';
-import { Booking } from '../../types';
+import { Booking, ScheduleSlot } from '../../types';
+import { bookingsApi, usersApi } from '../../utils/api';
+import { useToast } from '../../contexts/ToastContext';
+
+interface Student {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  bookingId: string;
+  package: string;
+  startDate: string;
+  endDate: string;
+  totalLessons: number;
+  completedLessons: number;
+  upcomingLessons: number;
+  progress: number;
+  lastLesson: string | null;
+  nextLesson: string | null;
+  status: 'confirmed' | 'pending' | 'cancelled';
+  hoursPerWeek: number;
+}
 
 interface StudentManagementProps {
-  bookings: Booking[];
+  initialBookings?: Booking[];
   onMessageStudent: (studentId: string, studentName: string) => void;
 }
 
-export const StudentManagement: React.FC<StudentManagementProps> = ({ bookings, onMessageStudent }) => {
+// Minimal shape for the student object returned by the users API
+type StudentApiShape = {
+  _id?: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  avatar?: string;
+};
+
+export const StudentManagement: React.FC<StudentManagementProps> = ({ initialBookings, onMessageStudent }) => {
+  const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [showStudentModal, setShowStudentModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  // bookings state removed because we derive students from bookings and don't render bookings directly
+  const [students, setStudents] = useState<Student[]>([]);
 
-  // Transform bookings into student data
-  const students = bookings.map(booking => ({
-    id: booking.studentId,
-    name: 'Student Name', // In real app, fetch from user data
-    email: 'student@email.com',
-    bookingId: booking.id,
-    package: booking.packageType === 'basic' ? 'Qur\'an & Tajweed' : 'Complete Package',
-    startDate: booking.startDate,
-    endDate: booking.endDate,
-    totalLessons: booking.schedule.length,
-    completedLessons: booking.schedule.filter(s => s.status === 'completed').length,
-    upcomingLessons: booking.schedule.filter(s => s.status === 'scheduled' && new Date(s.date) >= new Date()).length,
-    progress: Math.round((booking.schedule.filter(s => s.status === 'completed').length / booking.schedule.length) * 100),
-    lastLesson: booking.schedule
-      .filter(s => s.status === 'completed')
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]?.date || null,
-    nextLesson: booking.schedule
-      .filter(s => s.status === 'scheduled' && new Date(s.date) >= new Date())
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]?.date || null,
-    status: booking.status,
-    hoursPerWeek: booking.hoursPerDay * booking.daysPerWeek
-  }));
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Fetch bookings if not provided
+        let currentBookings: Booking[] = initialBookings || [];
+        if (!initialBookings) {
+          // bookingsApi.getMyBookings may return either an array or a wrapper { data: [...] }
+          const response: unknown = await bookingsApi.getMyBookings();
+          // prefer response.data if present
+          const raw = (response && typeof response === 'object' && 'data' in response)
+            ? (response as { data: unknown }).data
+            : response;
+          currentBookings = Array.isArray(raw) ? (raw as Booking[]) : [];
+        }
+
+        // Fetch student details for each booking
+        const studentsData = await Promise.all(
+          currentBookings.map(async (booking: Booking) => {
+            try {
+              const studentResponse: unknown = await usersApi.getUserById(booking.studentId);
+              // studentResponse may be wrapped
+              const studentData = (studentResponse && typeof studentResponse === 'object' && 'data' in studentResponse)
+                ? ((studentResponse as { data: unknown }).data as StudentApiShape)
+                : (studentResponse as StudentApiShape | undefined) ?? {};
+
+              // schedule is known on Booking as ScheduleSlot[], but guard in case of malformed data
+              const schedule: ScheduleSlot[] = Array.isArray(booking.schedule) ? booking.schedule : [];
+              const completedCount = schedule.filter((s) => s.status === 'completed').length;
+              const upcomingCount = schedule.filter((s) => s.status === 'scheduled' && new Date(s.date) >= new Date()).length;
+
+              return {
+                id: studentData._id,
+                name: studentData.fullName || `${studentData.firstName ?? ''} ${studentData.lastName ?? ''}`.trim() || 'Student',
+                email: studentData.email || '',
+                avatar: studentData.avatar,
+                bookingId: booking.id,
+                package: booking.packageType === 'basic' ? "Qur'an & Tajweed" : 'Complete Package',
+                startDate: booking.startDate,
+                endDate: booking.endDate,
+                totalLessons: schedule.length,
+                completedLessons: completedCount,
+                upcomingLessons: upcomingCount,
+                progress: schedule.length ? Math.round((completedCount / schedule.length) * 100) : 0,
+                lastLesson: (schedule
+                  .filter((s) => s.status === 'completed')
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]?.date) || null,
+                nextLesson: (schedule
+                  .filter((s) => s.status === 'scheduled' && new Date(s.date) >= new Date())
+                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]?.date) || null,
+                status: booking.status as Student['status'],
+                hoursPerWeek: (booking.hoursPerDay || 0) * (booking.daysPerWeek || 0)
+              } as Student | null;
+            } catch (error) {
+              console.error(`Failed to fetch student data for booking ${booking.id}:`, error);
+              return null;
+            }
+          })
+        );
+
+        setStudents(studentsData.filter((student): student is Student => student !== null));
+      } catch (error) {
+        console.error('Failed to fetch bookings:', error);
+        toast.error('Failed to load student data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [initialBookings, toast]);
 
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -46,7 +130,9 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ bookings, 
 
   const activeStudents = students.filter(s => s.status === 'confirmed').length;
   const totalLessonsCompleted = students.reduce((sum, s) => sum + s.completedLessons, 0);
-  const averageProgress = Math.round(students.reduce((sum, s) => sum + s.progress, 0) / students.length);
+  const averageProgress = students.length > 0
+    ? Math.round(students.reduce((sum, s) => sum + s.progress, 0) / students.length)
+    : 0;
 
   const StudentModal = () => {
     if (!selectedStudent) return null;
@@ -68,8 +154,18 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ bookings, 
 
           <div className="p-6 space-y-6">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="h-8 w-8 text-blue-600" />
+              <div className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden">
+                {selectedStudent.avatar ? (
+                  <img
+                    src={selectedStudent.avatar}
+                    alt={selectedStudent.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                    <Users className="h-8 w-8 text-blue-600" />
+                  </div>
+                )}
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-800">{selectedStudent.name}</h3>
@@ -238,7 +334,12 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ bookings, 
         </div>
 
         <div className="divide-y divide-gray-200">
-          {filteredStudents.length === 0 ? (
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading students...</p>
+            </div>
+          ) : filteredStudents.length === 0 ? (
             <div className="p-8 text-center">
               <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-600">No students found</p>
@@ -248,8 +349,18 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ bookings, 
               <div key={student.id} className="p-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Users className="h-6 w-6 text-blue-600" />
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden">
+                      {student.avatar ? (
+                        <img
+                          src={student.avatar}
+                          alt={student.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                          <Users className="h-6 w-6 text-blue-600" />
+                        </div>
+                      )}
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-800">{student.name}</h4>

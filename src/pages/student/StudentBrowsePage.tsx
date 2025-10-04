@@ -1,32 +1,38 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Search, MessageSquare } from 'lucide-react';
-import { BookingModal } from '../../components/booking/BookingModal';
-import { MessageCenter } from '../../components/messaging/MessageCenter';
-import { UstaadhCard } from '../../components/student/UstaadhCard';
-import { ReviewSystem } from '../../components/reviews/ReviewSystem';
-import { useToast } from '../../contexts/ToastContext';
-import { EmptyState } from '../../components/common/EmptyState';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
-import { usersApi } from '../../utils/api';
-import { User } from '../../types';
+import { useEffect, useMemo, useState } from "react";
+import { Search, MessageSquare } from "lucide-react";
+import { BookingModal } from "../../components/booking/BookingModal";
+import { MessageCenter } from "../../components/messaging/MessageCenter";
+import { UstaadhCard } from "../../components/student/UstaadhCard";
+import { ReviewSystem } from "../../components/reviews/ReviewSystem";
+import { reviewsApi } from "../../utils/api";
+import { useToast } from "../../contexts/ToastContext";
+import { EmptyState } from "../../components/common/EmptyState";
+import { LoadingSpinner } from "../../components/common/LoadingSpinner";
+import { usersApi } from "../../utils/api";
+import { User } from "../../types";
 
 const PACKAGE_SPECIALTIES: Record<string, string[]> = {
-  basic: ["Qur'an", 'Tajweed', 'Memorization'],
-  complete: ['Arabic', 'Islamic Studies', 'Fiqh', 'Hadeeth'],
+  basic: ["Qur'an", "Tajweed", "Memorization"],
+  complete: ["Arabic", "Islamic Studies", "Fiqh", "Hadeeth"],
 };
 
 export const StudentBrowsePage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('');
-  const [selectedPackage, setSelectedPackage] = useState('');
-  const [sortBy, setSortBy] = useState('rating');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedPackage, setSelectedPackage] = useState("");
+  const [sortBy, setSortBy] = useState("rating");
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedUstaadh, setSelectedUstaadh] = useState<User | null>(null);
   const [showMessageCenter, setShowMessageCenter] = useState(false);
-  const [messageRecipient, setMessageRecipient] = useState<{ id: string; name: string } | null>(null);
+  const [messageRecipient, setMessageRecipient] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const toast = useToast();
   const [showReviews, setShowReviews] = useState(false);
-  const [selectedForReviews, setSelectedForReviews] = useState<User | null>(null);
+  const [selectedForReviews, setSelectedForReviews] = useState<User | null>(
+    null
+  );
   const [ustaadhs, setUstaadhs] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,26 +44,36 @@ export const StudentBrowsePage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await usersApi.getApprovedUstaadhss({ limit: '100' });
+        const response = await usersApi.getApprovedUstaadhss({ limit: "100" });
         const fetchedUstaadhs = Array.isArray(response?.ustaadhs)
           ? response.ustaadhs
           : Array.isArray(response)
-          ? response
-          : Array.isArray(response?.data)
-          ? response.data
-          : [];
+            ? response
+            : Array.isArray(response?.data)
+              ? response.data
+              : [];
 
         if (isMounted) {
           setUstaadhs(
-            fetchedUstaadhs.map((ustaadh) => ({
-              ...ustaadh,
-              id: ustaadh.id || ustaadh._id || ustaadh.userId,
-            }))
+            fetchedUstaadhs.map((item: unknown) => {
+              const u = item as Partial<User>;
+              const asRec = u as unknown as Record<string, unknown>;
+              const resolvedId =
+                (u.id as string) ||
+                (asRec._id as string) ||
+                (asRec.userId as string) ||
+                "";
+              return {
+                ...(u as User),
+                id: resolvedId,
+              } as User;
+            })
           );
         }
       } catch (err) {
         if (isMounted) {
-          const message = err instanceof Error ? err.message : 'Failed to load Ustaadh list.';
+          const message =
+            err instanceof Error ? err.message : "Failed to load Ustaadh list.";
           setError(message);
         }
       } finally {
@@ -85,18 +101,26 @@ export const StudentBrowsePage: React.FC = () => {
   }, [ustaadhs]);
 
   const filteredUstaadhs = useMemo(() => {
-    const packageSpecialties = selectedPackage ? PACKAGE_SPECIALTIES[selectedPackage] || [] : [];
+    const packageSpecialties = selectedPackage
+      ? PACKAGE_SPECIALTIES[selectedPackage] || []
+      : [];
 
     return ustaadhs
       .filter((ustaadh) => {
         const specialties = ustaadh.specialties || [];
         const matchesSearch = searchTerm
           ? ustaadh.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            specialties.some((specialty) => specialty.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (ustaadh.bio ? ustaadh.bio.toLowerCase().includes(searchTerm.toLowerCase()) : false)
+            specialties.some((specialty) =>
+              specialty.toLowerCase().includes(searchTerm.toLowerCase())
+            ) ||
+            (ustaadh.bio
+              ? ustaadh.bio.toLowerCase().includes(searchTerm.toLowerCase())
+              : false)
           : true;
 
-        const matchesCountry = selectedCountry ? ustaadh.country === selectedCountry : true;
+        const matchesCountry = selectedCountry
+          ? ustaadh.country === selectedCountry
+          : true;
 
         const matchesPackage = selectedPackage
           ? specialties.some((specialty) =>
@@ -110,11 +134,11 @@ export const StudentBrowsePage: React.FC = () => {
       })
       .sort((a, b) => {
         switch (sortBy) {
-          case 'rating':
+          case "rating":
             return (b.rating || 0) - (a.rating || 0);
-          case 'reviews':
+          case "reviews":
             return (b.reviewCount || 0) - (a.reviewCount || 0);
-          case 'experience': {
+          case "experience": {
             const parseYears = (value?: string) => {
               if (!value) return 0;
               const match = value.match(/\d+/);
@@ -172,7 +196,7 @@ export const StudentBrowsePage: React.FC = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2  gap-4 lg:gap-6 auto-rows-fr">
         {filteredUstaadhs.map((ustaadh) => (
           <UstaadhCard
             key={ustaadh.id}
@@ -191,7 +215,9 @@ export const StudentBrowsePage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
         <h1 className="text-2xl font-bold text-gray-900">Browse Ustaadhs</h1>
         <div className="text-sm text-gray-600">
-          {loading ? 'Loading...' : `${filteredUstaadhs.length} teacher${filteredUstaadhs.length !== 1 ? 's' : ''} available`}
+          {loading
+            ? "Loading..."
+            : `${filteredUstaadhs.length} teacher${filteredUstaadhs.length !== 1 ? "s" : ""} available`}
         </div>
       </div>
 
@@ -274,9 +300,14 @@ export const StudentBrowsePage: React.FC = () => {
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-green-600" />
-                <h2 className="text-lg font-semibold text-gray-800">Reviews for {selectedForReviews.fullName}</h2>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Reviews for {selectedForReviews.fullName}
+                </h2>
               </div>
-              <button onClick={() => setShowReviews(false)} className="p-1 hover:bg-gray-100 rounded-full">
+              <button
+                onClick={() => setShowReviews(false)}
+                className="p-1 hover:bg-gray-100 rounded-full"
+              >
                 ×
               </button>
             </div>
@@ -284,7 +315,24 @@ export const StudentBrowsePage: React.FC = () => {
               <ReviewSystem
                 ustaadhId={selectedForReviews.id}
                 canLeaveReview={true}
-                onSubmitReview={() => toast.success('Review submitted!')}
+                onSubmitReview={async (rating: number, comment: string) => {
+                  try {
+                    await reviewsApi.createReview({
+                      ustaadhId: selectedForReviews.id,
+                      rating,
+                      comment,
+                    });
+                    toast.success("Review submitted!");
+                    setShowReviews(false);
+                    setSelectedForReviews(null);
+                    // refetch ustaadhs or reviews if needed - simple approach: reload the page's content
+                    // (could call a fetchReviews helper or re-fetch ustaadhs)
+                  } catch (err: unknown) {
+                    const message =
+                      err instanceof Error ? err.message : String(err);
+                    toast.error(message || "Failed to submit review");
+                  }
+                }}
               />
             </div>
           </div>

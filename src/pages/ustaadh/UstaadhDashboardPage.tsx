@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Users, DollarSign, Star, Clock, BookOpen, MessageCircle, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { bookingsApi, payrollApi, reviewsApi } from '../../utils/api';
+import { bookingsApi, payrollApi, reviewsApi, usersApi } from '../../utils/api';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 
 interface DashboardStats {
@@ -27,6 +27,8 @@ export const UstaadhDashboardPage: React.FC = () => {
     newStudents: 0,
     earnings: 0
   });
+  const [payrollCurrency, setPayrollCurrency] = useState<string>('USD');
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,10 +37,11 @@ export const UstaadhDashboardPage: React.FC = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const [bookingsResponse, payrollResponse, reviewsResponse] = await Promise.all([
+        const [bookingsResponse, payrollResponse, reviewsResponse, approvedUstaadhsResponse] = await Promise.all([
           bookingsApi.getMyBookings(),
           payrollApi.getMyCompensationPlan().catch(() => null),
-          reviewsApi.getMyReviews().catch(() => ({ reviews: [], averageRating: 0 }))
+          reviewsApi.getMyReviews().catch(() => ({ reviews: [], averageRating: 0 })),
+          usersApi.getApprovedUstaadhss({ limit: '100' }).catch(() => null),
         ]);
 
         if (!isMounted) return;
@@ -96,7 +99,41 @@ export const UstaadhDashboardPage: React.FC = () => {
           })
           .slice(0, 3);
 
-        const monthlyEarnings = payrollResponse?.monthlySalary || 0;
+  // Normalize payroll response shape: handle wrappers like { data }, { plan }, or direct plan
+  const normalizePlanResponse = (resp: any) => {
+    if (!resp) return null;
+    // unwrap common layers
+    let candidate = resp;
+    if (resp.data && resp.data.plan) candidate = resp.data.plan;
+    else if (resp.data && typeof resp.data === 'object' && (resp.data.monthlySalary || resp.data.currency)) candidate = resp.data;
+    else if (resp.plan) candidate = resp.plan;
+    // if candidate is an array, pick first object
+    if (Array.isArray(candidate)) candidate = candidate[0] ?? null;
+    if (!candidate || typeof candidate !== 'object') return null;
+    return {
+      ...candidate,
+      monthlySalary: Number(candidate.monthlySalary ?? 0),
+      currency: (candidate.currency as string) || 'USD',
+      salaryHistory: Array.isArray(candidate.salaryHistory)
+        ? candidate.salaryHistory.map((r: any) => ({
+            ...r,
+            amount: Number(r?.amount ?? candidate.monthlySalary ?? 0),
+            adjustments: Array.isArray(r?.adjustments) ? r.adjustments.map((a: any) => ({ ...a, amount: Number(a?.amount ?? 0) })) : [],
+          }))
+        : [],
+    };
+  };
+
+  const planData = normalizePlanResponse(payrollResponse);
+  // Debug: show raw payroll response and normalized planData so we can verify what the server returned
+  try {
+    // eslint-disable-next-line no-console
+    console.debug('[UstaadhDashboard] payrollResponse raw:', payrollResponse, 'normalized planData:', planData);
+  } catch (e) {
+    // ignore
+  }
+  const monthlyEarnings = Number(planData?.monthlySalary ?? 0) || 0;
+  const currencyFromPlan = (planData && planData.currency) || 'USD';
 
         const avgRating = reviewsResponse?.averageRating || user?.rating || 0;
 
@@ -160,6 +197,8 @@ export const UstaadhDashboardPage: React.FC = () => {
           averageRating: avgRating
         });
 
+        setPayrollCurrency(currencyFromPlan);
+
         setUpcomingLessons(upcoming);
         setRecentActivities(activities.slice(0, 4));
         setMonthStats({
@@ -167,6 +206,28 @@ export const UstaadhDashboardPage: React.FC = () => {
           newStudents: newStudentsThisMonth,
           earnings: monthlyEarnings
         });
+
+        // Derive unique specialties (categories) from approved ustaadhs response
+        try {
+          const ustaadhsList = Array.isArray(approvedUstaadhsResponse?.ustaadhs)
+            ? approvedUstaadhsResponse.ustaadhs
+            : Array.isArray(approvedUstaadhsResponse)
+            ? approvedUstaadhsResponse
+            : Array.isArray(approvedUstaadhsResponse?.data)
+            ? approvedUstaadhsResponse.data
+            : [];
+
+          const unique = new Set<string>();
+          ustaadhsList.forEach((u: any) => {
+            (u.specialties || []).forEach((s: string) => {
+              if (s && typeof s === 'string') unique.add(s.trim());
+            });
+          });
+
+          setCategories(Array.from(unique).slice(0, 24));
+        } catch (err) {
+          // ignore
+        }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
@@ -188,7 +249,7 @@ export const UstaadhDashboardPage: React.FC = () => {
     { title: "This Week's Lessons", value: stats.weekLessons.toString(), icon: Calendar, color: 'bg-green-500' },
     {
       title: 'Monthly Earnings',
-      value: `$${stats.monthlyEarnings.toFixed(2)}`,
+      value: new Intl.NumberFormat(undefined, { style: 'currency', currency: payrollCurrency }).format(stats.monthlyEarnings),
       icon: DollarSign,
       color: 'bg-yellow-500'
     },
@@ -355,10 +416,31 @@ export const UstaadhDashboardPage: React.FC = () => {
                 </div>
                 <span className="font-medium text-gray-800">Earnings</span>
               </div>
-              <span className="font-semibold text-purple-600">${monthStats.earnings.toFixed(2)}</span>
+              <span className="font-semibold text-purple-600">{new Intl.NumberFormat(undefined, { style: 'currency', currency: payrollCurrency }).format(monthStats.earnings)}</span>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Categories / Specialties */}
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">Popular Specialties</h3>
+          <Link to="/ustaadh/students" className="text-green-600 hover:text-green-700 text-sm font-medium">
+            View all
+          </Link>
+        </div>
+        {categories.length === 0 ? (
+          <p className="text-sm text-gray-600">No specialties available yet.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <span key={cat} className="px-3 py-1 rounded-full bg-gray-100 text-sm text-gray-800">
+                {cat}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}

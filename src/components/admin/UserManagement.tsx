@@ -34,6 +34,18 @@ export const UserManagement: React.FC<UserManagementProps> = ({
   onSuspendUser,
   onActivateUser
 }) => {
+  const stored = typeof window !== 'undefined' ? localStorage.getItem('al-abraar-user') : null;
+  let currentUser: any = null;
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      // lazy-import to avoid cycles
+      const { normalizeUser } = require('../../utils/user');
+      currentUser = normalizeUser(parsed);
+    } catch (e) {
+      currentUser = null;
+    }
+  }
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -202,10 +214,11 @@ export const UserManagement: React.FC<UserManagementProps> = ({
               {user.status === 'active' ? (
                 <button
                   onClick={() => onSuspendUser(user.id)}
-                  className="px-3 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors text-sm flex items-center justify-center space-x-1"
+                  disabled={currentUser && (currentUser.id === user.id || currentUser._id === user.id)}
+                  className={`px-3 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors text-sm flex items-center justify-center space-x-1 ${currentUser && (currentUser.id === user.id || currentUser._id === user.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <Ban className="h-4 w-4" />
-                  <span>Suspend</span>
+                  <span>{currentUser && (currentUser.id === user.id || currentUser._id === user.id) ? 'Cannot suspend self' : 'Suspend'}</span>
                 </button>
               ) : (
                 <button

@@ -2,10 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Users, Shield, Ban, Mail, Phone, MapPin } from 'lucide-react';
 import { UserManagement } from '../../components/admin/UserManagement';
 import { usersApi } from '../../utils/api';
+import { MessageCenter } from '../../components/messaging/MessageCenter';
 
 export const AdminUsersPage: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [suspendReason, setSuspendReason] = useState('');
+  const [suspendingUserId, setSuspendingUserId] = useState<string | null>(null);
+  const [showMessageCenter, setShowMessageCenter] = useState(false);
+  const [messageRecipient, setMessageRecipient] = useState<{ id: string; name: string } | null>(null);
 
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,15 +56,50 @@ export const AdminUsersPage: React.FC = () => {
     setSelectedUser(user);
     setShowModal(true);
   };
-
+  const handleSendMessage = (user: any) => {
+    setMessageRecipient({ id: user.id, name: user.fullName || user.email });
+    setShowMessageCenter(true);
+  };
   const handleSuspendUser = (userId: string) => {
-    console.log('Suspending user:', userId);
-    // In real app, call API to suspend user
+    // Prevent admin from suspending themselves on the client
+    const stored = localStorage.getItem('al-abraar-user');
+    let me: any = null;
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        const { normalizeUser } = require('../../utils/user');
+        me = normalizeUser(parsed);
+      } catch (e) {
+        me = null;
+      }
+    }
+    if (me && (me.id === userId || me._id === userId)) {
+      alert('You cannot suspend your own account');
+      return;
+    }
+    setSuspendingUserId(userId);
+    setSuspendReason('');
+    setShowSuspendModal(true);
   };
 
   const handleActivateUser = (userId: string) => {
-    console.log('Activating user:', userId);
-    // In real app, call API to activate user
+    (async () => {
+      try {
+        await usersApi.activateUser(userId);
+        // refresh users
+        const res = await usersApi.getUsers({ limit: '100' });
+        const list = Array.isArray(res?.users)
+          ? res.users
+          : Array.isArray(res)
+          ? res
+          : Array.isArray(res?.data)
+          ? res.data
+          : [];
+        setUsers(list.map((u: any) => ({ ...u, id: u.id || u._id, status: u.status || 'active', lastLogin: u.lastLogin || u.updatedAt || u.createdAt })));
+      } catch (err: any) {
+        alert(err?.message || 'Failed to activate user');
+      }
+    })();
   };
 
   const getRoleColor = (role: string) => {
@@ -147,6 +188,14 @@ export const AdminUsersPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
+                {selectedUser.status === 'suspended' && (
+                  <div className="p-4 bg-red-50 rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-2">Suspension Details</h4>
+                    <p className="text-sm text-gray-700"><span className="font-medium">Reason:</span> {selectedUser.suspensionReason || '—'}</p>
+                    <p className="text-sm text-gray-700"><span className="font-medium">Suspended By:</span> {selectedUser.suspendedBy ? (selectedUser.suspendedBy.fullName || selectedUser.suspendedBy) : 'System'}</p>
+                    <p className="text-sm text-gray-700"><span className="font-medium">Suspended At:</span> {selectedUser.suspendedAt ? new Date(selectedUser.suspendedAt).toLocaleString() : '—'}</p>
+                  </div>
+                )}
                 {selectedUser.role === 'ustaadh' && (
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Teaching Stats</h4>
@@ -171,9 +220,13 @@ export const AdminUsersPage: React.FC = () => {
             </div>
 
             <div className="flex space-x-3 pt-4 border-t border-gray-200">
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+              {/* <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
                 <span>Send Message</span>
+              </button> */}
+              <button onClick={() => handleSendMessage(selectedUser)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
+                <Mail className="h-4 w-4 text-gray-600" />
+                <span>Open Message Center</span>
               </button>
               {selectedUser.status === 'active' ? (
                 <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2">
@@ -242,6 +295,65 @@ export const AdminUsersPage: React.FC = () => {
       />
 
       {showModal && <UserModal />}
+
+      {showSuspendModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold">Suspend User</h2>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-700 mb-3">Provide a brief reason for suspending this user (optional):</p>
+              <textarea
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px]"
+                placeholder="Reason for suspension (visible to admins)"
+              />
+            </div>
+            <div className="p-6 border-t border-gray-200 flex justify-end space-x-2">
+              <button onClick={() => setShowSuspendModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg">Cancel</button>
+              <button
+                onClick={async () => {
+                  if (!suspendingUserId) return;
+                  try {
+                    await usersApi.suspendUser(suspendingUserId, { reason: suspendReason });
+                    // refresh users
+                    const res = await usersApi.getUsers({ limit: '100' });
+                    const list = Array.isArray(res?.users)
+                      ? res.users
+                      : Array.isArray(res)
+                      ? res
+                      : Array.isArray(res?.data)
+                      ? res.data
+                      : [];
+                    setUsers(list.map((u: any) => ({ ...u, id: u.id || u._id, status: u.status || 'active', lastLogin: u.lastLogin || u.updatedAt || u.createdAt })));
+                    setShowSuspendModal(false);
+                    setSuspendingUserId(null);
+                  } catch (err: any) {
+                    alert(err?.message || 'Failed to suspend user');
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg"
+              >
+                Suspend User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMessageCenter && (
+        <MessageCenter
+          isOpen={showMessageCenter}
+          onClose={() => {
+            setShowMessageCenter(false);
+            setMessageRecipient(null);
+          }}
+          recipientId={messageRecipient?.id}
+          recipientName={messageRecipient?.name}
+        />
+      )}
     </div>
   );
 };

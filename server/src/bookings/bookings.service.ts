@@ -50,7 +50,13 @@ export class BookingsService {
       throw new BadRequestException('Time slot conflicts detected');
     }
 
-    const booking = new this.bookingModel(createBookingDto);
+    // Ensure reservedUntil (optional) is stored as a Date when provided
+    const bookingData: any = { ...createBookingDto };
+    if (createBookingDto.reservedUntil) {
+      bookingData.reservedUntil = new Date(createBookingDto.reservedUntil);
+    }
+
+    const booking = new this.bookingModel(bookingData);
     const savedBooking = await booking.save();
     
     // Send notification to Ustaadh about new booking
