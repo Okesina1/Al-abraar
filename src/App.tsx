@@ -270,6 +270,16 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/admin/reservations"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <DashboardLayout>
+              <AdminReservationsPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/payroll"
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
