@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Calendar, Clock, Plus, Trash2 } from 'lucide-react';
 import { UstaadhAvailability } from '../../types';
@@ -39,6 +38,8 @@ export const AvailabilityCalendar: React.FC = () => {
     return () => { active = false; };
   }, [user?.id, getUstaadhAvailability]);
   const [isEditing, setIsEditing] = useState(false);
+  const [dateSlots, setDateSlots] = useState<Record<string, Array<{ startTime: string; endTime: string }>>>({});
+  const [bookedByDate, setBookedByDate] = useState<Record<string, Array<{ startTime: string; endTime: string; reserved?: boolean }>>>({});
 
   const daysOfWeek = [
     { id: 0, name: 'Sunday', short: 'Sun' },
