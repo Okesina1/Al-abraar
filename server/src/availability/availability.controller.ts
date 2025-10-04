@@ -50,6 +50,20 @@ export class AvailabilityController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/reservations')
+  async adminListReservations(@Query('ustaadhId') ustaadhId: string, @Query('date') date: string) {
+    return this.availabilityService.listReservations(ustaadhId, date);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/reservations/:id')
+  async adminDeleteReservation(@Param('id') id: string) {
+    return this.availabilityService.deleteReservation(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USTAADH)
   @Get('my-availability')
   async getMyAvailability(@Request() req) {
