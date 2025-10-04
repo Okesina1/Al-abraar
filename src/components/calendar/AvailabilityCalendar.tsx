@@ -309,21 +309,30 @@ export const AvailabilityCalendar: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
         {daysOfWeek.map((day) => {
           const daySlots = getDayAvailability(day.id);
-          
+          const date = getNextDateForDay(day.id);
+          const dateFree = dateSlots[date] || [];
+          const dateBooked = bookedByDate[date] || [];
+
+          // choose which slots to render: when editing show weekly slots, otherwise show date-specific free slots
+          const slotsToRender = isEditing ? daySlots : dateFree;
+
           return (
             <div key={day.id} className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-semibold text-gray-800 mb-3 text-center">
                 {day.name}
+                {!isEditing && (
+                  <div className="text-xs text-gray-500 mt-1">{date}</div>
+                )}
               </h3>
-              
+
               <div className="space-y-2">
-                {daySlots.length === 0 ? (
+                {slotsToRender.length === 0 ? (
                   <div className="text-center text-gray-500 py-4">
                     <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                     <p className="text-sm">Not Available</p>
                   </div>
                 ) : (
-                  daySlots.map((slot, index) => {
+                  slotsToRender.map((slot, index) => {
                     const globalIndex = availability.findIndex(s => 
                       s.dayOfWeek === slot.dayOfWeek && 
                       s.startTime === slot.startTime && 
@@ -422,7 +431,7 @@ export const AvailabilityCalendar: React.FC = () => {
           <h4 className="font-medium text-blue-800 mb-2">Availability Tips</h4>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Set consistent hours to help students plan their schedule</li>
-            <li>• Update your availability regularly to avoid booking conflicts</li>
+            <li>��� Update your availability regularly to avoid booking conflicts</li>
             <li>• Consider different time zones when setting your hours</li>
             <li>• Block out time for breaks between lessons</li>
           </ul>
