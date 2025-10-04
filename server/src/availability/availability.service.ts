@@ -153,6 +153,38 @@ export class AvailabilityService {
     return slots.some((seg) => s >= DateUtils.timeToMinutes(seg.startTime) && e <= DateUtils.timeToMinutes(seg.endTime));
   }
 
+  async getBookedSlots(ustaadhId: string, date: string): Promise<Array<{ startTime: string; endTime: string; reserved: boolean }>> {
+    if (!ustaadhId) throw new BadRequestException('Missing ustaadhId');
+    if (!date) throw new BadRequestException('Missing date');
+
+    // booked slots from bookings (pending/confirmed)
+    const existingBookings = await this.bookingModel.find({
+      ustaadhId: new Types.ObjectId(ustaadhId),
+      status: { $in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
+      'schedule.date': date,
+    }).exec();
+
+    const bookedSlots: Array<{ startTime: string; endTime: string; reserved: boolean }> = [];
+    for (const b of existingBookings) {
+      if (!Array.isArray((b as any).schedule)) continue;
+      for (const s of (b as any).schedule) {
+        if (s && s.date === date) {
+          bookedSlots.push({ startTime: s.startTime, endTime: s.endTime, reserved: false });
+        }
+      }
+    }
+
+    // reservations without bookingId are active holds
+    const reservations = await (this as any).reservationModel?.find ? (this as any).reservationModel.find({ ustaadhId: new Types.ObjectId(ustaadhId), date }).exec() : [];
+    for (const r of reservations || []) {
+      if (r && r.startTime && r.endTime) {
+        bookedSlots.push({ startTime: r.startTime, endTime: r.endTime, reserved: !!r.bookingId ? false : true });
+      }
+    }
+
+    return bookedSlots;
+  }
+
   async updateAvailabilitySlot(
     ustaadhId: string,
     slotId: string,
