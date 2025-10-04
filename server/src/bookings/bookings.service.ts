@@ -9,12 +9,14 @@ import { NotificationType } from '../notifications/schemas/notification.schema';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { DateUtils } from '../common/utils/date.utils';
 import { BookingUtils } from '../common/utils/booking.utils';
+import { AvailabilityService } from '../availability/availability.service';
 
 @Injectable()
 export class BookingsService {
   constructor(
     @InjectModel(Booking.name) private bookingModel: Model<Booking>,
     private notificationsService: NotificationsService,
+    private availabilityService: AvailabilityService,
   ) {}
 
   async create(createBookingDto: CreateBookingDto): Promise<Booking> {
