@@ -107,15 +107,28 @@ export class SchedulerService {
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async cleanupOldNotifications() {
     this.logger.log('Cleaning up old notifications...');
-    
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     try {
       const result = await this.notificationsService.deleteOldNotifications(thirtyDaysAgo);
       this.logger.log(`Deleted ${result} old notifications`);
     } catch (error) {
       this.logger.error('Failed to cleanup notifications:', error);
+    }
+  }
+
+  // Cleanup expired reservations periodically
+  @Cron('*/5 * * * *')
+  async cleanupExpiredReservations() {
+    this.logger.log('Cleaning up expired reservations...');
+    try {
+      const now = new Date();
+      const result = await this.reservationModel.deleteMany({ bookingId: null, reservedUntil: { $lte: now } }).exec();
+      this.logger.log(`Removed ${result.deletedCount || 0} expired reservations`);
+    } catch (error) {
+      this.logger.error('Failed to cleanup reservations:', error);
     }
   }
 }
