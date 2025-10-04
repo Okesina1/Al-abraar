@@ -44,6 +44,11 @@ export class AvailabilityController {
     return { available };
   }
 
+  @Get('booked')
+  async getBooked(@Query('ustaadhId') ustaadhId: string, @Query('date') date: string) {
+    return this.availabilityService.getBookedSlots(ustaadhId, date);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.USTAADH)
   @Get('my-availability')
