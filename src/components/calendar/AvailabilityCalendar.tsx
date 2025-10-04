@@ -415,6 +415,21 @@ export const AvailabilityCalendar: React.FC = () => {
                   })
                 )}
                 
+                {/* show booked/reserved entries for the date when viewing */}
+                {!isEditing && (dateBooked.length > 0) && (
+                  <div className="mt-3 p-2 bg-red-50 border border-red-100 rounded">
+                    <h4 className="text-xs font-medium text-red-700 mb-2">Booked / Reserved</h4>
+                    <div className="space-y-1 text-sm text-red-700">
+                      {dateBooked.map((b, i) => (
+                        <div key={i} className="flex justify-between">
+                          <span>{b.startTime} - {b.endTime}</span>
+                          <span className="text-xs">{b.reserved ? 'Reserved' : 'Booked'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {isEditing && (
                   <button
                     onClick={() => addTimeSlot(day.id)}
