@@ -73,9 +73,41 @@ export class BookingsService {
       bookingData.reservedUntil = new Date(createBookingDto.reservedUntil);
     }
 
+    // Create reservation entries for each schedule slot to avoid race conditions
+    const toCleanup: Array<any> = [];
+    try {
+      for (const slot of createBookingDto.schedule) {
+        const resObj: any = {
+          ustaadhId: slot.ustaadhId ? slot.ustaadhId : createBookingDto.ustaadhId,
+          date: slot.date,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          bookingId: null,
+          reservedUntil: bookingData.reservedUntil ? new Date(bookingData.reservedUntil) : new Date(Date.now() + 10 * 60 * 1000),
+        };
+        // Insert sequentially to detect duplicates and throw
+        const created = await this.reservationModel.create(resObj);
+        toCleanup.push(created._id);
+      }
+    } catch (err) {
+      // rollback created reservations
+      if (toCleanup.length > 0) {
+        await this.reservationModel.deleteMany({ _id: { $in: toCleanup } }).catch(() => null);
+      }
+      throw new BadRequestException('Selected time was reserved by another student');
+    }
+
     const booking = new this.bookingModel(bookingData);
     const savedBooking = await booking.save();
-    
+
+    // attach bookingId to reservations
+    try {
+      await this.reservationModel.updateMany({ _id: { $in: toCleanup } }, { bookingId: savedBooking._id });
+    } catch (e) {
+      // not critical, log and continue
+      console.error('Failed to attach bookingId to reservations', e);
+    }
+
     // Send notification to Ustaadh about new booking
     await this.notificationsService.createNotification(
       createBookingDto.ustaadhId,
@@ -83,7 +115,7 @@ export class BookingsService {
       'You have received a new booking request. Please review and confirm.',
       NotificationType.INFO
     );
-    
+
     return savedBooking;
   }
 
@@ -195,15 +227,22 @@ export class BookingsService {
   async cancelBooking(id: string, reason: string): Promise<Booking> {
     const booking = await this.bookingModel.findByIdAndUpdate(
       id,
-      { 
+      {
         status: BookingStatus.CANCELLED,
-        cancellationReason: reason 
+        cancellationReason: reason
       },
       { new: true }
     );
 
     if (!booking) {
       throw new NotFoundException('Booking not found');
+    }
+
+    // remove reservations tied to this booking so slots become available immediately
+    try {
+      await this.reservationModel.deleteMany({ bookingId: booking._id }).exec();
+    } catch (e) {
+      console.error('Failed to cleanup reservations for cancelled booking', e);
     }
 
     return booking;
