@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Booking, BookingStatus } from '../../bookings/schemas/booking.schema';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { EmailService } from './email.service';
 import { SmsService } from './sms.service';
+import { Reservation } from '../../availability/schemas/reservation.schema';
 
 @Injectable()
 export class SchedulerService {
@@ -13,6 +14,7 @@ export class SchedulerService {
 
   constructor(
     @InjectModel(Booking.name) private bookingModel: Model<Booking>,
+    @InjectModel(Reservation.name) private reservationModel: Model<Reservation>,
     private notificationsService: NotificationsService,
     private emailService: EmailService,
     private smsService: SmsService,
@@ -105,15 +107,28 @@ export class SchedulerService {
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   async cleanupOldNotifications() {
     this.logger.log('Cleaning up old notifications...');
-    
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     try {
       const result = await this.notificationsService.deleteOldNotifications(thirtyDaysAgo);
       this.logger.log(`Deleted ${result} old notifications`);
     } catch (error) {
       this.logger.error('Failed to cleanup notifications:', error);
+    }
+  }
+
+  // Cleanup expired reservations periodically
+  @Cron('*/5 * * * *')
+  async cleanupExpiredReservations() {
+    this.logger.log('Cleaning up expired reservations...');
+    try {
+      const now = new Date();
+      const result = await this.reservationModel.deleteMany({ bookingId: null, reservedUntil: { $lte: now } }).exec();
+      this.logger.log(`Removed ${result.deletedCount || 0} expired reservations`);
+    } catch (error) {
+      this.logger.error('Failed to cleanup reservations:', error);
     }
   }
 }

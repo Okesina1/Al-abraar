@@ -1,10 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { Calendar, Clock, Plus, Trash2 } from 'lucide-react';
 import { UstaadhAvailability } from '../../types';
 import { useBooking } from '../../contexts/BookingContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { availabilityApi } from '../../utils/api';
 
 export const AvailabilityCalendar: React.FC = () => {
   const { user } = useAuth();
@@ -38,7 +38,65 @@ export const AvailabilityCalendar: React.FC = () => {
     load();
     return () => { active = false; };
   }, [user?.id, getUstaadhAvailability]);
+
   const [isEditing, setIsEditing] = useState(false);
+  const [dateSlots, setDateSlots] = useState<Record<string, Array<{ startTime: string; endTime: string }>>>({});
+  const [bookedByDate, setBookedByDate] = useState<Record<string, Array<{ startTime: string; endTime: string; reserved?: boolean }>>>({});
+
+  // Helper to compute next date for a given dayOfWeek relative to base (today)
+  const getNextDateForDay = (dayOfWeek: number, baseDate?: Date) => {
+    const base = baseDate ? new Date(baseDate) : new Date();
+    const currentDow = base.getDay();
+    const diff = (dayOfWeek - currentDow + 7) % 7;
+    base.setDate(base.getDate() + diff);
+    return base.toISOString().split('T')[0];
+  };
+
+  // When not editing, fetch date-specific available slots and booked slots for next occurrence of each weekday
+  useEffect(() => {
+    if (isEditing) return;
+    let active = true;
+    let interval: any = null;
+
+    const fetchForWeek = async () => {
+      const uId = user?.id || (user as any)?._id;
+      if (!uId) return;
+
+      const newDateSlots: Record<string, Array<{ startTime: string; endTime: string }>> = {};
+      const newBooked: Record<string, Array<{ startTime: string; endTime: string; reserved?: boolean }>> = {};
+
+      for (const d of daysOfWeek) {
+        try {
+          const date = getNextDateForDay(d.id);
+          // fetch free segments
+          const slots = await availabilityApi.getAvailableTimeSlots(uId, date);
+          newDateSlots[date] = slots || [];
+          // fetch booked/reserved segments
+          try {
+            const b = await (await import('../../utils/api')).apiClient.get(`/availability/booked?ustaadhId=${uId}&date=${date}`);
+            newBooked[date] = b || [];
+          } catch (e) {
+            newBooked[date] = [];
+          }
+        } catch (e) {
+          console.error('Failed to fetch date slots for calendar', e);
+        }
+      }
+
+      if (!active) return;
+      setDateSlots(newDateSlots);
+      setBookedByDate(newBooked);
+    };
+
+    // initial fetch and polling
+    fetchForWeek();
+    interval = setInterval(fetchForWeek, 15000);
+
+    return () => {
+      active = false;
+      if (interval) clearInterval(interval);
+    };
+  }, [isEditing, user?.id]);
 
   const daysOfWeek = [
     { id: 0, name: 'Sunday', short: 'Sun' },
@@ -252,21 +310,30 @@ export const AvailabilityCalendar: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
         {daysOfWeek.map((day) => {
           const daySlots = getDayAvailability(day.id);
-          
+          const date = getNextDateForDay(day.id);
+          const dateFree = dateSlots[date] || [];
+          const dateBooked = bookedByDate[date] || [];
+
+          // choose which slots to render: when editing show weekly slots, otherwise show date-specific free slots
+          const slotsToRender = isEditing ? daySlots : dateFree;
+
           return (
             <div key={day.id} className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-semibold text-gray-800 mb-3 text-center">
                 {day.name}
+                {!isEditing && (
+                  <div className="text-xs text-gray-500 mt-1">{date}</div>
+                )}
               </h3>
-              
+
               <div className="space-y-2">
-                {daySlots.length === 0 ? (
+                {slotsToRender.length === 0 ? (
                   <div className="text-center text-gray-500 py-4">
                     <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                     <p className="text-sm">Not Available</p>
                   </div>
                 ) : (
-                  daySlots.map((slot, index) => {
+                  slotsToRender.map((slot, index) => {
                     const globalIndex = availability.findIndex(s => 
                       s.dayOfWeek === slot.dayOfWeek && 
                       s.startTime === slot.startTime && 
@@ -334,9 +401,13 @@ export const AvailabilityCalendar: React.FC = () => {
                             <p className={`text-sm font-medium ${slotInvalid ? 'text-red-800' : 'text-green-800'}`}>
                               {slot.startTime} - {slot.endTime}
                             </p>
-                            <p className={`text-xs ${slot.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
-                              {slot.isAvailable ? 'Available' : 'Unavailable'}
-                            </p>
+                            {isEditing ? (
+                              <p className={`text-xs ${slot.isAvailable ? 'text-green-600' : 'text-red-600'}`}>
+                                {slot.isAvailable ? 'Available' : 'Unavailable'}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-green-600">Available</p>
+                            )}
                           </div>
                         )}
                       </div>
@@ -344,6 +415,21 @@ export const AvailabilityCalendar: React.FC = () => {
                   })
                 )}
                 
+                {/* show booked/reserved entries for the date when viewing */}
+                {!isEditing && (dateBooked.length > 0) && (
+                  <div className="mt-3 p-2 bg-red-50 border border-red-100 rounded">
+                    <h4 className="text-xs font-medium text-red-700 mb-2">Booked / Reserved</h4>
+                    <div className="space-y-1 text-sm text-red-700">
+                      {dateBooked.map((b, i) => (
+                        <div key={i} className="flex justify-between">
+                          <span>{b.startTime} - {b.endTime}</span>
+                          <span className="text-xs">{b.reserved ? 'Reserved' : 'Booked'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {isEditing && (
                   <button
                     onClick={() => addTimeSlot(day.id)}
@@ -365,7 +451,7 @@ export const AvailabilityCalendar: React.FC = () => {
           <h4 className="font-medium text-blue-800 mb-2">Availability Tips</h4>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Set consistent hours to help students plan their schedule</li>
-            <li>• Update your availability regularly to avoid booking conflicts</li>
+            <li>��� Update your availability regularly to avoid booking conflicts</li>
             <li>• Consider different time zones when setting your hours</li>
             <li>• Block out time for breaks between lessons</li>
           </ul>

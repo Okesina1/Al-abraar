@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request, Put, Query, Delete } from '@nestjs/common';
 import { AvailabilityService } from './availability.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -31,6 +31,36 @@ export class AvailabilityController {
   @Get('ustaadh/:ustaadhId/available')
   async getAvailableForDate(@Param('ustaadhId') ustaadhId: string, @Query('date') date: string) {
     return this.availabilityService.getAvailableTimeSlots(ustaadhId, date);
+  }
+
+  @Get('check')
+  async checkSlot(
+    @Query('ustaadhId') ustaadhId: string,
+    @Query('date') date: string,
+    @Query('startTime') startTime: string,
+    @Query('endTime') endTime: string,
+  ) {
+    const available = await this.availabilityService.checkSlotAvailabilityOnDate(ustaadhId, date, startTime, endTime);
+    return { available };
+  }
+
+  @Get('booked')
+  async getBooked(@Query('ustaadhId') ustaadhId: string, @Query('date') date: string) {
+    return this.availabilityService.getBookedSlots(ustaadhId, date);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('admin/reservations')
+  async adminListReservations(@Query('ustaadhId') ustaadhId: string, @Query('date') date: string) {
+    return this.availabilityService.listReservations(ustaadhId, date);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/reservations/:id')
+  async adminDeleteReservation(@Param('id') id: string) {
+    return this.availabilityService.deleteReservation(id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

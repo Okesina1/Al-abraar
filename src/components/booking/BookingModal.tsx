@@ -14,7 +14,7 @@ interface BookingModalProps {
 
 export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ustaadh }) => {
   const { user } = useAuth();
-  const { createBooking } = useBooking();
+  const { createBooking, checkTimeSlotAvailability } = useBooking();
   const [step, setStep] = useState(1);
   const [bookingData, setBookingData] = useState({
     packageType: 'basic' as 'basic' | 'complete',
@@ -47,6 +47,30 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingData.startDate, bookingData.selectedDays]);
+
+  // Poll available slots while modal is open to reflect live booking state
+  useEffect(() => {
+    if (!isOpen || bookingData.selectedDays.length === 0) return;
+    let active = true;
+    const intervalMs = 10000;
+    const fetchForSelected = async () => {
+      const days = bookingData.selectedDays.filter(d => d !== undefined && d !== null);
+      for (const d of days) {
+        try {
+          const date = getNextDateForDay(d, bookingData.startDate);
+          const slots = await availabilityApi.getAvailableTimeSlots(ustaadh.id, date);
+          if (!active) return;
+          setAvailableSlotsByDate(prev => ({ ...prev, [date]: slots || [] }));
+        } catch (err) {
+          // ignore polling errors
+        }
+      }
+    };
+
+    fetchForSelected();
+    const interval = setInterval(fetchForSelected, intervalMs);
+    return () => { active = false; clearInterval(interval); };
+  }, [isOpen, bookingData.startDate, bookingData.selectedDays, ustaadh.id]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
@@ -65,15 +89,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
 
   const handleBookingSubmit = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       // Generate schedule slots matching server DTO (no extra fields)
       const schedule: any[] = bookingData.selectedDays.map((day, index) => {
-        // If user picked an available slot for that date, use it; otherwise fallback to selectedTimes
         const date = getNextDateForDay(day, bookingData.startDate);
         const picked = (availableSlotsByDate[date] || [])[0];
-        // allow user to have set a specific time in the input (backwards compatible)
         const start = bookingData.selectedTimes[index] || (picked ? picked.startTime : '14:00');
         const end = addHours(start, bookingData.hoursPerDay);
         return {
@@ -82,12 +104,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
           endTime: end,
           date,
         };
-  });
+      });
+
+      // Client-side validation: ensure each selected slot is still available
+      for (const s of schedule) {
+        const ok = await checkTimeSlotAvailability(ustaadh.id, s.date, s.startTime, s.endTime);
+        if (!ok) {
+          toast.error(`Selected time ${s.startTime}-${s.endTime} on ${s.date} is no longer available.`);
+          setLoading(false);
+          return;
+        }
+      }
 
       const endDate = new Date(bookingData.startDate);
       endDate.setMonth(endDate.getMonth() + bookingData.subscriptionMonths);
 
-      // create a PENDING booking and set reservedUntil to 10 minutes from now to hold the slot
       const reservedUntil = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
       await createBooking({
@@ -100,14 +131,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
         totalAmount: calculateTotal(),
         startDate: bookingData.startDate,
         endDate: endDate.toISOString().split('T')[0],
-        // schedule may be a lightweight DTO (no id/status). cast to any to avoid TS mismatch with client-side Booking type
         schedule: schedule as any,
         reservedUntil
       } as any);
 
-      // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       toast.success('Booking confirmed! You will receive a confirmation email shortly.');
       onClose();
     } catch (error) {

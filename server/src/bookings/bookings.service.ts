@@ -9,12 +9,16 @@ import { NotificationType } from '../notifications/schemas/notification.schema';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { DateUtils } from '../common/utils/date.utils';
 import { BookingUtils } from '../common/utils/booking.utils';
+import { AvailabilityService } from '../availability/availability.service';
+import { Reservation } from '../availability/schemas/reservation.schema';
 
 @Injectable()
 export class BookingsService {
   constructor(
     @InjectModel(Booking.name) private bookingModel: Model<Booking>,
+    @InjectModel(Reservation.name) private reservationModel: Model<Reservation>,
     private notificationsService: NotificationsService,
+    private availabilityService: AvailabilityService,
   ) {}
 
   async create(createBookingDto: CreateBookingDto): Promise<Booking> {
@@ -40,7 +44,20 @@ export class BookingsService {
       throw new BadRequestException('Invalid total amount calculation');
     }
 
-    // Check for time conflicts
+    // Ensure all requested slots are within ustaadh availability and not already booked
+    for (const slot of createBookingDto.schedule) {
+      const withinAvailability = await this.availabilityService.checkSlotAvailabilityOnDate(
+        createBookingDto.ustaadhId,
+        slot.date,
+        slot.startTime,
+        slot.endTime
+      );
+      if (!withinAvailability) {
+        throw new BadRequestException('Selected time is not available');
+      }
+    }
+
+    // Check for time conflicts with concurrent requests or edge cases
     const conflicts = await this.checkTimeConflicts(
       createBookingDto.ustaadhId,
       createBookingDto.schedule
@@ -56,9 +73,45 @@ export class BookingsService {
       bookingData.reservedUntil = new Date(createBookingDto.reservedUntil);
     }
 
-    const booking = new this.bookingModel(bookingData);
-    const savedBooking = await booking.save();
-    
+    // Use MongoDB transaction to create reservations and booking atomically
+    const session = await this.bookingModel.db.startSession();
+    let savedBooking: any = null;
+    try {
+      await session.withTransaction(async () => {
+        // prepare reservation documents
+        const reservationDocs = createBookingDto.schedule.map((slot: any) => ({
+          ustaadhId: slot.ustaadhId ? slot.ustaadhId : createBookingDto.ustaadhId,
+          date: slot.date,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          bookingId: null,
+          reservedUntil: bookingData.reservedUntil ? new Date(bookingData.reservedUntil) : new Date(Date.now() + 10 * 60 * 1000),
+        }));
+
+        // attempt to insert all reservations; unique index will prevent duplicates
+        const inserted = await this.reservationModel.insertMany(reservationDocs, { session, ordered: true });
+
+        // create booking under transaction
+        const bookingDoc = new this.bookingModel(bookingData);
+        savedBooking = await bookingDoc.save({ session });
+
+        // attach bookingId to inserted reservations
+        const insertedIds = inserted.map((d: any) => d._id);
+        await this.reservationModel.updateMany(
+          { _id: { $in: insertedIds } },
+          { bookingId: savedBooking._id },
+          { session }
+        );
+      });
+    } catch (err: any) {
+      // Transaction aborted - likely duplicate reservation or other conflict
+      // attempt to give a clear message
+      const msg = err && err.code === 11000 ? 'Selected time was reserved by another student' : (err.message || 'Failed to create booking');
+      throw new BadRequestException(msg);
+    } finally {
+      session.endSession();
+    }
+
     // Send notification to Ustaadh about new booking
     await this.notificationsService.createNotification(
       createBookingDto.ustaadhId,
@@ -66,7 +119,7 @@ export class BookingsService {
       'You have received a new booking request. Please review and confirm.',
       NotificationType.INFO
     );
-    
+
     return savedBooking;
   }
 
@@ -178,15 +231,22 @@ export class BookingsService {
   async cancelBooking(id: string, reason: string): Promise<Booking> {
     const booking = await this.bookingModel.findByIdAndUpdate(
       id,
-      { 
+      {
         status: BookingStatus.CANCELLED,
-        cancellationReason: reason 
+        cancellationReason: reason
       },
       { new: true }
     );
 
     if (!booking) {
       throw new NotFoundException('Booking not found');
+    }
+
+    // remove reservations tied to this booking so slots become available immediately
+    try {
+      await this.reservationModel.deleteMany({ bookingId: booking._id }).exec();
+    } catch (e) {
+      console.error('Failed to cleanup reservations for cancelled booking', e);
     }
 
     return booking;

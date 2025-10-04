@@ -31,70 +31,94 @@ class ApiClient {
   }
 
   async get<T = any>(endpoint: string, headers?: Record<string, string>): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: {
-        ...this.getAuthHeaders(),
-        ...(headers || {}),
-      },
-    });
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: {
+          ...this.getAuthHeaders(),
+          ...(headers || {}),
+        },
+      });
+      return this.handleResponse<T>(response);
+    } catch (err: any) {
+      throw new Error(err?.message || 'Network request failed');
+    }
   }
 
   async post<T = any>(endpoint: string, data?: any): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: data ? JSON.stringify(data) : undefined,
-    });
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      return this.handleResponse<T>(response);
+    } catch (err: any) {
+      throw new Error(err?.message || 'Network request failed');
+    }
   }
 
   async patch<T = any>(endpoint: string, data?: any): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'PATCH',
-      headers: this.getAuthHeaders(),
-      body: data ? JSON.stringify(data) : undefined,
-    });
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'PATCH',
+        headers: this.getAuthHeaders(),
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      return this.handleResponse<T>(response);
+    } catch (err: any) {
+      throw new Error(err?.message || 'Network request failed');
+    }
   }
 
   async put<T = any>(endpoint: string, data?: any): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'PUT',
-      headers: this.getAuthHeaders(),
-      body: data ? JSON.stringify(data) : undefined,
-    });
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      return this.handleResponse<T>(response);
+    } catch (err: any) {
+      throw new Error(err?.message || 'Network request failed');
+    }
   }
 
   async delete<T = any>(endpoint: string): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'DELETE',
-      headers: this.getAuthHeaders(),
-    });
-    return this.handleResponse<T>(response);
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders(),
+      });
+      return this.handleResponse<T>(response);
+    } catch (err: any) {
+      throw new Error(err?.message || 'Network request failed');
+    }
   }
 
   async uploadFile(endpoint: string, file: File, additionalData?: Record<string, string>): Promise<any> {
-    const token = localStorage.getItem('al-abraar-token');
-    const formData = new FormData();
-    formData.append('file', file);
+    try {
+      const token = localStorage.getItem('al-abraar-token');
+      const formData = new FormData();
+      formData.append('file', file);
 
-    if (additionalData) {
-      Object.entries(additionalData).forEach(([key, value]) => {
-        formData.append(key, value);
+      if (additionalData) {
+        Object.entries(additionalData).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+      }
+
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
       });
+
+      return this.handleResponse(response);
+    } catch (err: any) {
+      throw new Error(err?.message || 'Network request failed');
     }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: formData,
-    });
-
-    return this.handleResponse(response);
   }
 }
 
@@ -207,6 +231,17 @@ export const availabilityApi = {
 
   checkSlotAvailability: (ustaadhId: string, date: string, startTime: string, endTime: string) =>
     apiClient.get(`/availability/check?ustaadhId=${ustaadhId}&date=${date}&startTime=${startTime}&endTime=${endTime}`),
+
+  getReservations: (ustaadhId?: string, date?: string) => {
+    const params: string[] = [];
+    if (ustaadhId) params.push(`ustaadhId=${encodeURIComponent(ustaadhId)}`);
+    if (date) params.push(`date=${encodeURIComponent(date)}`);
+    const q = params.length ? `?${params.join('&')}` : '';
+    return apiClient.get(`/availability/admin/reservations${q}`);
+  },
+
+  deleteReservation: (id: string) =>
+    apiClient.delete(`/availability/admin/reservations/${id}`),
 };
 
 export const paymentsApi = {
@@ -322,9 +357,18 @@ export const analyticsApi = {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
     return apiClient.get(`/analytics/revenue${query}`);
   },
+  getRevenueAnalytics: (period?: string) => {
+    const q = period ? `?period=${encodeURIComponent(period)}` : '';
+    return apiClient.get(`/analytics/revenue${q}`);
+  },
   getUserGrowth: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
     return apiClient.get(`/analytics/growth${query}`);
+  },
+  getGrowthMetrics: () => apiClient.get('/analytics/growth'),
+  getTopUstaadhs: (limit?: number) => {
+    const q = limit ? `?limit=${limit}` : '';
+    return apiClient.get(`/analytics/top-ustaadhs${q}`);
   },
   getBookingTrends: (params?: Record<string, any>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
