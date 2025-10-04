@@ -10,6 +10,8 @@ export class AvailabilityService {
   constructor(
     @InjectModel(Availability.name) private availabilityModel: Model<Availability>,
     @InjectModel(Booking.name) private bookingModel: Model<Booking>,
+    // reservationModel may be optionally injected depending on module composition; attach dynamically below if present
+    @InjectModel('Reservation') private reservationModel?: Model<any>,
   ) {}
 
   async setUstaadhAvailability(ustaadhId: string, availabilityData: any[]): Promise<Availability[]> {
