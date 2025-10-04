@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Availability } from './schemas/availability.schema';
@@ -185,6 +186,25 @@ export class AvailabilityService {
     }
 
     return bookedSlots;
+  }
+
+  async listReservations(ustaadhId?: string, date?: string) {
+    if (!this.reservationModel) {
+      throw new NotFoundException('Reservation model not available');
+    }
+    const q: any = {};
+    if (ustaadhId) q.ustaadhId = new Types.ObjectId(ustaadhId);
+    if (date) q.date = date;
+    return this.reservationModel.find(q).sort({ reservedUntil: 1 }).exec();
+  }
+
+  async deleteReservation(reservationId: string) {
+    if (!this.reservationModel) {
+      throw new NotFoundException('Reservation model not available');
+    }
+    const res = await this.reservationModel.findByIdAndDelete(reservationId).exec();
+    if (!res) throw new NotFoundException('Reservation not found');
+    return res;
   }
 
   async updateAvailabilitySlot(
