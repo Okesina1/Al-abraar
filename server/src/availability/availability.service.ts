@@ -177,7 +177,7 @@ export class AvailabilityService {
     }
 
     // reservations without bookingId are active holds
-    const reservations = await (this as any).reservationModel?.find ? (this as any).reservationModel.find({ ustaadhId: new Types.ObjectId(ustaadhId), date }).exec() : [];
+    const reservations = this.reservationModel ? await this.reservationModel.find({ ustaadhId: new Types.ObjectId(ustaadhId), date }).exec() : [];
     for (const r of reservations || []) {
       if (r && r.startTime && r.endTime) {
         bookedSlots.push({ startTime: r.startTime, endTime: r.endTime, reserved: !!r.bookingId ? false : true });
