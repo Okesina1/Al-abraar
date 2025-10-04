@@ -36,6 +36,7 @@ import { AdminReportsPage } from "./pages/admin/AdminReportsPage";
 import { AdminPayrollPage } from "./pages/admin/AdminPayrollPage";
 import { AdminSettingsPage } from "./pages/admin/AdminSettingsPage";
 import { AdminTestimonialsPage } from "./pages/admin/AdminTestimonialsPage";
+import { AdminReservationsPage } from "./pages/admin/AdminReservationsPage";
 
 // Ustaadh Pages
 import { UstaadhDashboardPage } from "./pages/ustaadh/UstaadhDashboardPage";
