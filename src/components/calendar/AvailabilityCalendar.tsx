@@ -48,9 +48,9 @@ export const AvailabilityCalendar: React.FC = () => {
   type BookedSlot = { startTime: string; endTime: string; reserved?: boolean };
 
   const [dateSlots, setDateSlots] = useState<Record<string, DateSlot[]>>({});
-  const [bookedByDate, setBookedByDate] = useState<Record<string, BookedSlot[]>>(
-    {}
-  );
+  const [bookedByDate, setBookedByDate] = useState<
+    Record<string, BookedSlot[]>
+  >({});
 
   // Helper to compute next date for a given dayOfWeek relative to base (today)
   const getNextDateForDay = (dayOfWeek: number, baseDate?: Date) => {
@@ -65,10 +65,10 @@ export const AvailabilityCalendar: React.FC = () => {
   useEffect(() => {
     if (isEditing) return;
     let active = true;
-  let interval: ReturnType<typeof setInterval> | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
 
     const fetchForWeek = async () => {
-  const uId = user?.id || (user as unknown as { _id?: string })?._id;
+      const uId = user?.id || (user as unknown as { _id?: string })?._id;
       if (!uId) return;
 
       const newDateSlots: Record<
@@ -134,7 +134,7 @@ export const AvailabilityCalendar: React.FC = () => {
   ];
 
   const addTimeSlot = (dayOfWeek: number) => {
-  const uId = user?.id || (user as unknown as { _id?: string })?._id || "";
+    const uId = user?.id || (user as unknown as { _id?: string })?._id || "";
     const newSlot: UstaadhAvailability = {
       ustaadhId: uId,
       dayOfWeek,
@@ -204,7 +204,7 @@ export const AvailabilityCalendar: React.FC = () => {
   };
 
   const saveAvailability = async () => {
-  const uId = user?.id || (user as unknown as { _id?: string })?._id || "";
+    const uId = user?.id || (user as unknown as { _id?: string })?._id || "";
     if (!uId) {
       toast.error("Unable to save availability: missing user id");
       return;
@@ -289,7 +289,7 @@ export const AvailabilityCalendar: React.FC = () => {
           setAvailability(serverResult);
         }
         // refetch fresh data from backend to ensure UI reflects persisted state (secondary confirmation)
-  try {
+        try {
           const fresh = await getUstaadhAvailability(uId);
           console.debug("Availability fresh after save", fresh);
           setAvailability(fresh);
@@ -400,7 +400,9 @@ export const AvailabilityCalendar: React.FC = () => {
                         const endOk = isValidTimeFormat(slot.endTime);
                         let rangeOk = false;
                         if (startOk && endOk) {
-                          const [sh, sm] = slot.startTime.split(":").map(Number);
+                          const [sh, sm] = slot.startTime
+                            .split(":")
+                            .map(Number);
                           const [eh, em] = slot.endTime.split(":").map(Number);
                           const startM = sh * 60 + sm;
                           const endM = eh * 60 + em;
@@ -428,7 +430,9 @@ export const AvailabilityCalendar: React.FC = () => {
                                   }
                                   className={`text-xs p-1 rounded ${!isValidTimeFormat(slot.startTime) ? "border border-red-400" : "border border-gray-300"}`}
                                 />
-                                <span className="text-xs text-gray-500">to</span>
+                                <span className="text-xs text-gray-500">
+                                  to
+                                </span>
                                 <input
                                   type="time"
                                   value={slot.endTime}
@@ -443,10 +447,14 @@ export const AvailabilityCalendar: React.FC = () => {
                                 />
                               </div>
                               {!rangeOk && startOk && endOk && (
-                                <div className="text-xs text-red-600">Start must be before end</div>
+                                <div className="text-xs text-red-600">
+                                  Start must be before end
+                                </div>
                               )}
                               {(!startOk || !endOk) && (
-                                <div className="text-xs text-red-600">Invalid time format (use HH:MM)</div>
+                                <div className="text-xs text-red-600">
+                                  Invalid time format (use HH:MM)
+                                </div>
                               )}
                               <div className="flex items-center justify-between">
                                 <label className="flex items-center space-x-1">
@@ -462,7 +470,9 @@ export const AvailabilityCalendar: React.FC = () => {
                                     }
                                     className="text-green-600"
                                   />
-                                  <span className="text-xs text-gray-600">Available</span>
+                                  <span className="text-xs text-gray-600">
+                                    Available
+                                  </span>
                                 </label>
                                 <button
                                   onClick={() => confirmRemove(globalIndex)}
@@ -476,45 +486,45 @@ export const AvailabilityCalendar: React.FC = () => {
                         );
                       })
                     )
+                  ) : // viewing: show date-specific free slots (DateSlot[])
+                  dateFree.length === 0 ? (
+                    <div className="text-center text-gray-500 py-4">
+                      <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">Not Available</p>
+                    </div>
                   ) : (
-                    // viewing: show date-specific free slots (DateSlot[])
-                    dateFree.length === 0 ? (
-                      <div className="text-center text-gray-500 py-4">
-                        <Clock className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                        <p className="text-sm">Not Available</p>
-                      </div>
-                    ) : (
-                      dateFree.map((slot, index) => {
-                        // viewing branch: no need to find weekly index
+                    dateFree.map((slot, index) => {
+                      // viewing branch: no need to find weekly index
 
-                        const startOk = isValidTimeFormat(slot.startTime);
-                        const endOk = isValidTimeFormat(slot.endTime);
-                        let rangeOk = false;
-                        if (startOk && endOk) {
-                          const [sh, sm] = slot.startTime.split(":").map(Number);
-                          const [eh, em] = slot.endTime.split(":").map(Number);
-                          const startM = sh * 60 + sm;
-                          const endM = eh * 60 + em;
-                          rangeOk = startM < endM;
-                        }
+                      const startOk = isValidTimeFormat(slot.startTime);
+                      const endOk = isValidTimeFormat(slot.endTime);
+                      let rangeOk = false;
+                      if (startOk && endOk) {
+                        const [sh, sm] = slot.startTime.split(":").map(Number);
+                        const [eh, em] = slot.endTime.split(":").map(Number);
+                        const startM = sh * 60 + sm;
+                        const endM = eh * 60 + em;
+                        rangeOk = startM < endM;
+                      }
 
-                        const slotInvalid = !(startOk && endOk && rangeOk);
+                      const slotInvalid = !(startOk && endOk && rangeOk);
 
-                        return (
-                          <div
-                            key={index}
-                            className={`p-3 rounded-lg ${slotInvalid ? "bg-red-50 border border-red-300" : "bg-green-50 border border-green-200"}`}
-                          >
-                            <div className="text-center">
-                              <p className={`text-sm font-medium ${slotInvalid ? "text-red-800" : "text-green-800"}`}>
-                                {slot.startTime} - {slot.endTime}
-                              </p>
-                              <p className="text-xs text-green-600">Available</p>
-                            </div>
+                      return (
+                        <div
+                          key={index}
+                          className={`p-3 rounded-lg ${slotInvalid ? "bg-red-50 border border-red-300" : "bg-green-50 border border-green-200"}`}
+                        >
+                          <div className="text-center">
+                            <p
+                              className={`text-sm font-medium ${slotInvalid ? "text-red-800" : "text-green-800"}`}
+                            >
+                              {slot.startTime} - {slot.endTime}
+                            </p>
+                            <p className="text-xs text-green-600">Available</p>
                           </div>
-                        );
-                      })
-                    )
+                        </div>
+                      );
+                    })
                   )}
 
                   {/* show booked/reserved entries for the date when viewing */}

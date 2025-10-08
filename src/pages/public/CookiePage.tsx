@@ -98,66 +98,140 @@ export const CookiePage: React.FC = () => {
 };
 
 const COOKIE_CONTENT = {
-  enCommon: { lastUpdated: 'Last updated' },
-  arCommon: { lastUpdated: 'آخر تحديث' },
+  enCommon: { lastUpdated: "Last updated" },
+  arCommon: { lastUpdated: "آخر تحديث" },
   en: {
-    lastUpdated: 'Last updated',
-    title: 'Cookie Policy',
+    lastUpdated: "Last updated",
+    title: "Cookie Policy",
     sections: {
-      what: { title: '1. What Are Cookies?', p1: 'Cookies are small text files stored on your device when you visit a website. They help sites function properly, remember preferences, and understand how you interact with content.' },
+      what: {
+        title: "1. What Are Cookies?",
+        p1: "Cookies are small text files stored on your device when you visit a website. They help sites function properly, remember preferences, and understand how you interact with content.",
+      },
       ethics: {
-        title: 'Transparency with Taqwa (God‑Consciousness)',
-        p1: 'We aim to collect and utilize data in a manner aligned with God‑conscious accountability. Every digital interaction is treated as a trust, so we explain our use of cookies with clarity and honesty.',
-        q1: '“And do not pursue that of which you have no knowledge. Indeed, the hearing, the sight, and the heart—about all those [one] will be questioned.”',
+        title: "Transparency with Taqwa (God‑Consciousness)",
+        p1: "We aim to collect and utilize data in a manner aligned with God‑conscious accountability. Every digital interaction is treated as a trust, so we explain our use of cookies with clarity and honesty.",
+        q1: "“And do not pursue that of which you have no knowledge. Indeed, the hearing, the sight, and the heart—about all those [one] will be questioned.”",
         q1ref: "Qur'an 17:36",
-        q2: '“There should be neither harm nor reciprocating harm.”',
-        q2ref: 'Prophet Muhammad ﷺ, Sunan Ibn Majah 2341',
+        q2: "“There should be neither harm nor reciprocating harm.”",
+        q2ref: "Prophet Muhammad ﷺ, Sunan Ibn Majah 2341",
       },
       use: {
-        title: '2. How We Use Cookies',
+        title: "2. How We Use Cookies",
         items: [
-          { label: 'Essential Cookies:', text: 'required for core functionality (e.g., authentication, security).' },
-          { label: 'Performance Cookies:', text: 'analyze site usage to improve performance and features.' },
-          { label: 'Functionality Cookies:', text: 'remember preferences such as language or display settings.' },
-          { label: 'Analytics Cookies:', text: 'provide aggregated insights into traffic and user interactions.' },
-          { label: 'Advertising Cookies:', text: 'may deliver relevant ads (if applicable) and measure effectiveness.' },
+          {
+            label: "Essential Cookies:",
+            text: "required for core functionality (e.g., authentication, security).",
+          },
+          {
+            label: "Performance Cookies:",
+            text: "analyze site usage to improve performance and features.",
+          },
+          {
+            label: "Functionality Cookies:",
+            text: "remember preferences such as language or display settings.",
+          },
+          {
+            label: "Analytics Cookies:",
+            text: "provide aggregated insights into traffic and user interactions.",
+          },
+          {
+            label: "Advertising Cookies:",
+            text: "may deliver relevant ads (if applicable) and measure effectiveness.",
+          },
         ],
       },
-      third: { title: '3. Third‑Party Cookies', p1: 'We may allow trusted partners to set cookies for analytics, advertising, or other services. These third parties are responsible for their own cookie practices.' },
-      choices: { title: '4. Your Choices', items: [ 'Manage or delete cookies in your browser settings.', 'Opt out of certain analytics/advertising cookies via third‑party tools, where available.', 'Blocking some cookies may impact site functionality.' ] },
-      dnt: { title: '5. Do Not Track', p1: 'Some browsers offer a “Do Not Track” (DNT) setting. Currently, we do not respond to DNT signals. We will update this Policy if our practices change.' },
-      changes: { title: '6. Changes to this Policy', p1: 'We may update this Policy to reflect changes in technology, law, or our practices. Please review this page periodically. Continued use indicates acceptance of changes.' },
-      contact: { title: '7. Contact Us', p1: 'For questions about this Cookie Policy, contact us at privacy@al‑abraar.com.' },
+      third: {
+        title: "3. Third‑Party Cookies",
+        p1: "We may allow trusted partners to set cookies for analytics, advertising, or other services. These third parties are responsible for their own cookie practices.",
+      },
+      choices: {
+        title: "4. Your Choices",
+        items: [
+          "Manage or delete cookies in your browser settings.",
+          "Opt out of certain analytics/advertising cookies via third‑party tools, where available.",
+          "Blocking some cookies may impact site functionality.",
+        ],
+      },
+      dnt: {
+        title: "5. Do Not Track",
+        p1: "Some browsers offer a “Do Not Track” (DNT) setting. Currently, we do not respond to DNT signals. We will update this Policy if our practices change.",
+      },
+      changes: {
+        title: "6. Changes to this Policy",
+        p1: "We may update this Policy to reflect changes in technology, law, or our practices. Please review this page periodically. Continued use indicates acceptance of changes.",
+      },
+      contact: {
+        title: "7. Contact Us",
+        p1: "For questions about this Cookie Policy, contact us at alabraaracademy.ng@gmail.com.",
+      },
     },
   },
   ar: {
-    lastUpdated: 'آخر تحديث',
-    title: 'سياسة ملفات تعريف الارتباط',
+    lastUpdated: "آخر تحديث",
+    title: "سياسة ملفات تعريف الارتباط",
     sections: {
-      what: { title: '1. ما هي الكوكيز؟', p1: 'الكوكيز ملفات نصية صغيرة تُخزَّن على جهازك عند زيارة موقع. تساعد المواقع على العمل بشكل صحيح وتذكر التفضيلات وفهم تفاعلك مع المحتوى.' },
+      what: {
+        title: "1. ما هي الكوكيز؟",
+        p1: "الكوكيز ملفات نصية صغيرة تُخزَّن على جهازك عند زيارة موقع. تساعد المواقع على العمل بشكل صحيح وتذكر التفضيلات وفهم تفاعلك مع المحتوى.",
+      },
       ethics: {
-        title: 'الشفافية مع التقوى',
-        p1: 'نحرص على جمع البيانات واستخد��مها بما يوافق التقوى والمساءلة. كل تفاعل رقمي أمانة، لذا نشرح استعمالنا للكوكيز بوضوح وصدق.',
-        q1: '﴿وَلَا تَقْفُ مَا لَيْسَ لَكَ بِهِ عِلْمٌ إِنَّ السَّمْعَ وَالْبَصَرَ وَالْفُؤَادَ كُلُّ أُولَٰئِكَ كَانَ عَنْهُ مَسْئُولًا﴾',
-        q1ref: 'القرآن 17:36',
+        title: "الشفافية مع التقوى",
+        p1: "نحرص على جمع البيانات واستخد��مها بما يوافق التقوى والمساءلة. كل تفاعل رقمي أمانة، لذا نشرح استعمالنا للكوكيز بوضوح وصدق.",
+        q1: "﴿وَلَا تَقْفُ مَا لَيْسَ لَكَ بِهِ عِلْمٌ إِنَّ السَّمْعَ وَالْبَصَرَ وَالْفُؤَادَ كُلُّ أُولَٰئِكَ كَانَ عَنْهُ مَسْئُولًا﴾",
+        q1ref: "القرآن 17:36",
         q2: '"لا ضرر ولا ضرار"',
-        q2ref: 'النبي ﷺ، سنن ابن ماجه 2341',
+        q2ref: "النبي ﷺ، سنن ابن ماجه 2341",
       },
       use: {
-        title: '2. كيف نستخدم الكوكيز',
+        title: "2. كيف نستخدم الكوكيز",
         items: [
-          { label: 'كوكيز أساسية:', text: 'مطلوبة لوظائف أساسية (مثل التوثيق والأمان).' },
-          { label: 'كوكيز الأداء:', text: 'لتحليل استخدام الموقع وتحسين الأداء والميزات.' },
-          { label: 'كوكيز الوظائف:', text: 'لتذكر التفضيلات مثل اللغة أو إعدادات العرض.' },
-          { label: 'كوكيز التحليلات:', text: 'لتقديم رؤى مجمعة حول الزيارات وتفاعلات المستخدم.' },
-          { label: 'كوكيز الإعلانات:', text: 'قد تُستخدم لتقديم إ��لانات مناسبة (إن وُجدت) وقياس فعاليتها.' },
+          {
+            label: "كوكيز أساسية:",
+            text: "مطلوبة لوظائف أساسية (مثل التوثيق والأمان).",
+          },
+          {
+            label: "كوكيز الأداء:",
+            text: "لتحليل استخدام الموقع وتحسين الأداء والميزات.",
+          },
+          {
+            label: "كوكيز الوظائف:",
+            text: "لتذكر التفضيلات مثل اللغة أو إعدادات العرض.",
+          },
+          {
+            label: "كوكيز التحليلات:",
+            text: "لتقديم رؤى مجمعة حول الزيارات وتفاعلات المستخدم.",
+          },
+          {
+            label: "كوكيز الإعلانات:",
+            text: "قد تُستخدم لتقديم إ��لانات مناسبة (إن وُجدت) وقياس فعاليتها.",
+          },
         ],
       },
-      third: { title: '3. كوكيز الطرف الثالث', p1: 'قد نسمح لشركاء موثوقين بوضع كوكيز لأغراض التحليلات أو الإعلانات أو خدمات أخرى. يتحمل هؤلاء الأطراف مسؤولية ممارساتهم بشأن الكوكيز.' },
-      choices: { title: '4. خياراتك', items: [ 'إدارة أو حذف الكوكيز من إعدادات المتصفح.', 'إلغاء بعض كوكيز التحليلات/الإعلانات عبر أدوات طرف ثالث حيثما أمكن.', 'قد يؤثر حظر بعض الكوكيز على وظائف الموقع.' ] },
-      dnt: { title: '5. عدم التتبع', p1: 'توفّر بعض المتصفحات إعداد "عدم التتبع" (DNT). حاليًا لا نستجيب لإشارات DNT. سنحدّث هذه السياسة إذا تغيّرت ممارساتنا.' },
-      changes: { title: '6. تغييرات على هذه السياسة', p1: 'قد نحدّث هذه السياسة لتواكب التقنية أو القانون أو ممارساتنا. يُرجى مراجعة هذه الصفحة دوريًا. استمرارك في الاستخدام يعني قبولك أي تغييرات.' },
-      contact: { title: '7. تواصل معنا', p1: 'للاستفسارات حول سياسة الكوكيز: privacy@al‑abraar.com.' },
+      third: {
+        title: "3. كوكيز الطرف الثالث",
+        p1: "قد نسمح لشركاء موثوقين بوضع كوكيز لأغراض التحليلات أو الإعلانات أو خدمات أخرى. يتحمل هؤلاء الأطراف مسؤولية ممارساتهم بشأن الكوكيز.",
+      },
+      choices: {
+        title: "4. خياراتك",
+        items: [
+          "إدارة أو حذف الكوكيز من إعدادات المتصفح.",
+          "إلغاء بعض كوكيز التحليلات/الإعلانات عبر أدوات طرف ثالث حيثما أمكن.",
+          "قد يؤثر حظر بعض الكوكيز على وظائف الموقع.",
+        ],
+      },
+      dnt: {
+        title: "5. عدم التتبع",
+        p1: 'توفّر بعض المتصفحات إعداد "عدم التتبع" (DNT). حاليًا لا نستجيب لإشارات DNT. سنحدّث هذه السياسة إذا تغيّرت ممارساتنا.',
+      },
+      changes: {
+        title: "6. تغييرات على هذه السياسة",
+        p1: "قد نحدّث هذه السياسة لتواكب التقنية أو القانون أو ممارساتنا. يُرجى مراجعة هذه الصفحة دوريًا. استمرارك في الاستخدام يعني قبولك أي تغييرات.",
+      },
+      contact: {
+        title: "7. تواصل معنا",
+        p1: "للاستفسارات حول سياسة الكوكيز: alabraaracademy.ng@gmail.com.",
+      },
     },
   },
 } as const;

@@ -127,7 +127,7 @@ const strings = {
   footer_rights: { en: 'All rights reserved.', ar: 'جميع الحقوق محفوظة.' },
 
   /* Landing v2 - Hero */
-  hero_trust_badge: { en: 'Trusted by 10,000+ students worldwide', ar: 'موثوق من قِبل أكثر من 10,000 طالب حول العالم' },
+  hero_trust_badge: { en: 'Trusted by 1,000+ students worldwide', ar: 'موثوق من قِبل أكثر من 1,000 طالب حول العالم' },
   hero_title_prefix: { en: 'Learn the', ar: 'تعلّم' },
   hero_title_highlight_v2: { en: "Qur'an & Arabic", ar: 'القرآن واللغة العربية' },
   hero_title_suffix: { en: 'with Expert Teachers', ar: 'مع معلمين خبراء' },

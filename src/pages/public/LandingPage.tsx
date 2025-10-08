@@ -460,9 +460,9 @@ export const LandingPage: React.FC = () => {
                 </div>
                 <div className="col-span-3 row-span-1 relative">
                   <img
-                    src="https://images.pexels.com/photos/4491461/pexels-photo-4491461.jpeg"
-                    alt="A professional woman engaged in a virtual meeting setup at her home desk, using a computer and camera."
-                    className="w-full h-28 sm:h-32 lg:h-full object-cover rounded-2xl shadow-xl"
+                    src="https://www.tarteelequran.com/wp-content/uploads/2023/08/tarteelequran-home-image.webp"
+                    alt="A professional Kid engaged in a virtual meeting setup at her home desk, using a computer and camera."
+                    className="w-full h-72 object-cover rounded-2xl shadow-xl"
                   />
                 </div>
               </div>

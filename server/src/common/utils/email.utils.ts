@@ -42,7 +42,7 @@ export class EmailUtils {
             </div>
             <div class="footer">
               <p>© ${new Date().getFullYear()} Al-Abraar Online Modrasah. All rights reserved.</p>
-              <p>If you have any questions, contact us at support@al-abraar.com</p>
+              <p>If you have any questions, contact us at alabraaracademy.ng@gmail.com</p>
             </div>
           </div>
         </body>
