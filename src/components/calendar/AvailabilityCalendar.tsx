@@ -296,7 +296,35 @@ export const AvailabilityCalendar: React.FC = () => {
         } catch {
           // ignore; booking context already logged
         }
+
+        // Exit editing mode AFTER updating availability state
         setIsEditing(false);
+
+        // Force immediate refresh of date-specific slots for viewing mode
+        const newDateSlots: Record<string, Array<{ startTime: string; endTime: string }>> = {};
+        const newBooked: Record<string, Array<{ startTime: string; endTime: string; reserved?: boolean }>> = {};
+
+        for (const d of daysOfWeek) {
+          try {
+            const date = getNextDateForDay(d.id);
+            const slots = await availabilityApi.getAvailableTimeSlots(uId, date);
+            newDateSlots[date] = slots || [];
+            try {
+              const b = await (await import("../../utils/api")).apiClient.get(
+                `/availability/booked?ustaadhId=${uId}&date=${date}`
+              );
+              newBooked[date] = b || [];
+            } catch {
+              newBooked[date] = [];
+            }
+          } catch (e) {
+            console.error("Failed to fetch date slots after save", e);
+          }
+        }
+
+        setDateSlots(newDateSlots);
+        setBookedByDate(newBooked);
+
         toast.success("Availability saved");
       } catch (err) {
         console.error("Failed to save availability:", err);
