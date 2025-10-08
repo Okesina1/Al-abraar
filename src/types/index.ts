@@ -10,6 +10,7 @@ export interface User {
   isApproved?: boolean;
   createdAt: string;
   avatar?: string;
+  cvUrl?: string;
   bio?: string;
   experience?: string;
   specialties?: string[];

@@ -1,33 +1,48 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Availability } from './schemas/availability.schema';
-import { DateUtils } from '../common/utils/date.utils';
-import { Booking, BookingStatus } from '../bookings/schemas/booking.schema';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, Types } from "mongoose";
+import { Availability } from "./schemas/availability.schema";
+import { DateUtils } from "../common/utils/date.utils";
+import { Booking, BookingStatus } from "../bookings/schemas/booking.schema";
 
 @Injectable()
 export class AvailabilityService {
   constructor(
-    @InjectModel(Availability.name) private availabilityModel: Model<Availability>,
+    @InjectModel(Availability.name)
+    private availabilityModel: Model<Availability>,
     @InjectModel(Booking.name) private bookingModel: Model<Booking>,
     // reservationModel may be optionally injected depending on module composition; attach dynamically below if present
-    @InjectModel('Reservation') private reservationModel?: Model<any>,
+    @InjectModel("Reservation") private reservationModel?: Model<any>
   ) {}
 
-  async setUstaadhAvailability(ustaadhId: string, availabilityData: any[]): Promise<Availability[]> {
+  async setUstaadhAvailability(
+    ustaadhId: string,
+    availabilityData: any[]
+  ): Promise<Availability[]> {
     // Validate availability data
     for (const slot of availabilityData) {
-      if (!DateUtils.isValidTimeFormat(slot.startTime) || !DateUtils.isValidTimeFormat(slot.endTime)) {
-        throw new BadRequestException('Invalid time format. Use HH:MM format.');
+      if (
+        !DateUtils.isValidTimeFormat(slot.startTime) ||
+        !DateUtils.isValidTimeFormat(slot.endTime)
+      ) {
+        throw new BadRequestException("Invalid time format. Use HH:MM format.");
       }
 
-      if (DateUtils.timeToMinutes(slot.endTime) <= DateUtils.timeToMinutes(slot.startTime)) {
-        throw new BadRequestException('End time must be after start time.');
+      if (
+        DateUtils.timeToMinutes(slot.endTime) <=
+        DateUtils.timeToMinutes(slot.startTime)
+      ) {
+        throw new BadRequestException("End time must be after start time.");
       }
 
       if (slot.dayOfWeek < 0 || slot.dayOfWeek > 6) {
-        throw new BadRequestException('Day of week must be between 0 (Sunday) and 6 (Saturday).');
+        throw new BadRequestException(
+          "Day of week must be between 0 (Sunday) and 6 (Saturday)."
+        );
       }
     }
 
@@ -35,7 +50,7 @@ export class AvailabilityService {
     await this.availabilityModel.deleteMany({ ustaadhId });
 
     // Create new availability slots
-    const availabilitySlots = availabilityData.map(slot => ({
+    const availabilitySlots = availabilityData.map((slot) => ({
       ustaadhId: new Types.ObjectId(ustaadhId),
       dayOfWeek: slot.dayOfWeek,
       startTime: slot.startTime,
@@ -70,23 +85,29 @@ export class AvailabilityService {
     return !!availability;
   }
 
-  async getAvailableTimeSlots(ustaadhId: string, date: string): Promise<Array<{ startTime: string; endTime: string }>> {
-    if (!ustaadhId) throw new BadRequestException('Missing ustaadhId');
-    if (!date) throw new BadRequestException('Missing date');
+  async getAvailableTimeSlots(
+    ustaadhId: string,
+    date: string
+  ): Promise<Array<{ startTime: string; endTime: string }>> {
+    if (!ustaadhId) throw new BadRequestException("Missing ustaadhId");
+    if (!date) throw new BadRequestException("Missing date");
 
     const dayOfWeek = new Date(date).getDay();
     const availability = await this.getUstaadhAvailability(ustaadhId);
 
     const dayAvailability = availability
       .filter((slot) => slot.dayOfWeek === dayOfWeek && slot.isAvailable)
-      .map((s) => ({ start: DateUtils.timeToMinutes(s.startTime), end: DateUtils.timeToMinutes(s.endTime) }))
+      .map((s) => ({
+        start: DateUtils.timeToMinutes(s.startTime),
+        end: DateUtils.timeToMinutes(s.endTime),
+      }))
       .sort((a, b) => a.start - b.start);
 
     const existingBookings = await this.bookingModel
       .find({
         ustaadhId: new Types.ObjectId(ustaadhId),
         status: { $in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
-        'schedule.date': date,
+        "schedule.date": date,
       })
       .exec();
 
@@ -94,8 +115,16 @@ export class AvailabilityService {
     for (const b of existingBookings) {
       const sch = (b as any).schedule || [];
       for (const s of sch) {
-        if (s && s.date === date && DateUtils.isValidTimeFormat(s.startTime) && DateUtils.isValidTimeFormat(s.endTime)) {
-          booked.push({ start: DateUtils.timeToMinutes(s.startTime), end: DateUtils.timeToMinutes(s.endTime) });
+        if (
+          s &&
+          s.date === date &&
+          DateUtils.isValidTimeFormat(s.startTime) &&
+          DateUtils.isValidTimeFormat(s.endTime)
+        ) {
+          booked.push({
+            start: DateUtils.timeToMinutes(s.startTime),
+            end: DateUtils.timeToMinutes(s.endTime),
+          });
         }
       }
     }
@@ -109,17 +138,27 @@ export class AvailabilityService {
         if (b.end <= cursor) continue;
         if (b.start >= avail.end) break;
         if (b.start > cursor) {
-          result.push({ startTime: DateUtils.minutesToTime(cursor), endTime: DateUtils.minutesToTime(Math.min(b.start, avail.end)) });
+          result.push({
+            startTime: DateUtils.minutesToTime(cursor),
+            endTime: DateUtils.minutesToTime(Math.min(b.start, avail.end)),
+          });
         }
         cursor = Math.max(cursor, Math.min(b.end, avail.end));
         if (cursor >= avail.end) break;
       }
       if (cursor < avail.end) {
-        result.push({ startTime: DateUtils.minutesToTime(cursor), endTime: DateUtils.minutesToTime(avail.end) });
+        result.push({
+          startTime: DateUtils.minutesToTime(cursor),
+          endTime: DateUtils.minutesToTime(avail.end),
+        });
       }
     }
 
-    result.sort((a, b) => DateUtils.timeToMinutes(a.startTime) - DateUtils.timeToMinutes(b.startTime));
+    result.sort(
+      (a, b) =>
+        DateUtils.timeToMinutes(a.startTime) -
+        DateUtils.timeToMinutes(b.startTime)
+    );
     const merged: Array<{ startTime: string; endTime: string }> = [];
     for (const seg of result) {
       if (merged.length === 0) {
@@ -127,7 +166,10 @@ export class AvailabilityService {
         continue;
       }
       const last = merged[merged.length - 1];
-      if (DateUtils.timeToMinutes(last.endTime) === DateUtils.timeToMinutes(seg.startTime)) {
+      if (
+        DateUtils.timeToMinutes(last.endTime) ===
+        DateUtils.timeToMinutes(seg.startTime)
+      ) {
         last.endTime = seg.endTime;
       } else {
         merged.push(seg);
@@ -143,45 +185,75 @@ export class AvailabilityService {
     startTime: string,
     endTime: string
   ): Promise<boolean> {
-    if (!DateUtils.isValidTimeFormat(startTime) || !DateUtils.isValidTimeFormat(endTime)) {
-      throw new BadRequestException('Invalid time format. Use HH:MM');
+    if (
+      !DateUtils.isValidTimeFormat(startTime) ||
+      !DateUtils.isValidTimeFormat(endTime)
+    ) {
+      throw new BadRequestException("Invalid time format. Use HH:MM");
     }
-    if (DateUtils.timeToMinutes(endTime) <= DateUtils.timeToMinutes(startTime)) {
-      throw new BadRequestException('End time must be after start time');
+    if (
+      DateUtils.timeToMinutes(endTime) <= DateUtils.timeToMinutes(startTime)
+    ) {
+      throw new BadRequestException("End time must be after start time");
     }
 
     const slots = await this.getAvailableTimeSlots(ustaadhId, date);
     const s = DateUtils.timeToMinutes(startTime);
     const e = DateUtils.timeToMinutes(endTime);
-    return slots.some((seg) => s >= DateUtils.timeToMinutes(seg.startTime) && e <= DateUtils.timeToMinutes(seg.endTime));
+    return slots.some(
+      (seg) =>
+        s >= DateUtils.timeToMinutes(seg.startTime) &&
+        e <= DateUtils.timeToMinutes(seg.endTime)
+    );
   }
 
-  async getBookedSlots(ustaadhId: string, date: string): Promise<Array<{ startTime: string; endTime: string; reserved: boolean }>> {
-    if (!ustaadhId) throw new BadRequestException('Missing ustaadhId');
-    if (!date) throw new BadRequestException('Missing date');
+  async getBookedSlots(
+    ustaadhId: string,
+    date: string
+  ): Promise<Array<{ startTime: string; endTime: string; reserved: boolean }>> {
+    if (!ustaadhId) throw new BadRequestException("Missing ustaadhId");
+    if (!date) throw new BadRequestException("Missing date");
 
     // booked slots from bookings (pending/confirmed)
-    const existingBookings = await this.bookingModel.find({
-      ustaadhId: new Types.ObjectId(ustaadhId),
-      status: { $in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
-      'schedule.date': date,
-    }).exec();
+    const existingBookings = await this.bookingModel
+      .find({
+        ustaadhId: new Types.ObjectId(ustaadhId),
+        status: { $in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
+        "schedule.date": date,
+      })
+      .exec();
 
-    const bookedSlots: Array<{ startTime: string; endTime: string; reserved: boolean }> = [];
+    const bookedSlots: Array<{
+      startTime: string;
+      endTime: string;
+      reserved: boolean;
+    }> = [];
     for (const b of existingBookings) {
       if (!Array.isArray((b as any).schedule)) continue;
       for (const s of (b as any).schedule) {
         if (s && s.date === date) {
-          bookedSlots.push({ startTime: s.startTime, endTime: s.endTime, reserved: false });
+          bookedSlots.push({
+            startTime: s.startTime,
+            endTime: s.endTime,
+            reserved: false,
+          });
         }
       }
     }
 
     // reservations without bookingId are active holds
-    const reservations = this.reservationModel ? await this.reservationModel.find({ ustaadhId: new Types.ObjectId(ustaadhId), date }).exec() : [];
+    const reservations = this.reservationModel
+      ? await this.reservationModel
+          .find({ ustaadhId: new Types.ObjectId(ustaadhId), date })
+          .exec()
+      : [];
     for (const r of reservations || []) {
       if (r && r.startTime && r.endTime) {
-        bookedSlots.push({ startTime: r.startTime, endTime: r.endTime, reserved: !!r.bookingId ? false : true });
+        bookedSlots.push({
+          startTime: r.startTime,
+          endTime: r.endTime,
+          reserved: !!r.bookingId ? false : true,
+        });
       }
     }
 
@@ -190,7 +262,7 @@ export class AvailabilityService {
 
   async listReservations(ustaadhId?: string, date?: string) {
     if (!this.reservationModel) {
-      throw new NotFoundException('Reservation model not available');
+      throw new NotFoundException("Reservation model not available");
     }
     const q: any = {};
     if (ustaadhId) q.ustaadhId = new Types.ObjectId(ustaadhId);
@@ -200,10 +272,12 @@ export class AvailabilityService {
 
   async deleteReservation(reservationId: string) {
     if (!this.reservationModel) {
-      throw new NotFoundException('Reservation model not available');
+      throw new NotFoundException("Reservation model not available");
     }
-    const res = await this.reservationModel.findByIdAndDelete(reservationId).exec();
-    if (!res) throw new NotFoundException('Reservation not found');
+    const res = await this.reservationModel
+      .findByIdAndDelete(reservationId)
+      .exec();
+    if (!res) throw new NotFoundException("Reservation not found");
     return res;
   }
 
@@ -219,20 +293,23 @@ export class AvailabilityService {
     );
 
     if (!slot) {
-      throw new NotFoundException('Availability slot not found');
+      throw new NotFoundException("Availability slot not found");
     }
 
     return slot;
   }
 
-  async deleteAvailabilitySlot(ustaadhId: string, slotId: string): Promise<void> {
+  async deleteAvailabilitySlot(
+    ustaadhId: string,
+    slotId: string
+  ): Promise<void> {
     const result = await this.availabilityModel.findOneAndDelete({
       _id: slotId,
-      ustaadhId
+      ustaadhId,
     });
 
     if (!result) {
-      throw new NotFoundException('Availability slot not found');
+      throw new NotFoundException("Availability slot not found");
     }
   }
 }

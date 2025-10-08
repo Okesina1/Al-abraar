@@ -5,7 +5,6 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useNotifications } from "../../contexts/NotificationsContext";
 import { NotificationCenter } from "../notifications/NotificationCenter";
 import {
-  BookOpen,
   LogOut,
   Bell,
   User,
@@ -128,8 +127,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-green-700 rounded-lg flex items-center justify-center">
-              <BookOpen className="h-5 w-5 text-white" />
+            <div className="w-12 h-10 rounded-lg flex items-center justify-center">
+              <img
+                src="/images/al-abraar-bg.png"
+                alt="Al-Abraar Logo"
+                className="w-12 h-10 rounded-lg object-cover"
+              />
             </div>
             <span className="text-xl font-bold text-gray-800">Al-Abraar</span>
           </Link>

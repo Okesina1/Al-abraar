@@ -11,30 +11,43 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { fetchCountries, fetchStates } from "../../utils/locations";
+import type { User as AppUser } from "../../types";
+
+// Form shape used on this page
+type ProfileForm = {
+  fullName: string;
+  phoneNumber: string;
+  country: string;
+  city: string;
+  age: string | number;
+  bio: string;
+  experience: string;
+  specialties: string[];
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  profileVisibility: boolean;
+};
+
+// cvUrl is now part of AppUser (see src/types)
 
 export const ProfilePage: React.FC = () => {
   const { user, updateUser } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const SPECIALTIES_OPTIONS = [
-    "Tajweed",
-    "Arabic",
-    "Quran",
-    "Hadeeth",
-  ];
+  const SPECIALTIES_OPTIONS = ["Tajweed", "Arabic", "Quran", "Hadeeth"];
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingCv, setUploadingCv] = useState(false);
   const [uploadingCvProgress, setUploadingCvProgress] = useState(0);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileForm>({
     fullName: user?.fullName || "",
     phoneNumber: user?.phoneNumber || "",
     country: user?.country || "",
     city: user?.city || "",
     age: user?.age || "",
     bio: user?.bio || "",
-    experience: (user as any)?.experience || "",
-    specialties: (user as any)?.specialties || [],
+    experience: (user as unknown as AppUser)?.experience || "",
+    specialties: (user as unknown as AppUser)?.specialties || [],
     emailNotifications: user?.emailNotifications ?? true,
     smsNotifications: user?.smsNotifications ?? false,
     profileVisibility: user?.profileVisibility ?? true,
@@ -42,18 +55,19 @@ export const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (user) {
+      const u = user as unknown as AppUser;
       setFormData({
-        fullName: user.fullName || "",
-        phoneNumber: user.phoneNumber || "",
-        country: user.country || "",
-        city: user.city || "",
-        age: user.age || "",
-        bio: user.bio || "",
-        experience: (user as any).experience || "",
-        specialties: (user as any).specialties || [],
-        emailNotifications: user.emailNotifications ?? true,
-        smsNotifications: user.smsNotifications ?? false,
-        profileVisibility: user.profileVisibility ?? true,
+        fullName: u.fullName || "",
+        phoneNumber: u.phoneNumber || "",
+        country: u.country || "",
+        city: u.city || "",
+        age: u.age || "",
+        bio: u.bio || "",
+        experience: u.experience || "",
+        specialties: u.specialties || [],
+        emailNotifications: u.emailNotifications ?? true,
+        smsNotifications: u.smsNotifications ?? false,
+        profileVisibility: u.profileVisibility ?? true,
       });
     }
   }, [user]);
@@ -208,10 +222,10 @@ export const ProfilePage: React.FC = () => {
       }
 
       await updateUser({
-        ...formData,
+        ...(formData as unknown as Partial<AppUser>),
         age: ageData,
         specialties: specialtiesArray,
-      } as any);
+      } as Partial<AppUser>);
       setIsEditing(false);
     } catch (err: unknown) {
       setError((err as Error).message || "Failed to update profile");
@@ -306,9 +320,9 @@ export const ProfilePage: React.FC = () => {
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api"}/uploads`;
-        xhr.open('POST', url);
-        const token = localStorage.getItem('al-abraar-token');
-        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.open("POST", url);
+        const token = localStorage.getItem("al-abraar-token");
+        if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
         xhr.upload.onprogress = (ev) => {
           if (ev.lengthComputable) {
@@ -322,35 +336,50 @@ export const ProfilePage: React.FC = () => {
             try {
               const res = JSON.parse(xhr.responseText);
               const cvUrl = res?.url;
-              if (!cvUrl) return reject(new Error('Upload returned no URL'));
-              // Persist cvUrl (cast to any because User type doesn't include cvUrl in TS defs)
-              await updateUser({ cvUrl } as any);
+              if (!cvUrl) return reject(new Error("Upload returned no URL"));
+              // Persist cvUrl: declare as Partial<AppUser> so no explicit any is needed
+              await updateUser({ cvUrl } as Partial<AppUser>);
               resolve(undefined);
-            } catch (e) {
-              reject(e);
+            } catch (err) {
+              reject(err);
             }
           } else {
             // Try to parse error from server
             try {
               const err = JSON.parse(xhr.responseText);
-              reject(new Error(err?.message || `Upload failed with status ${xhr.status}`));
-            } catch (e) {
-              reject(new Error(`Upload failed with status ${xhr.status}`));
+              reject(
+                new Error(
+                  err?.message || `Upload failed with status ${xhr.status}`
+                )
+              );
+            } catch (parseErr: unknown) {
+              const parsedMessage =
+                typeof parseErr === "object" &&
+                parseErr !== null &&
+                "message" in parseErr
+                  ? (parseErr as { message?: string }).message
+                  : undefined;
+              reject(
+                new Error(
+                  parsedMessage || `Upload failed with status ${xhr.status}`
+                )
+              );
             }
           }
         };
 
-        xhr.onerror = () => reject(new Error('Network error during file upload'));
+        xhr.onerror = () =>
+          reject(new Error("Network error during file upload"));
 
         const fd = new FormData();
-        fd.append('file', file);
-        fd.append('folder', 'cvs');
-        fd.append('resourceType', 'auto');
+        fd.append("file", file);
+        fd.append("folder", "cvs");
+        fd.append("resourceType", "auto");
 
         xhr.send(fd);
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload CV');
+      setError(err instanceof Error ? err.message : "Failed to upload CV");
     } finally {
       setUploadingCv(false);
       setUploadingCvProgress(0);
@@ -359,18 +388,19 @@ export const ProfilePage: React.FC = () => {
 
   const handleCancel = () => {
     setError("");
+    const u = user as unknown as AppUser;
     setFormData({
-      fullName: user?.fullName || "",
-      phoneNumber: user?.phoneNumber || "",
-      country: user?.country || "",
-      city: user?.city || "",
-      age: user?.age || "",
-      bio: user?.bio || "",
-      experience: (user as any)?.experience || "",
-      specialties: (user as any)?.specialties || [],
-      emailNotifications: user?.emailNotifications ?? true,
-      smsNotifications: user?.smsNotifications ?? false,
-      profileVisibility: user?.profileVisibility ?? true,
+      fullName: u.fullName || "",
+      phoneNumber: u.phoneNumber || "",
+      country: u.country || "",
+      city: u.city || "",
+      age: u.age || "",
+      bio: u.bio || "",
+      experience: u.experience || "",
+      specialties: u.specialties || [],
+      emailNotifications: u.emailNotifications ?? true,
+      smsNotifications: u.smsNotifications ?? false,
+      profileVisibility: u.profileVisibility ?? true,
     });
     setDobDay("");
     setDobMonth("");
@@ -450,41 +480,55 @@ export const ProfilePage: React.FC = () => {
               </>
             )}
           </div>
-          <div className="ml-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">CV</label>
-            {(user as any).cvUrl ? (<>
-              <div className="flex items-center space-x-3">
-                <a
-                  href={(user as any).cvUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm text-green-600 underline"
-                >
-                  View uploaded CV
-                </a>
-                {isEditing && (
-                  <>
-                    <input
-                      type="file"
-                      accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                      onChange={handleCvChange}
-                      className="hidden"
-                      id="cv-input"
-                    />
-                    <label htmlFor="cv-input" className="text-sm px-3 py-1 bg-green-600 text-white rounded cursor-pointer">{uploadingCv ? 'Uploading...' : 'Replace CV'}</label>
-                  </>
-                )}
-              </div>
-              {uploadingCv && (
-                <div className="mt-2">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{ width: `${uploadingCvProgress}%` }} />
+          {user.role !== "student" && (
+            <div className="ml-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                CV
+              </label>
+              {(user as unknown as AppUser).cvUrl ? (
+                <>
+                  <div className="flex items-center space-x-3">
+                    <a
+                      href={(user as unknown as AppUser).cvUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm text-green-600 underline"
+                    >
+                      View uploaded CV
+                    </a>
+                    {isEditing && (
+                      <>
+                        <input
+                          type="file"
+                          accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          onChange={handleCvChange}
+                          className="hidden"
+                          id="cv-input"
+                        />
+                        <label
+                          htmlFor="cv-input"
+                          className="text-sm px-3 py-1 bg-green-600 text-white rounded cursor-pointer"
+                        >
+                          {uploadingCv ? "Uploading..." : "Replace CV"}
+                        </label>
+                      </>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">Uploading CV... {uploadingCvProgress}%</p>
-                </div>
-              )}
-            </>) : (
-              isEditing ? (
+                  {uploadingCv && (
+                    <div className="mt-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-green-600 h-2 rounded-full"
+                          style={{ width: `${uploadingCvProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Uploading CV... {uploadingCvProgress}%
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : isEditing ? (
                 <>
                   <input
                     type="file"
@@ -493,13 +537,18 @@ export const ProfilePage: React.FC = () => {
                     className="hidden"
                     id="cv-input2"
                   />
-                  <label htmlFor="cv-input2" className="text-sm px-3 py-1 bg-green-600 text-white rounded cursor-pointer">{uploadingCv ? 'Uploading...' : 'Upload CV'}</label>
+                  <label
+                    htmlFor="cv-input2"
+                    className="text-sm px-3 py-1 bg-green-600 text-white rounded cursor-pointer"
+                  >
+                    {uploadingCv ? "Uploading..." : "Upload CV"}
+                  </label>
                 </>
               ) : (
                 <p className="text-sm text-gray-600">No CV uploaded</p>
-              )
-            )}
-          </div>
+              )}
+            </div>
+          )}
           <div className="text-center sm:text-left">
             <h2 className="text-2xl font-bold text-gray-800">
               {user.fullName}
@@ -745,18 +794,20 @@ export const ProfilePage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Experience
               </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="experience"
-                    value={(formData as any).experience}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="Describe your teaching experience"
-                  />
-                ) : (
-                  <p className="text-gray-800 py-3">{user.experience || "Not provided"}</p>
-                )}
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="experience"
+                  value={formData.experience}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Describe your teaching experience"
+                />
+              ) : (
+                <p className="text-gray-800 py-3">
+                  {user.experience || "Not provided"}
+                </p>
+              )}
             </div>
 
             <div>
@@ -795,9 +846,12 @@ export const ProfilePage: React.FC = () => {
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {SPECIALTIES_OPTIONS.map((opt) => {
-                  const checked = (formData as any).specialties.includes(opt);
+                  const checked = formData.specialties.includes(opt);
                   return (
-                    <label key={opt} className="inline-flex items-center space-x-2">
+                    <label
+                      key={opt}
+                      className="inline-flex items-center space-x-2"
+                    >
                       <input
                         type="checkbox"
                         name="specialties"
@@ -805,8 +859,10 @@ export const ProfilePage: React.FC = () => {
                         checked={checked}
                         onChange={() => {
                           // toggle with enforcement: allow up to 4 selections
-                          const current: string[] = Array.isArray((formData as any).specialties)
-                            ? (formData as any).specialties
+                          const current: string[] = Array.isArray(
+                            formData.specialties
+                          )
+                            ? formData.specialties
                             : [];
                           if (checked) {
                             // remove
@@ -828,7 +884,9 @@ export const ProfilePage: React.FC = () => {
                   );
                 })}
               </div>
-              <p className="text-sm text-gray-500 mt-2">{(formData as any).specialties.length} selected (1-4)</p>
+              <p className="text-sm text-gray-500 mt-2">
+                {formData.specialties.length} selected (1-4)
+              </p>
             </div>
           )}
         </div>
