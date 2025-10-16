@@ -30,11 +30,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
   useEffect(() => {
     // when startDate or selectedDays change, prefetch available slots for those dates
     const fetchForSelected = async () => {
+      console.log('[BookingModal] Fetching available slots for selected days');
       const days = bookingData.selectedDays.filter(d => d !== undefined && d !== null);
       for (const d of days) {
         try {
           const date = getNextDateForDay(d, bookingData.startDate);
+          console.log(`[BookingModal] Fetching slots for day ${d}, date ${date}`);
           const slots = await availabilityApi.getAvailableTimeSlots(ustaadh.id, date);
+          console.log(`[BookingModal] Received slots for ${date}:`, slots);
           setAvailableSlotsByDate(prev => ({ ...prev, [date]: slots || [] }));
         } catch (err) {
           console.error('Failed to fetch available slots for date', err);
@@ -54,12 +57,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
     let active = true;
     const intervalMs = 10000;
     const fetchForSelected = async () => {
+      console.log('[BookingModal] Polling available slots...');
       const days = bookingData.selectedDays.filter(d => d !== undefined && d !== null);
       for (const d of days) {
         try {
           const date = getNextDateForDay(d, bookingData.startDate);
           const slots = await availabilityApi.getAvailableTimeSlots(ustaadh.id, date);
           if (!active) return;
+          console.log(`[BookingModal] Polling update for ${date}:`, slots);
           setAvailableSlotsByDate(prev => ({ ...prev, [date]: slots || [] }));
         } catch (err) {
           // ignore polling errors
@@ -71,6 +76,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ust
     const interval = setInterval(fetchForSelected, intervalMs);
     return () => { active = false; clearInterval(interval); };
   }, [isOpen, bookingData.startDate, bookingData.selectedDays, ustaadh.id]);
+
+  // Force refresh when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log('[BookingModal] Modal opened, clearing cached slots');
+      setAvailableSlotsByDate({});
+    }
+  }, [isOpen]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 

@@ -24,12 +24,18 @@ export class AvailabilityController {
   }
 
   @Get('ustaadh/:ustaadhId')
-  async getUstaadhAvailability(@Param('ustaadhId') ustaadhId: string) {
+  async getUstaadhAvailability(@Param('ustaadhId') ustaadhId: string, @Request() req) {
+    req.res?.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    req.res?.setHeader('Pragma', 'no-cache');
+    req.res?.setHeader('Expires', '0');
     return this.availabilityService.getUstaadhAvailability(ustaadhId);
   }
 
   @Get('ustaadh/:ustaadhId/available')
-  async getAvailableForDate(@Param('ustaadhId') ustaadhId: string, @Query('date') date: string) {
+  async getAvailableForDate(@Param('ustaadhId') ustaadhId: string, @Query('date') date: string, @Request() req) {
+    req.res?.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    req.res?.setHeader('Pragma', 'no-cache');
+    req.res?.setHeader('Expires', '0');
     return this.availabilityService.getAvailableTimeSlots(ustaadhId, date);
   }
 

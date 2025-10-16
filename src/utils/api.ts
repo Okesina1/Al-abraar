@@ -216,14 +216,14 @@ export const availabilityApi = {
   getAvailability: (ustaadhId: string) => {
     const ts = Date.now().toString();
     console.debug('[API] availability.getAvailability called for id=', ustaadhId);
-    return apiClient.get(`/availability/ustaadh/${ustaadhId}`, { 'x-cache-bust': ts });
+    return apiClient.get(`/availability/ustaadh/${ustaadhId}?_t=${ts}`, { 'x-cache-bust': ts, 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' });
   },
 
   getAvailableTimeSlots: (ustaadhId: string, date: string) => {
     const ts = Date.now().toString();
     console.debug('[API] availability.getAvailableTimeSlots called for id=', ustaadhId, 'date=', date);
-    const query = `?date=${encodeURIComponent(date)}&ts=${ts}`;
-    return apiClient.get(`/availability/ustaadh/${ustaadhId}/available${query}`);
+    const query = `?date=${encodeURIComponent(date)}&_t=${ts}`;
+    return apiClient.get(`/availability/ustaadh/${ustaadhId}/available${query}`, { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' });
   },
 
   setAvailability: (data: any[]) =>

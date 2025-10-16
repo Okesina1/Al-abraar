@@ -23,6 +23,9 @@ export class AvailabilityService {
     ustaadhId: string,
     availabilityData: any[]
   ): Promise<Availability[]> {
+    console.log(`[AvailabilityService] Setting availability for ustaadhId: ${ustaadhId}`);
+    console.log('[AvailabilityService] Received data:', JSON.stringify(availabilityData));
+
     // Validate availability data
     for (const slot of availabilityData) {
       if (
@@ -47,7 +50,8 @@ export class AvailabilityService {
     }
 
     // Remove existing availability for this Ustaadh
-    await this.availabilityModel.deleteMany({ ustaadhId });
+    const deleteResult = await this.availabilityModel.deleteMany({ ustaadhId });
+    console.log(`[AvailabilityService] Deleted ${deleteResult.deletedCount} existing slots`);
 
     // Create new availability slots
     const availabilitySlots = availabilityData.map((slot) => ({
@@ -58,14 +62,22 @@ export class AvailabilityService {
       isAvailable: slot.isAvailable !== false, // Default to true
     }));
 
-    return this.availabilityModel.insertMany(availabilitySlots);
+    const result = await this.availabilityModel.insertMany(availabilitySlots);
+    console.log(`[AvailabilityService] Inserted ${result.length} new slots`);
+    console.log('[AvailabilityService] Result:', JSON.stringify(result));
+
+    return result;
   }
 
   async getUstaadhAvailability(ustaadhId: string): Promise<Availability[]> {
-    return this.availabilityModel
+    console.log(`[AvailabilityService] Getting availability for ustaadhId: ${ustaadhId}`);
+    const result = await this.availabilityModel
       .find({ ustaadhId })
       .sort({ dayOfWeek: 1, startTime: 1 })
       .exec();
+    console.log(`[AvailabilityService] Found ${result.length} slots`);
+    console.log('[AvailabilityService] Slots:', JSON.stringify(result));
+    return result;
   }
 
   async checkAvailability(
@@ -92,7 +104,9 @@ export class AvailabilityService {
     if (!ustaadhId) throw new BadRequestException("Missing ustaadhId");
     if (!date) throw new BadRequestException("Missing date");
 
+    console.log(`[AvailabilityService] Getting available slots for ustaadhId: ${ustaadhId}, date: ${date}`);
     const dayOfWeek = new Date(date).getDay();
+    console.log(`[AvailabilityService] Day of week: ${dayOfWeek}`);
     const availability = await this.getUstaadhAvailability(ustaadhId);
 
     const dayAvailability = availability

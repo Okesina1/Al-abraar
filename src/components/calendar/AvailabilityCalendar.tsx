@@ -213,6 +213,7 @@ export const AvailabilityCalendar: React.FC = () => {
       const previous = [...availability];
       // optimistic update: assume save will succeed and keep local state
       setSaveLoading(true);
+      console.log('[AvailabilityCalendar] Starting save, userId:', uId);
       try {
         // Validation: ensure start < end, valid formats, and no overlapping slots per day
         const parseTime = (t: string) => {
@@ -281,49 +282,65 @@ export const AvailabilityCalendar: React.FC = () => {
 
         // send payload and use server response immediately
         const payload = availability.map((a) => ({ ...a }));
+        console.log('[AvailabilityCalendar] Saving payload:', payload);
         const serverResult = await setUstaadhAvailability(uId, payload);
-        console.debug("Availability save payload", payload);
-        console.debug("Availability server result", serverResult);
+        console.log('[AvailabilityCalendar] Server returned:', serverResult);
+
         // If server returned inserted documents, use them to update UI immediately
         if (Array.isArray(serverResult) && serverResult.length > 0) {
+          console.log('[AvailabilityCalendar] Setting availability from server result');
           setAvailability(serverResult);
         }
+
+        // Wait a moment to ensure database replication
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         // refetch fresh data from backend to ensure UI reflects persisted state (secondary confirmation)
         try {
+          console.log('[AvailabilityCalendar] Re-fetching fresh availability');
           const fresh = await getUstaadhAvailability(uId);
-          console.debug("Availability fresh after save", fresh);
-          setAvailability(fresh);
-        } catch {
-          // ignore; booking context already logged
+          console.log('[AvailabilityCalendar] Fresh availability received:', fresh);
+          if (Array.isArray(fresh) && fresh.length > 0) {
+            setAvailability(fresh);
+          }
+        } catch (e) {
+          console.error('[AvailabilityCalendar] Failed to refresh availability:', e);
         }
 
-        // Exit editing mode AFTER updating availability state
-        setIsEditing(false);
+        // Wait a moment before refreshing date slots
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         // Force immediate refresh of date-specific slots for viewing mode
+        console.log('[AvailabilityCalendar] Refreshing date-specific slots');
         const newDateSlots: Record<string, Array<{ startTime: string; endTime: string }>> = {};
         const newBooked: Record<string, Array<{ startTime: string; endTime: string; reserved?: boolean }>> = {};
 
         for (const d of daysOfWeek) {
           try {
             const date = getNextDateForDay(d.id);
+            console.log(`[AvailabilityCalendar] Fetching slots for ${d.name} (${date})`);
             const slots = await availabilityApi.getAvailableTimeSlots(uId, date);
+            console.log(`[AvailabilityCalendar] Slots for ${date}:`, slots);
             newDateSlots[date] = slots || [];
             try {
               const b = await (await import("../../utils/api")).apiClient.get(
-                `/availability/booked?ustaadhId=${uId}&date=${date}`
+                `/availability/booked?ustaadhId=${uId}&date=${date}&_t=${Date.now()}`
               );
               newBooked[date] = b || [];
             } catch {
               newBooked[date] = [];
             }
           } catch (e) {
-            console.error("Failed to fetch date slots after save", e);
+            console.error(`[AvailabilityCalendar] Failed to fetch date slots for ${d.name}:`, e);
           }
         }
 
+        console.log('[AvailabilityCalendar] Setting new date slots:', newDateSlots);
         setDateSlots(newDateSlots);
         setBookedByDate(newBooked);
+
+        // Exit editing mode AFTER all data is refreshed
+        setIsEditing(false);
 
         toast.success("Availability saved");
       } catch (err) {
